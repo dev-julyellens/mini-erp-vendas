@@ -1,0 +1,213 @@
+:root {
+    --sidebar-bg: #0f172a;
+    --sidebar-hover: #1e293b;
+    --accent: #38bdf8;
+    --accent-2: #a78bfa;
+    --surface: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #f59e0b;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 45%, #ecfeff 100%);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.18), transparent 45%),
+        radial-gradient(circle at 80% 0%, rgba(167, 139, 250, 0.22), transparent 40%), var(--sidebar-bg);
+    color: #e2e8f0;
+    padding: 1.25rem 1rem;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    min-height: 100vh;
+    border-right: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.sidebar .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.35rem 0.5rem 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    margin-bottom: 1rem;
+}
+
+.sidebar .brand-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: #0f172a;
+    box-shadow: 0 10px 30px rgba(56, 189, 248, 0.35);
+}
+
+.sidebar .nav-link {
+    color: #cbd5e1;
+    border-radius: 10px;
+    padding: 0.55rem 0.75rem;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.sidebar .nav-link:hover {
+    background: var(--sidebar-hover);
+    color: #fff;
+    transform: translateX(2px);
+}
+
+.sidebar .nav-link.active {
+    background: rgba(56, 189, 248, 0.12);
+    color: #fff;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.topbar {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.75);
+    border-bottom: 1px solid var(--border);
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.page {
+    padding: 1.25rem;
+    flex: 1;
+}
+
+.card-soft {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+}
+
+.stat-tile {
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-tile::after {
+    content: "";
+    position: absolute;
+    inset: -40% -20% auto auto;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 60%);
+    opacity: 0.35;
+}
+
+.stat-tile h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.stat-orders {
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+}
+
+.stat-products {
+    background: linear-gradient(135deg, #22c55e, #14b8a6);
+}
+
+.stat-customers {
+    background: linear-gradient(135deg, #f97316, #ec4899);
+}
+
+.table thead th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    border-bottom-color: var(--border) !important;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge-low {
+    background: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+    border: none;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.05);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: rgba(56, 189, 248, 0.65);
+    box-shadow: 0 0 0 0.2rem rgba(56, 189, 248, 0.15);
+}
+
+.order-line {
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 0.75rem;
+    background: #f8fafc;
+}
+
+.toast-container {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1080;
+}
+
+@media (max-width: 991px) {
+    .app-shell {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        position: relative;
+    }
+}
