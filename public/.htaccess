@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Ajuste o RewriteBase conforme a pasta do seu projeto no Apache (XAMPP).
+    # Ex.: http://localhost/mini-erp-vendas/public/  -> /mini-erp-vendas/public/
+    RewriteBase /mini-erp-vendas/public/
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>
