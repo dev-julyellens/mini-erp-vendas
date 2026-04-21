@@ -1,0 +1,31 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core;
+
+final class View
+{
+    /**
+     * @param array<string, mixed> $data
+     */
+    public static function render(string $template, array $data = []): void
+    {
+        $viewsPath = dirname(__DIR__) . '/Views/';
+        $file = $viewsPath . $template . '.php';
+
+        if (!is_file($file)) {
+            http_response_code(500);
+            echo 'View not found: ' . htmlspecialchars($template, ENT_QUOTES, 'UTF-8');
+            exit;
+        }
+
+        extract($data, EXTR_SKIP);
+        $config = require dirname(__DIR__, 2) . '/config/app.php';
+        $appName = (string) ($config['app_name'] ?? 'App');
+        $baseUrl = rtrim((string) ($config['base_url'] ?? ''), '/');
+        $__viewFile = $file;
+
+        require $viewsPath . 'layouts/main.php';
+    }
+}
