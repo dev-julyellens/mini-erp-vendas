@@ -1,0 +1,99 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var string $appName */
+/** @var string $baseUrl */
+/** @var string $__viewFile */
+
+$currentPath = \App\Helpers\PathHelper::requestPath();
+
+$url = static function (string $path = '') use ($baseUrl): string {
+    return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
+};
+
+$navActive = static function (string $path) use ($currentPath): string {
+    return $currentPath === $path ? 'active' : '';
+};
+
+$navPrefix = static function (string $prefix) use ($currentPath): string {
+    $prefix = '/' . trim($prefix, '/');
+    if ($prefix === '//') {
+        $prefix = '/';
+    }
+    if ($prefix !== '/' && strpos($currentPath, $prefix) === 0) {
+        return 'active';
+    }
+    return '';
+};
+
+?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars($url('assets/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
+</head>
+<body data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>">
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">M</div>
+            <div>
+                <div class="fw-semibold"><?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?></div>
+                <small class="text-secondary">Painel</small>
+            </div>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link <?= $navActive('/') ?>" href="<?= htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') ?>">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a class="nav-link <?= $navPrefix('/customers') ?>" href="<?= htmlspecialchars($url('customers'), ENT_QUOTES, 'UTF-8') ?>">
+                <i class="bi bi-people"></i> Clientes
+            </a>
+            <a class="nav-link <?= $navPrefix('/products') ?>" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">
+                <i class="bi bi-box-seam"></i> Produtos
+            </a>
+            <a class="nav-link <?= $navPrefix('/orders') ?>" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">
+                <i class="bi bi-receipt"></i> Vendas
+            </a>
+            <hr class="border-secondary-subtle">
+            <div class="px-2 pb-1 small text-secondary text-uppercase">API</div>
+            <a class="nav-link" href="<?= htmlspecialchars($url('api/products'), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer">
+                <i class="bi bi-braces"></i> /api/products
+            </a>
+            <a class="nav-link" href="<?= htmlspecialchars($url('api/orders'), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer">
+                <i class="bi bi-braces"></i> /api/orders
+            </a>
+        </nav>
+    </aside>
+    <div class="content">
+        <header class="topbar">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge text-bg-light border">PHP + PostgreSQL</span>
+                <span class="text-muted small d-none d-md-inline">MVC · Services · Repositories</span>
+            </div>
+            <div class="text-muted small">
+                <?= date('d/m/Y H:i') ?>
+            </div>
+        </header>
+        <main class="page">
+            <?php require dirname(__DIR__) . '/partials/flash.php'; ?>
+            <?php require $__viewFile; ?>
+        </main>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+<script src="<?= htmlspecialchars($url('assets/js/app.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+</body>
+</html>
