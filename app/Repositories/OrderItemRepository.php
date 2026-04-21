@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Repositories;
+
+use App\Core\Database;
+use App\Models\OrderItem;
+use PDO;
+
+final class OrderItemRepository
+{
+    private PDO $db;
+
+    public function __construct(?PDO $db = null)
+    {
+        $this->db = $db ?? Database::getConnection();
+    }
+
+    public function insert(int $orderId, int $productId, int $quantity, string $unitPrice, string $subtotal): void
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+             VALUES (:order_id, :product_id, :quantity, :unit_price, :subtotal)'
+        );
+        $stmt->execute([
+            'order_id' => $orderId,
+            'product_id' => $productId,
+            'quantity' => $quantity,
+            'unit_price' => $unitPrice,
+            'subtotal' => $subtotal,
+        ]);
+    }
+
+    /**
+     * @return list<OrderItem>
+     */
+    public function findByOrderId(int $orderId): array
+    {
+        $sql = 'SELECT oi.*, p.name AS product_name
+                FROM order_items oi
+                INNER JOIN products p ON p.id = oi.product_id
+                WHERE oi.order_id = :order_id
+                ORDER BY oi.id ASC';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['order_id' => $orderId]);
+        $rows = $stmt->fetchAll();
+        $list = [];
+        foreach ($rows as $row) {
+            $list[] = OrderItem::fromArray($row);
+        }
+        return $list;
+    }
+}

@@ -1,0 +1,106 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Repositories;
+
+use App\Core\Database;
+use App\Models\Order;
+use PDO;
+
+final class OrderRepository
+{
+    private PDO $db;
+
+    public function __construct(?PDO $db = null)
+    {
+        $this->db = $db ?? Database::getConnection();
+    }
+
+    public function findById(int $id): ?Order
+    {
+        $sql = 'SELECT o.*, c.name AS customer_name
+                FROM orders o
+                INNER JOIN customers c ON c.id = o.customer_id
+                WHERE o.id = :id';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row ? Order::fromArray($row) : null;
+    }
+
+    public function insert(int $customerId, string $totalAmount): int
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO orders (customer_id, total_amount) VALUES (:customer_id, :total) RETURNING id'
+        );
+        $stmt->execute([
+            'customer_id' => $customerId,
+            'total' => $totalAmount,
+        ]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function updateTotal(int $orderId, string $totalAmount): void
+    {
+        $stmt = $this->db->prepare('UPDATE orders SET total_amount = :total WHERE id = :id');
+        $stmt->execute(['id' => $orderId, 'total' => $totalAmount]);
+    }
+
+    /**
+     * @return array{items: list<Order>, total: int}
+     */
+    public function paginateFiltered(int $page, int $perPage, ?int $customerId, ?string $dateFrom, ?string $dateTo): array
+    {
+        $page = max(1, $page);
+        $offset = ($page - 1) * $perPage;
+
+        $where = [];
+        $params = [];
+        if ($customerId !== null) {
+            $where[] = 'o.customer_id = :customer_id';
+            $params['customer_id'] = $customerId;
+        }
+        if ($dateFrom !== null && $dateFrom !== '') {
+            $where[] = 'o.created_at::date >= :date_from';
+            $params['date_from'] = $dateFrom;
+        }
+        if ($dateTo !== null && $dateTo !== '') {
+            $where[] = 'o.created_at::date <= :date_to';
+            $params['date_to'] = $dateTo;
+        }
+        $whereSql = $where === [] ? '' : ('WHERE ' . implode(' AND ', $where));
+
+        $countSql = "SELECT COUNT(*) FROM orders o $whereSql";
+        $countStmt = $this->db->prepare($countSql);
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+
+        $listSql = "SELECT o.*, c.name AS customer_name
+                    FROM orders o
+                    INNER JOIN customers c ON c.id = o.customer_id
+                    $whereSql
+                    ORDER BY o.created_at DESC
+                    LIMIT :limit OFFSET :offset";
+        $stmt = $this->db->prepare($listSql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(':' . $k, $v);
+        }
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll();
+
+        $items = [];
+        foreach ($rows as $row) {
+            $items[] = Order::fromArray($row);
+        }
+
+        return ['items' => $items, 'total' => $total];
+    }
+
+    public function countAll(): int
+    {
+        return (int) $this->db->query('SELECT COUNT(*) FROM orders')->fetchColumn();
+    }
+}
