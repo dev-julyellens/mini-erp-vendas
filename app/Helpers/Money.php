@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Helpers;
+
+final class Money
+{
+    public static function mul(string $unitPrice, int $quantity): string
+    {
+        if (function_exists('bcmul')) {
+            return bcmul($unitPrice, (string) $quantity, 2);
+        }
+
+        return number_format((float) $unitPrice * $quantity, 2, '.', '');
+    }
+
+    public static function add(string $a, string $b): string
+    {
+        if (function_exists('bcadd')) {
+            return bcadd($a, $b, 2);
+        }
+
+        return number_format((float) $a + (float) $b, 2, '.', '');
+    }
+
+    public static function validatePositive(string $value): bool
+    {
+        return (bool) preg_match('/^\d+(\.\d{1,2})?$/', $value) && (float) $value > 0;
+    }
+
+    public static function validateNonNegativeInt(string $value): bool
+    {
+        return (bool) preg_match('/^\d+$/', $value) && (int) $value >= 0;
+    }
+}
