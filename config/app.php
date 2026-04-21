@@ -10,10 +10,12 @@ $dbName = getenv('DB_NAME');
 $dbUser = getenv('DB_USER');
 $dbPass = getenv('DB_PASSWORD');
 $base = getenv('APP_BASE_URL');
+$timezone = getenv('APP_TIMEZONE');
 
 return [
     'app_name' => 'Mini ERP de Vendas',
     'base_url' => ($base !== false && $base !== '') ? $base : 'http://localhost/mini-erp-vendas/public',
+    'timezone' => ($timezone !== false && $timezone !== '') ? $timezone : 'America/Sao_Paulo',
     'database' => [
         'host' => ($dbHost !== false && $dbHost !== '') ? $dbHost : '127.0.0.1',
         'port' => ($dbPort !== false && $dbPort !== '') ? $dbPort : '5432',
