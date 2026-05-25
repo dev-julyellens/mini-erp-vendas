@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS password_reset_tokens CASCADE;
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS customers CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
@@ -77,15 +78,43 @@ CREATE TABLE customers (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT categories_name_unique UNIQUE (name)
+);
+
+CREATE INDEX idx_categories_name ON categories (name);
+
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
+    sku VARCHAR(50) NOT NULL,
+    barcode VARCHAR(50),
+    category_id INTEGER REFERENCES categories (id) ON DELETE SET NULL,
+    unit_of_measure VARCHAR(10) NOT NULL DEFAULT 'UN',
+    cost_price NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    margin_percent NUMERIC(8, 2),
+    markup_percent NUMERIC(8, 2),
     price NUMERIC(12, 2) NOT NULL,
     stock INTEGER NOT NULL,
+    min_stock INTEGER NOT NULL DEFAULT 5,
+    type VARCHAR(20) NOT NULL DEFAULT 'product',
+    CONSTRAINT products_sku_unique UNIQUE (sku),
+    CONSTRAINT products_barcode_unique UNIQUE (barcode),
     CONSTRAINT products_price_positive CHECK (price > 0),
-    CONSTRAINT products_stock_non_negative CHECK (stock >= 0)
+    CONSTRAINT products_stock_non_negative CHECK (stock >= 0),
+    CONSTRAINT products_min_stock_non_negative CHECK (min_stock >= 0),
+    CONSTRAINT products_cost_non_negative CHECK (cost_price >= 0),
+    CONSTRAINT products_type_check CHECK (type IN ('product', 'service'))
 );
+
+CREATE INDEX idx_products_sku ON products (sku);
+CREATE INDEX idx_products_category ON products (category_id);
+CREATE INDEX idx_products_type ON products (type);
 
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
@@ -282,12 +311,44 @@ INSERT INTO customers (name, email, phone) VALUES
 INSERT INTO users (name, email, password_hash, role, active) VALUES
     ('Administrador', 'admin@mini-erp.local', '$2y$10$XNyBEjcS0aobvO6spDzXWOSwE.SxMSJhh59KUBcOOFTGSlAZdSwxe', 'admin', TRUE);
 
-INSERT INTO products (name, description, price, stock) VALUES
-    ('Notebook Pro 14', 'Ultrafino, 16GB RAM', 4599.90, 8),
-    ('Mouse sem fio', 'Sensor óptico, ergonomia', 129.90, 40),
-    ('Teclado mecânico', 'Switch brown, RGB', 549.00, 12),
-    ('Monitor 27" 4K', 'IPS, 60Hz', 1899.00, 3),
-    ('Webcam HD', '1080p, microfone integrado', 249.90, 2);
+INSERT INTO categories (name, description) VALUES
+    ('Informática', 'Hardware e periféricos'),
+    ('Serviços', 'Prestação de serviços');
+
+INSERT INTO products (
+    name, description, sku, category_id, unit_of_measure, cost_price, margin_percent, markup_percent,
+    price, stock, min_stock, type
+) VALUES
+    (
+        'Notebook Pro 14', 'Ultrafino, 16GB RAM', 'SKU-000001',
+        (SELECT id FROM categories WHERE name = 'Informática' LIMIT 1),
+        'UN', 3200.00, 30.43, 43.75, 4599.90, 8, 5, 'product'
+    ),
+    (
+        'Mouse sem fio', 'Sensor óptico, ergonomia', 'SKU-000002',
+        (SELECT id FROM categories WHERE name = 'Informática' LIMIT 1),
+        'UN', 65.00, 50.00, 100.00, 129.90, 40, 10, 'product'
+    ),
+    (
+        'Teclado mecânico', 'Switch brown, RGB', 'SKU-000003',
+        (SELECT id FROM categories WHERE name = 'Informática' LIMIT 1),
+        'UN', 380.00, 30.78, 44.47, 549.00, 12, 5, 'product'
+    ),
+    (
+        'Monitor 27" 4K', 'IPS, 60Hz', 'SKU-000004',
+        (SELECT id FROM categories WHERE name = 'Informática' LIMIT 1),
+        'UN', 1400.00, 26.28, 35.64, 1899.00, 3, 5, 'product'
+    ),
+    (
+        'Webcam HD', '1080p, microfone integrado', 'SKU-000005',
+        (SELECT id FROM categories WHERE name = 'Informática' LIMIT 1),
+        'UN', 150.00, 39.98, 66.60, 249.90, 2, 5, 'product'
+    ),
+    (
+        'Instalação e configuração', 'Serviço presencial ou remoto', 'SRV-000001',
+        (SELECT id FROM categories WHERE name = 'Serviços' LIMIT 1),
+        'HR', 0.00, 100.00, NULL, 150.00, 0, 0, 'service'
+    );
 
 INSERT INTO permissions (module, action)
 SELECT m.module, a.action
