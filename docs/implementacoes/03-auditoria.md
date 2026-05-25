@@ -78,6 +78,8 @@ Consulta: AuditLogController → AuditService::searchLogs() → view com filtros
 
 Senhas e hashes **nunca** são gravados nos logs.
 
+Falha ao gravar log **não interrompe** a operação de negócio (erro registrado em `error_log`).
+
 ---
 
 ## Consulta administrativa
@@ -85,7 +87,20 @@ Senhas e hashes **nunca** são gravados nos logs.
 - **Rota:** `GET /audit-logs`
 - **Permissão:** módulo `usuarios`, ação `visualizar` (admin tem bypass)
 - **Filtros:** usuário, entidade, período (data de/até)
-- **Paginação:** 20 registros por página
+- **Paginação:** 20 registros por página (partial compartilhado `partials/pagination.php`)
+- **Filtro de entidade:** apenas valores da whitelist (`AuditService::ENTITIES`)
+
+---
+
+## Robustez (revisão pós-implementação)
+
+| Correção | Detalhe |
+|----------|---------|
+| `AuditService::record()` | `try/catch` — falha de auditoria não propaga exceção |
+| `searchLogs()` | Whitelist de entidade via `normalizeEntityFilter()` |
+| Labels | Centralizados em `AuditService::ACTION_LABELS` / `ENTITY_LABELS` |
+| IP | Validação com `filter_var(FILTER_VALIDATE_IP)` |
+| View | Paginação reutilizada; IP oculto em telas &lt; lg (visível no modal) |
 
 ---
 
