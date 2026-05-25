@@ -16,7 +16,8 @@ final class AccountsReceivableRepository
         ar.created_at, ar.updated_at, c.name AS customer_name,
         o.total_amount AS order_total,
         COALESCE(pay.paid_total, 0) AS paid_total,
-        (ar.amount - COALESCE(pay.paid_total, 0)) AS remaining_amount';
+        (ar.amount - COALESCE(pay.paid_total, 0)) AS remaining_amount,
+        EXISTS (SELECT 1 FROM installments inst WHERE inst.order_id = ar.order_id) AS has_installments';
 
     private const FROM_JOIN = 'FROM accounts_receivable ar
         INNER JOIN customers c ON c.id = ar.customer_id
