@@ -153,6 +153,18 @@ body {
     background: linear-gradient(135deg, #f97316, #ec4899);
 }
 
+.stat-finance-open {
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+}
+
+.stat-finance-cash {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.stat-finance-month {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+}
+
 .table thead th {
     font-size: 0.78rem;
     text-transform: uppercase;
