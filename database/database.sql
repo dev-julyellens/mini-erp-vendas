@@ -1,6 +1,10 @@
 -- Mini ERP de Vendas - PostgreSQL schema + seed
 -- Encoding: UTF-8
 
+DROP TABLE IF EXISTS backup_logs CASCADE;
+DROP TABLE IF EXISTS backup_settings CASCADE;
+DROP TABLE IF EXISTS api_logs CASCADE;
+DROP TABLE IF EXISTS api_rate_limit_buckets CASCADE;
 DROP TABLE IF EXISTS cash_flow CASCADE;
 DROP TABLE IF EXISTS payments CASCADE;
 DROP TABLE IF EXISTS installments CASCADE;
@@ -15,7 +19,24 @@ DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS products CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS customers CASCADE;
+DROP TABLE IF EXISTS user_companies CASCADE;
+DROP TABLE IF EXISTS companies CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+
+CREATE TABLE companies (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    tax_id VARCHAR(20),
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT companies_name_unique UNIQUE (name)
+);
+
+CREATE INDEX idx_companies_active ON companies (active) WHERE active = TRUE;
+
+INSERT INTO companies (id, name, active) VALUES (1, 'Empresa Padrão', TRUE);
+SELECT setval(pg_get_serial_sequence('companies', 'id'), 1);
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -70,26 +91,42 @@ CREATE TABLE role_permissions (
 
 CREATE INDEX idx_role_permissions_role ON role_permissions (role);
 
+CREATE TABLE user_companies (
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    company_id INTEGER NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
+    CONSTRAINT user_companies_pkey PRIMARY KEY (user_id, company_id)
+);
+
+CREATE INDEX idx_user_companies_company ON user_companies (company_id);
+
 CREATE TABLE customers (
     id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies (id),
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL,
     phone VARCHAR(50),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE UNIQUE INDEX customers_company_email_unique ON customers (company_id, LOWER(email));
+CREATE INDEX idx_customers_company ON customers (company_id);
+
 CREATE TABLE categories (
     id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies (id),
     name VARCHAR(120) NOT NULL,
     description TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT categories_name_unique UNIQUE (name)
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE UNIQUE INDEX categories_company_name_unique ON categories (company_id, LOWER(name));
+
+CREATE INDEX idx_categories_company ON categories (company_id);
 CREATE INDEX idx_categories_name ON categories (name);
 
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies (id),
     name VARCHAR(255) NOT NULL,
     description TEXT,
     sku VARCHAR(50) NOT NULL,
@@ -104,8 +141,6 @@ CREATE TABLE products (
     min_stock INTEGER NOT NULL DEFAULT 5,
     type VARCHAR(20) NOT NULL DEFAULT 'product',
     estimated_time_minutes INTEGER,
-    CONSTRAINT products_sku_unique UNIQUE (sku),
-    CONSTRAINT products_barcode_unique UNIQUE (barcode),
     CONSTRAINT products_price_positive CHECK (price > 0),
     CONSTRAINT products_stock_non_negative CHECK (stock >= 0),
     CONSTRAINT products_min_stock_non_negative CHECK (min_stock >= 0),
@@ -116,12 +151,18 @@ CREATE TABLE products (
     )
 );
 
+CREATE UNIQUE INDEX products_company_sku_unique ON products (company_id, UPPER(sku));
+CREATE UNIQUE INDEX products_company_barcode_unique ON products (company_id, barcode) WHERE barcode IS NOT NULL;
+CREATE INDEX idx_products_company ON products (company_id);
 CREATE INDEX idx_products_sku ON products (sku);
 CREATE INDEX idx_products_category ON products (category_id);
 CREATE INDEX idx_products_type ON products (type);
+CREATE INDEX idx_products_low_stock ON products (type, stock, min_stock)
+    WHERE type = 'product';
 
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies (id),
     customer_id INTEGER NOT NULL REFERENCES customers (id) ON DELETE RESTRICT,
     total_amount NUMERIC(14, 2) NOT NULL DEFAULT 0,
     status VARCHAR(20) NOT NULL DEFAULT 'paid',
@@ -134,9 +175,11 @@ CREATE TABLE orders (
     )
 );
 
+CREATE INDEX idx_orders_company ON orders (company_id);
 CREATE INDEX idx_orders_customer ON orders (customer_id);
 CREATE INDEX idx_orders_created_at ON orders (created_at);
 CREATE INDEX idx_orders_status ON orders (status);
+CREATE INDEX idx_orders_status_created_at ON orders (status, created_at DESC);
 
 CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
@@ -151,6 +194,7 @@ CREATE TABLE order_items (
 
 CREATE INDEX idx_order_items_order ON order_items (order_id);
 CREATE INDEX idx_order_items_product ON order_items (product_id);
+CREATE INDEX idx_order_items_product_order ON order_items (product_id, order_id);
 
 CREATE TABLE accounts_receivable (
     id SERIAL PRIMARY KEY,
@@ -217,6 +261,7 @@ CREATE INDEX idx_installments_paid_at ON installments (paid_at DESC);
 
 CREATE TABLE cash_flow (
     id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies (id),
     type VARCHAR(10) NOT NULL,
     amount NUMERIC(14, 2) NOT NULL,
     payment_method VARCHAR(20),
@@ -237,6 +282,8 @@ CREATE TABLE cash_flow (
 CREATE INDEX idx_cash_flow_type ON cash_flow (type);
 CREATE INDEX idx_cash_flow_occurred_at ON cash_flow (occurred_at DESC);
 CREATE INDEX idx_cash_flow_reference ON cash_flow (reference_type, reference_id);
+CREATE INDEX idx_cash_flow_company ON cash_flow (company_id);
+CREATE INDEX idx_cash_flow_occurred_type ON cash_flow (occurred_at DESC, type);
 
 CREATE TABLE stock_movements (
     id SERIAL PRIMARY KEY,
@@ -263,6 +310,7 @@ CREATE INDEX idx_stock_movements_reference ON stock_movements (reference_type, r
 CREATE TABLE audit_logs (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    company_id INTEGER REFERENCES companies (id) ON DELETE SET NULL,
     action VARCHAR(50) NOT NULL,
     entity VARCHAR(50) NOT NULL,
     entity_id INTEGER,
@@ -302,65 +350,137 @@ CREATE INDEX idx_audit_logs_entity ON audit_logs (entity);
 CREATE INDEX idx_audit_logs_entity_id ON audit_logs (entity_id);
 CREATE INDEX idx_audit_logs_created_at ON audit_logs (created_at DESC);
 CREATE INDEX idx_audit_logs_user_created ON audit_logs (user_id, created_at DESC);
+CREATE INDEX idx_audit_logs_company ON audit_logs (company_id);
+
+CREATE TABLE api_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    ip_address VARCHAR(45) NOT NULL,
+    http_method VARCHAR(10) NOT NULL,
+    endpoint VARCHAR(255) NOT NULL,
+    payload JSONB,
+    status_code SMALLINT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_api_logs_user_id ON api_logs (user_id);
+CREATE INDEX idx_api_logs_endpoint ON api_logs (endpoint);
+CREATE INDEX idx_api_logs_created_at ON api_logs (created_at DESC);
+CREATE INDEX idx_api_logs_ip_created ON api_logs (ip_address, created_at DESC);
+
+CREATE TABLE api_rate_limit_buckets (
+    bucket_key VARCHAR(255) PRIMARY KEY,
+    request_count INTEGER NOT NULL DEFAULT 0,
+    reset_at TIMESTAMP NOT NULL
+);
+
+CREATE INDEX idx_api_rate_limit_reset_at ON api_rate_limit_buckets (reset_at);
+
+CREATE TABLE backup_settings (
+    id SMALLINT PRIMARY KEY DEFAULT 1,
+    enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    run_hour SMALLINT NOT NULL DEFAULT 2,
+    run_minute SMALLINT NOT NULL DEFAULT 0,
+    frequency VARCHAR(20) NOT NULL DEFAULT 'daily',
+    last_run_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by_user_id INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT backup_settings_singleton CHECK (id = 1),
+    CONSTRAINT backup_settings_run_hour_check CHECK (run_hour >= 0 AND run_hour <= 23),
+    CONSTRAINT backup_settings_run_minute_check CHECK (run_minute >= 0 AND run_minute <= 59),
+    CONSTRAINT backup_settings_frequency_check CHECK (frequency IN ('daily'))
+);
+
+CREATE TABLE backup_logs (
+    id SERIAL PRIMARY KEY,
+    operation VARCHAR(20) NOT NULL,
+    trigger_type VARCHAR(20) NOT NULL,
+    filename VARCHAR(255),
+    file_size BIGINT,
+    status VARCHAR(20) NOT NULL,
+    message TEXT,
+    user_id INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    duration_ms INTEGER,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT backup_logs_operation_check CHECK (
+        operation IN ('backup', 'restore', 'cleanup')
+    ),
+    CONSTRAINT backup_logs_trigger_check CHECK (
+        trigger_type IN ('manual', 'automatic', 'cron')
+    ),
+    CONSTRAINT backup_logs_status_check CHECK (
+        status IN ('success', 'failed', 'running')
+    )
+);
+
+CREATE INDEX idx_backup_logs_created_at ON backup_logs (created_at DESC);
+CREATE INDEX idx_backup_logs_operation ON backup_logs (operation);
+CREATE INDEX idx_backup_logs_status ON backup_logs (status);
 
 -- ---------------------------------------------------------------------------
 -- Seed data
 -- ---------------------------------------------------------------------------
 
-INSERT INTO customers (name, email, phone) VALUES
-    ('Maria Silva', 'maria.silva@example.com', '(11) 98888-1111'),
-    ('João Santos', 'joao.santos@example.com', '(21) 97777-2222'),
-    ('Tech LTDA', 'contato@techltda.example.com', '(31) 96666-3333');
+INSERT INTO customers (company_id, name, email, phone) VALUES
+    (1, 'Maria Silva', 'maria.silva@example.com', '(11) 98888-1111'),
+    (1, 'João Santos', 'joao.santos@example.com', '(21) 97777-2222'),
+    (1, 'Tech LTDA', 'contato@techltda.example.com', '(31) 96666-3333');
 
 INSERT INTO users (name, email, password_hash, role, active) VALUES
     ('Administrador', 'admin@mini-erp.local', '$2y$10$XNyBEjcS0aobvO6spDzXWOSwE.SxMSJhh59KUBcOOFTGSlAZdSwxe', 'admin', TRUE);
 
-INSERT INTO categories (name, description) VALUES
-    ('Informática', 'Hardware e periféricos'),
-    ('Serviços', 'Prestação de serviços');
+INSERT INTO user_companies (user_id, company_id)
+SELECT id, 1 FROM users;
+
+INSERT INTO backup_settings (id, enabled, run_hour, run_minute, frequency)
+VALUES (1, FALSE, 2, 0, 'daily');
+
+INSERT INTO categories (company_id, name, description) VALUES
+    (1, 'Informática', 'Hardware e periféricos'),
+    (1, 'Serviços', 'Prestação de serviços');
 
 INSERT INTO products (
-    name, description, sku, category_id, unit_of_measure, cost_price, margin_percent, markup_percent,
+    company_id, name, description, sku, category_id, unit_of_measure, cost_price, margin_percent, markup_percent,
     price, stock, min_stock, type, estimated_time_minutes
 ) VALUES
     (
-        'Notebook Pro 14', 'Ultrafino, 16GB RAM', 'SKU-000001',
-        (SELECT id FROM categories WHERE name = 'Informática' LIMIT 1),
+        1, 'Notebook Pro 14', 'Ultrafino, 16GB RAM', 'SKU-000001',
+        (SELECT id FROM categories WHERE name = 'Informática' AND company_id = 1 LIMIT 1),
         'UN', 3200.00, 30.43, 43.75, 4599.90, 8, 5, 'product', NULL
     ),
     (
-        'Mouse sem fio', 'Sensor óptico, ergonomia', 'SKU-000002',
-        (SELECT id FROM categories WHERE name = 'Informática' LIMIT 1),
+        1, 'Mouse sem fio', 'Sensor óptico, ergonomia', 'SKU-000002',
+        (SELECT id FROM categories WHERE name = 'Informática' AND company_id = 1 LIMIT 1),
         'UN', 65.00, 50.00, 100.00, 129.90, 40, 10, 'product', NULL
     ),
     (
-        'Teclado mecânico', 'Switch brown, RGB', 'SKU-000003',
-        (SELECT id FROM categories WHERE name = 'Informática' LIMIT 1),
+        1, 'Teclado mecânico', 'Switch brown, RGB', 'SKU-000003',
+        (SELECT id FROM categories WHERE name = 'Informática' AND company_id = 1 LIMIT 1),
         'UN', 380.00, 30.78, 44.47, 549.00, 12, 5, 'product', NULL
     ),
     (
-        'Monitor 27" 4K', 'IPS, 60Hz', 'SKU-000004',
-        (SELECT id FROM categories WHERE name = 'Informática' LIMIT 1),
+        1, 'Monitor 27" 4K', 'IPS, 60Hz', 'SKU-000004',
+        (SELECT id FROM categories WHERE name = 'Informática' AND company_id = 1 LIMIT 1),
         'UN', 1400.00, 26.28, 35.64, 1899.00, 3, 5, 'product', NULL
     ),
     (
-        'Webcam HD', '1080p, microfone integrado', 'SKU-000005',
-        (SELECT id FROM categories WHERE name = 'Informática' LIMIT 1),
+        1, 'Webcam HD', '1080p, microfone integrado', 'SKU-000005',
+        (SELECT id FROM categories WHERE name = 'Informática' AND company_id = 1 LIMIT 1),
         'UN', 150.00, 39.98, 66.60, 249.90, 2, 5, 'product', NULL
     ),
     (
-        'Instalação e configuração', 'Serviço presencial ou remoto', 'SRV-000001',
-        (SELECT id FROM categories WHERE name = 'Serviços' LIMIT 1),
+        1, 'Instalação e configuração', 'Serviço presencial ou remoto', 'SRV-000001',
+        (SELECT id FROM categories WHERE name = 'Serviços' AND company_id = 1 LIMIT 1),
         'HR', 0.00, 100.00, NULL, 150.00, 0, 0, 'service', 90
     ),
     (
-        'Manutenção preventiva', 'Revisão periódica de equipamentos', 'SRV-000002',
-        (SELECT id FROM categories WHERE name = 'Serviços' LIMIT 1),
+        1, 'Manutenção preventiva', 'Revisão periódica de equipamentos', 'SRV-000002',
+        (SELECT id FROM categories WHERE name = 'Serviços' AND company_id = 1 LIMIT 1),
         'HR', 0.00, 100.00, NULL, 89.90, 0, 0, 'service', 60
     ),
     (
-        'Consultoria técnica', 'Atendimento por hora', 'SRV-000003',
-        (SELECT id FROM categories WHERE name = 'Serviços' LIMIT 1),
+        1, 'Consultoria técnica', 'Atendimento por hora', 'SRV-000003',
+        (SELECT id FROM categories WHERE name = 'Serviços' AND company_id = 1 LIMIT 1),
         'HR', 0.00, 100.00, NULL, 120.00, 0, 0, 'service', 60
     );
 
