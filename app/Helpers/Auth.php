@@ -40,7 +40,29 @@ final class Auth
             return null;
         }
 
+        self::syncSessionFromUser($user);
+
         return $user;
+    }
+
+    private static function syncSessionFromUser(User $user): void
+    {
+        $fresh = $user->toSessionArray();
+        $current = $_SESSION[self::SESSION_KEY] ?? null;
+        if (!is_array($current))
+        {
+            $_SESSION[self::SESSION_KEY] = $fresh;
+            return;
+        }
+
+        if (
+            $current['role'] !== $fresh['role']
+            || $current['name'] !== $fresh['name']
+            || $current['email'] !== $fresh['email']
+        )
+        {
+            $_SESSION[self::SESSION_KEY] = $fresh;
+        }
     }
 
     public static function login(User $user): void
