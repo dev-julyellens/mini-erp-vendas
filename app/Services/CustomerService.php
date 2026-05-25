@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Core\ValidationException;
 use App\Helpers\Audit;
 use App\Repositories\CustomerRepository;
-use App\Services\AuditService;
 
 final class CustomerService
 {

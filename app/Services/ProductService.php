@@ -8,7 +8,6 @@ use App\Core\ValidationException;
 use App\Helpers\Audit;
 use App\Helpers\Money;
 use App\Repositories\ProductRepository;
-use App\Services\AuditService;
 
 final class ProductService
 {

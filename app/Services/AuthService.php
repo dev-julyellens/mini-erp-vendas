@@ -9,7 +9,6 @@ use App\Core\ValidationException;
 use App\Helpers\AppConfig;
 use App\Helpers\Audit;
 use App\Helpers\Auth;
-use App\Services\AuditService;
 use App\Models\User;
 use App\Repositories\UserRepository;
 

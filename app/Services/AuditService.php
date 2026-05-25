@@ -13,6 +13,31 @@ use App\Repositories\AuditRepository;
 
 final class AuditService
 {
+    /** @var list<string> */
+    public const ENTITIES = ['produtos', 'clientes', 'vendas', 'estoque', 'usuarios'];
+
+    /** @var array<string, string> */
+    public const ACTION_LABELS = [
+        'criar' => 'Criar',
+        'editar' => 'Editar',
+        'excluir' => 'Excluir',
+        'login' => 'Login',
+        'logout' => 'Logout',
+        'solicitar_redefinir_senha' => 'Solicitar redefinição de senha',
+        'redefinir_senha' => 'Redefinir senha',
+        'venda' => 'Venda',
+        'saida_estoque' => 'Saída de estoque',
+    ];
+
+    /** @var array<string, string> */
+    public const ENTITY_LABELS = [
+        'produtos' => 'Produtos',
+        'clientes' => 'Clientes',
+        'vendas' => 'Vendas',
+        'estoque' => 'Estoque',
+        'usuarios' => 'Usuários',
+    ];
+
     private AuditRepository $audit;
 
     public function __construct(?AuditRepository $audit = null)
@@ -21,6 +46,8 @@ final class AuditService
     }
 
     /**
+     * Falha na auditoria não deve interromper a operação de negócio já concluída.
+     *
      * @param array<string, mixed>|null $oldValues
      * @param array<string, mixed>|null $newValues
      */
@@ -33,16 +60,29 @@ final class AuditService
         ?int $userId = null
     ): void
     {
-        $this->audit->insert(
-            $userId ?? Auth::id(),
-            $action,
-            $entity,
-            $entityId,
-            $oldValues,
-            $newValues,
-            self::clientIp(),
-            self::userAgent()
-        );
+        try
+        {
+            $this->audit->insert(
+                $userId ?? Auth::id(),
+                $action,
+                $entity,
+                $entityId,
+                $oldValues,
+                $newValues,
+                self::clientIp(),
+                self::userAgent()
+            );
+        }
+        catch (\Throwable $e)
+        {
+            error_log(sprintf(
+                'Audit log failed [%s/%s entity_id=%s]: %s',
+                $action,
+                $entity,
+                $entityId !== null ? (string) $entityId : 'null',
+                $e->getMessage()
+            ));
+        }
     }
 
     /**
@@ -59,12 +99,13 @@ final class AuditService
     {
         $normalizedFrom = $this->normalizeDateStart($dateFrom);
         $normalizedTo = $this->normalizeDateEnd($dateTo);
+        $normalizedEntity = self::normalizeEntityFilter($entity);
 
         $result = $this->audit->search(
             $userId,
             $normalizedFrom,
             $normalizedTo,
-            $entity !== '' ? $entity : null,
+            $normalizedEntity,
             $page,
             $perPage
         );
@@ -74,6 +115,70 @@ final class AuditService
             'total' => $result['total'],
             'users' => $this->audit->listUsersForFilter(),
         ];
+    }
+
+    /**
+     * @param array{user_id: ?int, date_from: string, date_to: string, entity: string} $filters
+     * @return array<string, string>
+     */
+    public static function filterQueryParams(array $filters): array
+    {
+        $query = [];
+
+        if ($filters['user_id'] !== null && $filters['user_id'] > 0)
+        {
+            $query['user_id'] = (string) $filters['user_id'];
+        }
+
+        if ($filters['date_from'] !== '')
+        {
+            $query['date_from'] = $filters['date_from'];
+        }
+
+        if ($filters['date_to'] !== '')
+        {
+            $query['date_to'] = $filters['date_to'];
+        }
+
+        $entity = self::normalizeEntityFilter($filters['entity']);
+        if ($entity !== null)
+        {
+            $query['entity'] = $entity;
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param array<string, mixed>|null $data
+     */
+    public static function formatJsonDisplay(?array $data): string
+    {
+        if ($data === null || $data === [])
+        {
+            return '—';
+        }
+
+        try
+        {
+            $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
+        }
+        catch (\JsonException)
+        {
+            return '—';
+        }
+
+        return $json;
+    }
+
+    public static function actionLabel(string $action): string
+    {
+        return self::ACTION_LABELS[$action] ?? $action;
+    }
+
+    public static function entityLabel(string $entity): string
+    {
+        return self::ENTITY_LABELS[$entity] ?? $entity;
     }
 
     public static function productSnapshot(Product $product): array
@@ -106,6 +211,18 @@ final class AuditService
             'role' => $user->role,
             'active' => $user->active,
         ];
+    }
+
+    private static function normalizeEntityFilter(?string $entity): ?string
+    {
+        if ($entity === null || trim($entity) === '')
+        {
+            return null;
+        }
+
+        $entity = trim($entity);
+
+        return in_array($entity, self::ENTITIES, true) ? $entity : null;
     }
 
     private function normalizeDateStart(?string $date): ?string
@@ -142,18 +259,27 @@ final class AuditService
 
     private static function clientIp(): ?string
     {
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
-        if (!is_string($ip) || $ip === '')
+        $candidates = [];
+
+        if (isset($_SERVER['REMOTE_ADDR']) && is_string($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] !== '')
         {
-            return null;
+            $candidates[] = trim($_SERVER['REMOTE_ADDR']);
         }
 
-        if (str_contains($ip, ','))
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && is_string($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] !== '')
         {
-            $ip = trim(explode(',', $ip)[0]);
+            $candidates[] = trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
         }
 
-        return strlen($ip) <= 45 ? $ip : substr($ip, 0, 45);
+        foreach ($candidates as $ip)
+        {
+            if (filter_var($ip, FILTER_VALIDATE_IP) !== false)
+            {
+                return strlen($ip) <= 45 ? $ip : substr($ip, 0, 45);
+            }
+        }
+
+        return null;
     }
 
     private static function userAgent(): ?string
