@@ -3,6 +3,7 @@
 
 DROP TABLE IF EXISTS cash_flow CASCADE;
 DROP TABLE IF EXISTS payments CASCADE;
+DROP TABLE IF EXISTS installments CASCADE;
 DROP TABLE IF EXISTS accounts_receivable CASCADE;
 DROP TABLE IF EXISTS stock_movements CASCADE;
 DROP TABLE IF EXISTS audit_logs CASCADE;
@@ -158,6 +159,29 @@ CREATE INDEX idx_payments_accounts_receivable ON payments (accounts_receivable_i
 CREATE INDEX idx_payments_paid_at ON payments (paid_at DESC);
 CREATE INDEX idx_payments_method ON payments (payment_method);
 
+CREATE TABLE installments (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER NOT NULL REFERENCES orders (id) ON DELETE RESTRICT,
+    installment_number SMALLINT NOT NULL,
+    amount NUMERIC(14, 2) NOT NULL,
+    due_date DATE NOT NULL,
+    paid_at TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT installments_order_number_unique UNIQUE (order_id, installment_number),
+    CONSTRAINT installments_number_positive CHECK (installment_number > 0),
+    CONSTRAINT installments_amount_positive CHECK (amount > 0),
+    CONSTRAINT installments_status_check CHECK (
+        status IN ('pending', 'overdue', 'paid', 'canceled')
+    )
+);
+
+CREATE INDEX idx_installments_order ON installments (order_id);
+CREATE INDEX idx_installments_status ON installments (status);
+CREATE INDEX idx_installments_due_date ON installments (due_date);
+CREATE INDEX idx_installments_paid_at ON installments (paid_at DESC);
+
 CREATE TABLE cash_flow (
     id SERIAL PRIMARY KEY,
     type VARCHAR(10) NOT NULL,
@@ -229,7 +253,10 @@ CREATE TABLE audit_logs (
             'entrada_estoque',
             'conta_receber',
             'recebimento',
-            'cancelamento_conta_receber'
+            'cancelamento_conta_receber',
+            'parcelamento',
+            'recebimento_parcela',
+            'cancelamento_parcelas'
         )
     ),
     CONSTRAINT audit_logs_entity_check CHECK (
