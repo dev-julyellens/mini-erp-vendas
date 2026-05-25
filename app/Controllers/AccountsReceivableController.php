@@ -129,12 +129,21 @@ final class AccountsReceivableController extends Controller
     public function storePayment(): void
     {
         $id = (int) ($_POST['accounts_receivable_id'] ?? 0);
+        if ($id <= 0)
+        {
+            Flash::error('Conta a receber inválida.');
+            $this->redirect('finance/accounts-receivable');
+
+            return;
+        }
+
         $amount = trim((string) ($_POST['amount'] ?? ''));
         $paymentMethod = trim((string) ($_POST['payment_method'] ?? ''));
         $paidAtRaw = trim((string) ($_POST['paid_at'] ?? ''));
         $notes = isset($_POST['notes']) ? trim((string) $_POST['notes']) : null;
 
         $paidAt = null;
+        $fieldErrors = [];
         if ($paidAtRaw !== '')
         {
             try
@@ -143,7 +152,7 @@ final class AccountsReceivableController extends Controller
             }
             catch (\Throwable $e)
             {
-                $paidAt = null;
+                $fieldErrors['paid_at'] = 'Data de pagamento inválida.';
             }
         }
 
@@ -154,6 +163,13 @@ final class AccountsReceivableController extends Controller
             'notes' => $notes ?? '',
         ];
 
+        if ($fieldErrors !== [])
+        {
+            $this->renderReceiveForm($id, $old, $fieldErrors);
+
+            return;
+        }
+
         try
         {
             $service = new PaymentService();
@@ -163,25 +179,34 @@ final class AccountsReceivableController extends Controller
         }
         catch (ValidationException $e)
         {
-            $arService = new AccountsReceivableService();
-            $detail = $arService->findDetail($id);
-
-            if ($detail === null)
-            {
-                Flash::error('Conta a receber não encontrada.');
-                $this->redirect('finance/accounts-receivable');
-
-                return;
-            }
-
-            $this->view('finance/accounts-receivable/receive', [
-                'account' => $detail['account'],
-                'methods' => Payment::METHODS,
-                'methodLabels' => Payment::METHOD_LABELS,
-                'errors' => $e->getErrors(),
-                'old' => $old,
-                'flash' => Flash::pull(),
-            ]);
+            $this->renderReceiveForm($id, $old, $e->getErrors());
         }
+    }
+
+    /**
+     * @param array<string, string> $old
+     * @param array<string, string> $errors
+     */
+    private function renderReceiveForm(int $id, array $old, array $errors): void
+    {
+        $arService = new AccountsReceivableService();
+        $detail = $arService->findDetail($id);
+
+        if ($detail === null)
+        {
+            Flash::error('Conta a receber não encontrada.');
+            $this->redirect('finance/accounts-receivable');
+
+            return;
+        }
+
+        $this->view('finance/accounts-receivable/receive', [
+            'account' => $detail['account'],
+            'methods' => Payment::METHODS,
+            'methodLabels' => Payment::METHOD_LABELS,
+            'errors' => $errors,
+            'old' => $old,
+            'flash' => Flash::pull(),
+        ]);
     }
 }
