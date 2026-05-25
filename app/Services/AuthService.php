@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\Database;
 use App\Core\ValidationException;
+use App\Helpers\AppConfig;
 use App\Helpers\Auth;
 use App\Models\User;
 use App\Repositories\UserRepository;
@@ -85,10 +87,13 @@ final class AuthService
         $base = rtrim((string) $config['base_url'], '/');
         $resetUrl = $base . '/reset-password?token=' . urlencode($token);
 
-        return [
-            'message' => $message,
-            'reset_url' => $resetUrl,
-        ];
+        $result = ['message' => $message];
+        if (AppConfig::isDebug())
+        {
+            $result['reset_url'] = $resetUrl;
+        }
+
+        return $result;
     }
 
     public function resetPassword(string $token, string $password, string $passwordConfirm): void
@@ -114,9 +119,23 @@ final class AuthService
         }
 
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        $this->users->updatePassword($userId, $hash);
-        $this->users->deleteResetToken($tokenHash);
-        $this->users->deleteResetTokensForUser($userId);
+        $db = Database::getConnection();
+        $db->beginTransaction();
+        try
+        {
+            $this->users->updatePassword($userId, $hash);
+            $this->users->deleteResetToken($tokenHash);
+            $this->users->deleteResetTokensForUser($userId);
+            $db->commit();
+        }
+        catch (\Throwable $e)
+        {
+            if ($db->inTransaction())
+            {
+                $db->rollBack();
+            }
+            throw $e;
+        }
     }
 
     public function tokenIsValid(string $token): bool
