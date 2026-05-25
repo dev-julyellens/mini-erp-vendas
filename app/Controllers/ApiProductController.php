@@ -33,6 +33,8 @@ final class ApiProductController extends Controller
                 'stock' => $p->stock,
                 'min_stock' => $p->minStock,
                 'type' => $p->type,
+                'estimated_time_minutes' => $p->estimatedTimeMinutes,
+                'estimated_time_label' => $p->estimatedTimeLabel(),
                 'low_stock' => $p->isLowStock(),
             ];
         }
