@@ -13,6 +13,7 @@ final class OrderItem
     public string $unit_price;
     public string $subtotal;
     public ?string $product_name;
+    public ?string $product_type;
 
     /**
      * @param array<string, mixed> $row
@@ -27,6 +28,17 @@ final class OrderItem
         $m->unit_price = (string) $row['unit_price'];
         $m->subtotal = (string) $row['subtotal'];
         $m->product_name = isset($row['product_name']) ? (string) $row['product_name'] : null;
+        $m->product_type = isset($row['product_type']) ? (string) $row['product_type'] : null;
         return $m;
+    }
+
+    public function isService(): bool
+    {
+        return $this->product_type === 'service';
+    }
+
+    public function typeLabel(): string
+    {
+        return $this->isService() ? 'Serviço' : 'Produto';
     }
 }

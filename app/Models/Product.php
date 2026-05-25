@@ -23,6 +23,7 @@ final class Product
     public int $stock;
     public int $minStock;
     public string $type;
+    public ?int $estimatedTimeMinutes;
 
     /**
      * @param array<string, mixed> $row
@@ -57,6 +58,9 @@ final class Product
         $m->stock = (int) $row['stock'];
         $m->minStock = (int) ($row['min_stock'] ?? 5);
         $m->type = (string) ($row['type'] ?? ProductPricing::TYPE_PRODUCT);
+        $m->estimatedTimeMinutes = isset($row['estimated_time_minutes']) && $row['estimated_time_minutes'] !== null
+            ? (int) $row['estimated_time_minutes']
+            : null;
 
         return $m;
     }
@@ -79,5 +83,28 @@ final class Product
     public function typeLabel(): string
     {
         return $this->isService() ? 'Serviço' : 'Produto';
+    }
+
+    public function estimatedTimeLabel(): string
+    {
+        if ($this->estimatedTimeMinutes === null || $this->estimatedTimeMinutes <= 0)
+        {
+            return '—';
+        }
+
+        $hours = intdiv($this->estimatedTimeMinutes, 60);
+        $mins = $this->estimatedTimeMinutes % 60;
+
+        if ($hours > 0 && $mins > 0)
+        {
+            return sprintf('%dh %dmin', $hours, $mins);
+        }
+
+        if ($hours > 0)
+        {
+            return $hours === 1 ? '1 hora' : $hours . ' horas';
+        }
+
+        return $mins === 1 ? '1 min' : $mins . ' min';
     }
 }
