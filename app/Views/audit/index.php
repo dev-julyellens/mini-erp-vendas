@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Helpers\DateHelper;
 use App\Services\AuditService;
 
+/** @var callable(string):string $url */
 /** @var list<\App\Models\AuditLog> $logs */
 /** @var int $total */
 /** @var int $page */
