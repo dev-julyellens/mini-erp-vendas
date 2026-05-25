@@ -32,6 +32,13 @@ $navPrefix = static function (string $prefix) use ($currentPath): string
     return '';
 };
 
+$canClientes = \App\Helpers\Permission::canView('clientes');
+$canProdutos = \App\Helpers\Permission::canView('produtos');
+$canVendas = \App\Helpers\Permission::canView('vendas');
+$canEstoque = \App\Helpers\Permission::canView('estoque');
+$canFinanceiro = \App\Helpers\Permission::canView('financeiro');
+$canUsuarios = \App\Helpers\Permission::canView('usuarios');
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -61,45 +68,45 @@ $navPrefix = static function (string $prefix) use ($currentPath): string
                 <a class="nav-link <?= $navActive('/') ?>" href="<?= htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') ?>">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
-                <?php if (\App\Helpers\Permission::canView('clientes')): ?>
+                <?php if ($canClientes): ?>
                     <a class="nav-link <?= $navPrefix('/customers') ?>" href="<?= htmlspecialchars($url('customers'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-people"></i> Clientes
                     </a>
                 <?php endif; ?>
-                <?php if (\App\Helpers\Permission::canView('produtos')): ?>
+                <?php if ($canProdutos): ?>
                     <a class="nav-link <?= $navPrefix('/products') ?>" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-box-seam"></i> Produtos
                     </a>
                 <?php endif; ?>
-                <?php if (\App\Helpers\Permission::canView('vendas')): ?>
+                <?php if ($canVendas): ?>
                     <a class="nav-link <?= $navPrefix('/orders') ?>" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-receipt"></i> Vendas
                     </a>
                 <?php endif; ?>
-                <?php if (\App\Helpers\Permission::canView('estoque')): ?>
+                <?php if ($canEstoque): ?>
                     <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
                         <i class="bi bi-archive"></i> Estoque
                     </span>
                 <?php endif; ?>
-                <?php if (\App\Helpers\Permission::canView('financeiro')): ?>
+                <?php if ($canFinanceiro): ?>
                     <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
                         <i class="bi bi-cash-stack"></i> Financeiro
                     </span>
                 <?php endif; ?>
-                <?php if (\App\Helpers\Permission::canView('usuarios')): ?>
+                <?php if ($canUsuarios): ?>
                     <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
                         <i class="bi bi-person-gear"></i> Usuários
                     </span>
                 <?php endif; ?>
-                <?php if (\App\Helpers\Permission::canView('produtos') || \App\Helpers\Permission::canView('vendas')): ?>
+                <?php if ($canProdutos || $canVendas): ?>
                     <hr class="border-secondary-subtle">
                     <div class="px-2 pb-1 small text-secondary text-uppercase">API</div>
-                    <?php if (\App\Helpers\Permission::canView('produtos')): ?>
+                    <?php if ($canProdutos): ?>
                         <a class="nav-link" href="<?= htmlspecialchars($url('api/products'), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer">
                             <i class="bi bi-braces"></i> /api/products
                         </a>
                     <?php endif; ?>
-                    <?php if (\App\Helpers\Permission::canView('vendas')): ?>
+                    <?php if ($canVendas): ?>
                         <a class="nav-link" href="<?= htmlspecialchars($url('api/orders'), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer">
                             <i class="bi bi-braces"></i> /api/orders
                         </a>
