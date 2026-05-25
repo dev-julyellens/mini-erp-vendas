@@ -1,6 +1,7 @@
 -- Mini ERP de Vendas - PostgreSQL schema + seed
 -- Encoding: UTF-8
 
+DROP TABLE IF EXISTS stock_movements CASCADE;
 DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS role_permissions CASCADE;
 DROP TABLE IF EXISTS permissions CASCADE;
@@ -106,6 +107,28 @@ CREATE TABLE order_items (
 
 CREATE INDEX idx_order_items_order ON order_items (order_id);
 CREATE INDEX idx_order_items_product ON order_items (product_id);
+
+CREATE TABLE stock_movements (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER NOT NULL REFERENCES products (id) ON DELETE RESTRICT,
+    type VARCHAR(20) NOT NULL,
+    quantity INTEGER NOT NULL,
+    reference_type VARCHAR(50),
+    reference_id INTEGER,
+    notes TEXT,
+    created_by INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT stock_movements_type_check CHECK (
+        type IN ('entrada', 'saida', 'ajuste', 'devolucao', 'perda', 'inventario')
+    ),
+    CONSTRAINT stock_movements_quantity_non_zero CHECK (quantity <> 0)
+);
+
+CREATE INDEX idx_stock_movements_product_id ON stock_movements (product_id);
+CREATE INDEX idx_stock_movements_type ON stock_movements (type);
+CREATE INDEX idx_stock_movements_created_at ON stock_movements (created_at DESC);
+CREATE INDEX idx_stock_movements_product_created ON stock_movements (product_id, created_at DESC);
+CREATE INDEX idx_stock_movements_reference ON stock_movements (reference_type, reference_id);
 
 CREATE TABLE audit_logs (
     id SERIAL PRIMARY KEY,
