@@ -13,7 +13,9 @@ final class Auth
 
     public static function check(): bool
     {
-        return self::user() !== null;
+        $data = $_SESSION[self::SESSION_KEY] ?? null;
+
+        return is_array($data) && isset($data['id']);
     }
 
     public static function id(): ?int
@@ -52,6 +54,11 @@ final class Auth
     {
         unset($_SESSION[self::SESSION_KEY]);
         Csrf::regenerate();
+
+        if (session_status() === PHP_SESSION_ACTIVE)
+        {
+            session_regenerate_id(true);
+        }
     }
 
     /**
