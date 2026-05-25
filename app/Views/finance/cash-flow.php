@@ -29,8 +29,8 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
     </a>
 </div>
 
-<div class="card-soft p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end">
+<div class="card-soft filter-panel p-3 p-md-4 mb-3">
+    <form method="get" action="<?= htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end filter-form">
         <div class="col-6 col-md-3">
             <label class="form-label" for="type">Tipo</label>
             <select class="form-select" id="type" name="type">
@@ -61,7 +61,7 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 js-datatable">
             <thead>
                 <tr>
                     <th>Data</th>

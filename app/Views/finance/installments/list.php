@@ -58,8 +58,8 @@ $currentPath = $routes[$listType] ?? 'finance/installments/open';
     </li>
 </ul>
 
-<div class="card-soft p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url($currentPath), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end">
+<div class="card-soft filter-panel p-3 p-md-4 mb-3">
+    <form method="get" action="<?= htmlspecialchars($url($currentPath), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end filter-form">
         <div class="col-12 col-md-4">
             <label class="form-label" for="customer_id">Cliente</label>
             <select class="form-select" id="customer_id" name="customer_id">
@@ -88,7 +88,7 @@ $currentPath = $routes[$listType] ?? 'finance/installments/open';
 
 <div class="card-soft p-0 overflow-hidden">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 js-datatable" data-dt-actions-col="-1">
             <thead class="table-light">
                 <tr>
                     <th>Venda</th>
