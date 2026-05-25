@@ -50,6 +50,21 @@ final class RoutePermissionMap
         'POST /api/orders' => ['vendas', 'criar'],
         'POST /api/orders/cancel' => ['vendas', 'excluir'],
 
+        'GET /reports/sales-period' => ['vendas', 'visualizar'],
+        'GET /reports/sales-period/export' => ['vendas', 'visualizar'],
+        'GET /reports/sales-customer' => ['vendas', 'visualizar'],
+        'GET /reports/sales-customer/export' => ['vendas', 'visualizar'],
+        'GET /reports/sales-product' => ['vendas', 'visualizar'],
+        'GET /reports/sales-product/export' => ['vendas', 'visualizar'],
+        'GET /reports/top-products' => ['vendas', 'visualizar'],
+        'GET /reports/top-products/export' => ['vendas', 'visualizar'],
+
+        'GET /reports/low-stock' => ['estoque', 'visualizar'],
+        'GET /reports/low-stock/export' => ['estoque', 'visualizar'],
+
+        'GET /reports/cash-flow' => ['financeiro', 'visualizar'],
+        'GET /reports/cash-flow/export' => ['financeiro', 'visualizar'],
+
         'GET /audit-logs' => ['usuarios', 'visualizar'],
 
         'GET /finance' => ['financeiro', 'visualizar'],
