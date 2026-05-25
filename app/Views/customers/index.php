@@ -15,9 +15,11 @@ use App\Helpers\DateHelper;
         <h1 class="h3 mb-1">Clientes</h1>
         <div class="text-muted">Cadastro e manutenção de clientes</div>
     </div>
-    <a class="btn btn-primary" href="<?= htmlspecialchars($url('customers/create'), ENT_QUOTES, 'UTF-8') ?>">
-        <i class="bi bi-plus-lg"></i> Novo cliente
-    </a>
+    <?php if (\App\Helpers\Permission::can('clientes', 'criar')): ?>
+        <a class="btn btn-primary" href="<?= htmlspecialchars($url('customers/create'), ENT_QUOTES, 'UTF-8') ?>">
+            <i class="bi bi-plus-lg"></i> Novo cliente
+        </a>
+    <?php endif; ?>
 </div>
 
 <div class="card-soft p-3 p-md-4">
@@ -40,13 +42,17 @@ use App\Helpers\DateHelper;
                         <td><?= htmlspecialchars((string) ($c->phone ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-muted small"><?= htmlspecialchars(DateHelper::toBrDateTime($c->created_at), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('customers/edit?id=' . $c->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
-                            <form class="d-inline" method="post" action="<?= htmlspecialchars($url('customers/delete'), ENT_QUOTES, 'UTF-8') ?>"
-                                onsubmit="return confirm('Remover este cliente?');">
-                                <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                                <input type="hidden" name="id" value="<?= (int) $c->id ?>">
-                                <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
-                            </form>
+                            <?php if (\App\Helpers\Permission::can('clientes', 'editar')): ?>
+                                <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('customers/edit?id=' . $c->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
+                            <?php endif; ?>
+                            <?php if (\App\Helpers\Permission::can('clientes', 'excluir')): ?>
+                                <form class="d-inline" method="post" action="<?= htmlspecialchars($url('customers/delete'), ENT_QUOTES, 'UTF-8') ?>"
+                                    onsubmit="return confirm('Remover este cliente?');">
+                                    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
+                                    <input type="hidden" name="id" value="<?= (int) $c->id ?>">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+                                </form>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
