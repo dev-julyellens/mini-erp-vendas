@@ -10,6 +10,7 @@ use App\Helpers\Flash;
 use App\Models\Payment;
 use App\Repositories\CustomerRepository;
 use App\Services\AccountsReceivableService;
+use App\Services\InstallmentService;
 use App\Services\PaymentService;
 
 final class AccountsReceivableController extends Controller
@@ -103,6 +104,14 @@ final class AccountsReceivableController extends Controller
         }
 
         $account = $detail['account'];
+        if ($account->has_installments)
+        {
+            Flash::error('Esta venda possui parcelamento. Utilize a baixa por parcela.');
+            $this->redirect('finance/installments/open');
+
+            return;
+        }
+
         if (!$account->canReceive())
         {
             Flash::error('Esta conta não aceita novos recebimentos.');

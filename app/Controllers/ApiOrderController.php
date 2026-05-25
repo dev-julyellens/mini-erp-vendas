@@ -145,11 +145,14 @@ final class ApiOrderController extends Controller
         {
             $items = [];
         }
+        $installmentCount = \App\Services\InstallmentService::normalizeInstallmentCount(
+            $data['installment_count'] ?? 1
+        );
 
         $service = new OrderService();
         try
         {
-            $orderId = $service->placeOrder($customerId, $items);
+            $orderId = $service->placeOrder($customerId, $items, $installmentCount);
             $this->json(['success' => true, 'order_id' => $orderId], 201);
         }
         catch (ValidationException $e)

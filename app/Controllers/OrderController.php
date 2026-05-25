@@ -65,9 +65,11 @@ final class OrderController extends Controller
         }
 
         $items = new OrderItemRepository();
+        $installmentService = new \App\Services\InstallmentService();
         $this->view('orders/show', [
             'order' => $order,
             'items' => $items->findByOrderId($id),
+            'installments' => $installmentService->findByOrderId($id),
             'flash' => Flash::pull(),
         ]);
     }
@@ -128,12 +130,15 @@ final class OrderController extends Controller
         {
             $items = [];
         }
+        $installmentCount = \App\Services\InstallmentService::normalizeInstallmentCount(
+            $payload['installment_count'] ?? 1
+        );
 
         $service = new OrderService();
 
         try
         {
-            $orderId = $service->placeOrder($customerId, $items);
+            $orderId = $service->placeOrder($customerId, $items, $installmentCount);
             if ($isJson)
             {
                 $this->json(['success' => true, 'order_id' => $orderId, 'message' => 'Sale registered successfully.']);
