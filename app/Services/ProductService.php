@@ -133,10 +133,28 @@ final class ProductService
         }
         $stock = (int) $stockRaw;
 
+        $estimatedRaw = trim($input['estimated_time_minutes'] ?? '');
+        $estimatedMinutes = null;
+        if ($estimatedRaw !== '')
+        {
+            if (!Money::validateNonNegativeInt($estimatedRaw) || (int) $estimatedRaw <= 0)
+            {
+                $errors['estimated_time_minutes'] = 'Tempo estimado deve ser um inteiro positivo (minutos).';
+            }
+            else
+            {
+                $estimatedMinutes = (int) $estimatedRaw;
+            }
+        }
+
         if ($type === ProductPricing::TYPE_SERVICE)
         {
             $stock = 0;
             $minStock = 0;
+        }
+        else
+        {
+            $estimatedMinutes = null;
         }
 
         return [
@@ -155,6 +173,7 @@ final class ProductService
                 'stock' => $stock,
                 'min_stock' => $minStock,
                 'type' => $type,
+                'estimated_time_minutes' => $estimatedMinutes,
             ],
         ];
     }

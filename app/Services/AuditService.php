@@ -204,6 +204,7 @@ final class AuditService
             'stock' => $product->stock,
             'min_stock' => $product->minStock,
             'type' => $product->type,
+            'estimated_time_minutes' => $product->estimatedTimeMinutes,
         ];
     }
 

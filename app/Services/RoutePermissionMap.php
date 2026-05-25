@@ -25,6 +25,13 @@ final class RoutePermissionMap
         'POST /products/update' => ['produtos', 'editar'],
         'POST /products/delete' => ['produtos', 'excluir'],
 
+        'GET /services' => ['produtos', 'visualizar'],
+        'GET /services/create' => ['produtos', 'criar'],
+        'POST /services/store' => ['produtos', 'criar'],
+        'GET /services/edit' => ['produtos', 'editar'],
+        'POST /services/update' => ['produtos', 'editar'],
+        'POST /services/delete' => ['produtos', 'excluir'],
+
         'GET /categories' => ['produtos', 'visualizar'],
         'GET /categories/create' => ['produtos', 'criar'],
         'POST /categories/store' => ['produtos', 'criar'],
