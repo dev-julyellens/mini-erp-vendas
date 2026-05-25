@@ -116,6 +116,9 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
                     <a class="nav-link <?= $navPrefix('/audit-logs') ?>" href="<?= htmlspecialchars($url('audit-logs'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-journal-text"></i> Auditoria
                     </a>
+                    <a class="nav-link <?= $navPrefix('/backups') ?>" href="<?= htmlspecialchars($url('backups'), ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="bi bi-hdd-stack"></i> Backup
+                    </a>
                     <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
                         <i class="bi bi-person-gear"></i> Usuários
                     </span>

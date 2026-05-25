@@ -67,6 +67,13 @@ final class RoutePermissionMap
 
         'GET /audit-logs' => ['usuarios', 'visualizar'],
 
+        'GET /backups' => ['usuarios', 'visualizar'],
+        'POST /backups/create' => ['usuarios', 'criar'],
+        'GET /backups/download' => ['usuarios', 'visualizar'],
+        'POST /backups/restore' => ['usuarios', 'excluir'],
+        'POST /backups/settings' => ['usuarios', 'editar'],
+        'POST /backups/cleanup' => ['usuarios', 'editar'],
+
         'GET /finance' => ['financeiro', 'visualizar'],
         'GET /finance/cash-flow' => ['financeiro', 'visualizar'],
         'GET /finance/accounts-receivable' => ['financeiro', 'visualizar'],
