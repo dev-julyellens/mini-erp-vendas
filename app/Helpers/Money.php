@@ -8,7 +8,8 @@ final class Money
 {
     public static function mul(string $unitPrice, int $quantity): string
     {
-        if (function_exists('bcmul')) {
+        if (function_exists('bcmul'))
+        {
             return bcmul($unitPrice, (string) $quantity, 2);
         }
 
@@ -17,11 +18,35 @@ final class Money
 
     public static function add(string $a, string $b): string
     {
-        if (function_exists('bcadd')) {
+        if (function_exists('bcadd'))
+        {
             return bcadd($a, $b, 2);
         }
 
         return number_format((float) $a + (float) $b, 2, '.', '');
+    }
+
+    public static function sub(string $a, string $b): string
+    {
+        if (function_exists('bcsub'))
+        {
+            return bcsub($a, $b, 2);
+        }
+
+        return number_format((float) $a - (float) $b, 2, '.', '');
+    }
+
+    public static function compare(string $a, string $b): int
+    {
+        if (function_exists('bccomp'))
+        {
+            return bccomp($a, $b, 2);
+        }
+
+        $fa = (float) $a;
+        $fb = (float) $b;
+
+        return $fa <=> $fb;
     }
 
     public static function validatePositive(string $value): bool
