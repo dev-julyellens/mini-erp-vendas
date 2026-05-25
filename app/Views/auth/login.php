@@ -38,7 +38,7 @@ $loginError = $errors['login'] ?? null;
         <?php endif; ?>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100 mb-3">
+    <button type="submit" class="btn btn-primary w-100 mb-3" data-loading-text="Entrando...">
         <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
     </button>
 
