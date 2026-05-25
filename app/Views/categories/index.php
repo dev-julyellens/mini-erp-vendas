@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 js-datatable" data-dt-actions-col="2">
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -52,7 +52,8 @@ declare(strict_types=1);
                             <?php if (\App\Helpers\Permission::can('produtos', 'excluir')): ?>
                                 <form class="d-inline" method="post"
                                     action="<?= htmlspecialchars($url('categories/delete'), ENT_QUOTES, 'UTF-8') ?>"
-                                    onsubmit="return confirm('Remover esta categoria?');">
+                                    data-confirm="Remover esta categoria? Esta ação não pode ser desfeita."
+                                    data-confirm-title="Excluir categoria">
                                     <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                                     <input type="hidden" name="id" value="<?= (int) $c->id ?>">
                                     <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
@@ -62,8 +63,13 @@ declare(strict_types=1);
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($categories === []): ?>
-                    <tr>
-                        <td colspan="3" class="text-center text-muted py-4">Nenhuma categoria cadastrada.</td>
+                    <tr class="empty-row">
+                        <td colspan="3">
+                            <div class="empty-state">
+                                <i class="bi bi-tags"></i>
+                                Nenhuma categoria cadastrada.
+                            </div>
+                        </td>
                     </tr>
                 <?php endif; ?>
             </tbody>
