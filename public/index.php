@@ -75,6 +75,13 @@ $router->get('/reports/cash-flow/export', \App\Controllers\ReportController::cla
 
 $router->get('/audit-logs', \App\Controllers\AuditLogController::class . '@index');
 
+$router->get('/backups', \App\Controllers\BackupController::class . '@index');
+$router->post('/backups/create', \App\Controllers\BackupController::class . '@create');
+$router->get('/backups/download', \App\Controllers\BackupController::class . '@download');
+$router->post('/backups/restore', \App\Controllers\BackupController::class . '@restore');
+$router->post('/backups/settings', \App\Controllers\BackupController::class . '@updateSchedule');
+$router->post('/backups/cleanup', \App\Controllers\BackupController::class . '@cleanup');
+
 $router->get('/finance', \App\Controllers\FinanceController::class . '@index');
 $router->get('/finance/cash-flow', \App\Controllers\FinanceController::class . '@cashFlow');
 $router->get('/finance/accounts-receivable', \App\Controllers\AccountsReceivableController::class . '@index');
