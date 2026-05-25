@@ -42,6 +42,10 @@ $router->post('/orders/store', \App\Controllers\OrderController::class . '@store
 
 $router->get('/audit-logs', \App\Controllers\AuditLogController::class . '@index');
 
+$router->get('/stock-movements', \App\Controllers\StockMovementController::class . '@index');
+$router->get('/stock-movements/create', \App\Controllers\StockMovementController::class . '@create');
+$router->post('/stock-movements/store', \App\Controllers\StockMovementController::class . '@store');
+
 $router->get('/api/products', \App\Controllers\ApiProductController::class . '@index');
 $router->get('/api/orders', \App\Controllers\ApiOrderController::class . '@index');
 $router->post('/api/orders', \App\Controllers\ApiOrderController::class . '@store');
