@@ -54,12 +54,23 @@
         var stockQty = document.getElementById("stockQty");
         var minStockQty = document.getElementById("minStockQty");
         var unitEl = document.getElementById("productUnit");
+        var estimatedField = document.getElementById("estimatedTimeField");
+        var salePriceLabel = document.getElementById("salePriceLabel");
 
         if (!typeEl) {
             return;
         }
 
         var isService = typeEl.value === "service";
+
+        if (estimatedField) {
+            estimatedField.classList.toggle("d-none", !isService);
+        }
+        if (salePriceLabel) {
+            salePriceLabel.innerHTML = isService
+                ? 'Valor padrão (R$) <span class="text-danger">*</span>'
+                : 'Preço de venda (R$) <span class="text-danger">*</span>';
+        }
 
         if (stockFields) {
             stockFields.classList.toggle("opacity-50", isService);
