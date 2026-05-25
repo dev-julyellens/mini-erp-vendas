@@ -20,7 +20,8 @@ final class ProductRepository
     public function findById(int $id, bool $forUpdate = false): ?Product
     {
         $sql = 'SELECT * FROM products WHERE id = :id';
-        if ($forUpdate) {
+        if ($forUpdate)
+        {
             $sql .= ' FOR UPDATE';
         }
         $stmt = $this->db->prepare($sql);
@@ -37,7 +38,8 @@ final class ProductRepository
         $stmt = $this->db->query('SELECT * FROM products ORDER BY name ASC');
         $rows = $stmt->fetchAll();
         $list = [];
-        foreach ($rows as $row) {
+        foreach ($rows as $row)
+        {
             $list[] = Product::fromArray($row);
         }
         return $list;
@@ -62,7 +64,8 @@ final class ProductRepository
         $rows = $stmt->fetchAll();
 
         $items = [];
-        foreach ($rows as $row) {
+        foreach ($rows as $row)
+        {
             $items[] = Product::fromArray($row);
         }
 
@@ -105,17 +108,53 @@ final class ProductRepository
         $stmt->execute(['id' => $id]);
     }
 
+    public function getConnection(): PDO
+    {
+        return $this->db;
+    }
+
     public function decrementStock(int $productId, int $quantity): void
     {
-        $stmt = $this->db->prepare(
-            'UPDATE products SET stock = stock - :qty WHERE id = :id AND stock >= :qty2'
-        );
-        $stmt->execute([
-            'qty' => $quantity,
-            'id' => $productId,
-            'qty2' => $quantity,
-        ]);
-        if ($stmt->rowCount() === 0) {
+        $this->adjustStock($productId, -abs($quantity));
+    }
+
+    public function incrementStock(int $productId, int $quantity): void
+    {
+        $this->adjustStock($productId, abs($quantity));
+    }
+
+    public function adjustStock(int $productId, int $delta): void
+    {
+        if ($delta === 0)
+        {
+            return;
+        }
+
+        if ($delta > 0)
+        {
+            $stmt = $this->db->prepare(
+                'UPDATE products SET stock = stock + :qty WHERE id = :id'
+            );
+            $stmt->execute([
+                'qty' => $delta,
+                'id' => $productId,
+            ]);
+        }
+        else
+        {
+            $qty = abs($delta);
+            $stmt = $this->db->prepare(
+                'UPDATE products SET stock = stock - :qty WHERE id = :id AND stock >= :qty2'
+            );
+            $stmt->execute([
+                'qty' => $qty,
+                'id' => $productId,
+                'qty2' => $qty,
+            ]);
+        }
+
+        if ($stmt->rowCount() === 0)
+        {
             throw new \RuntimeException('Stock update failed for product ' . $productId);
         }
     }
@@ -134,7 +173,8 @@ final class ProductRepository
         $stmt->execute(['t' => $threshold]);
         $rows = $stmt->fetchAll();
         $list = [];
-        foreach ($rows as $row) {
+        foreach ($rows as $row)
+        {
             $list[] = Product::fromArray($row);
         }
         return $list;
