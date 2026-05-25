@@ -11,6 +11,7 @@ use App\Repositories\CustomerRepository;
 use App\Repositories\OrderItemRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
+use App\Services\OrderCancelService;
 use App\Services\OrderService;
 
 final class OrderController extends Controller
@@ -57,7 +58,8 @@ final class OrderController extends Controller
         $id = (int) ($_GET['id'] ?? 0);
         $orders = new OrderRepository();
         $order = $orders->findById($id);
-        if ($order === null) {
+        if ($order === null)
+        {
             Flash::error('Order not found.');
             $this->redirect('/orders');
         }
@@ -82,6 +84,35 @@ final class OrderController extends Controller
         ]);
     }
 
+    public function cancel(): void
+    {
+        $orderId = (int) ($_POST['id'] ?? 0);
+        if ($orderId <= 0)
+        {
+            Flash::error('Venda inválida.');
+            $this->redirect('/orders');
+        }
+
+        $service = new OrderCancelService();
+
+        try
+        {
+            $service->cancel($orderId);
+            Flash::success('Venda #' . $orderId . ' cancelada. Estoque restaurado.');
+            $this->redirect('/orders/show?id=' . $orderId);
+        }
+        catch (ValidationException $e)
+        {
+            Flash::error(implode(' ', $e->getErrors()));
+            $this->redirect('/orders/show?id=' . $orderId);
+        }
+        catch (\Throwable $e)
+        {
+            Flash::error('Erro inesperado ao cancelar a venda.');
+            $this->redirect('/orders/show?id=' . $orderId);
+        }
+    }
+
     public function store(): void
     {
         $contentType = (string) ($_SERVER['CONTENT_TYPE'] ?? '');
@@ -93,27 +124,36 @@ final class OrderController extends Controller
 
         $customerId = (int) ($payload['customer_id'] ?? 0);
         $items = $payload['items'] ?? [];
-        if (!is_array($items)) {
+        if (!is_array($items))
+        {
             $items = [];
         }
 
         $service = new OrderService();
 
-        try {
+        try
+        {
             $orderId = $service->placeOrder($customerId, $items);
-            if ($isJson) {
+            if ($isJson)
+            {
                 $this->json(['success' => true, 'order_id' => $orderId, 'message' => 'Sale registered successfully.']);
             }
             Flash::success('Sale #' . $orderId . ' registered successfully.');
             $this->redirect('/orders/show?id=' . $orderId);
-        } catch (ValidationException $e) {
-            if ($isJson) {
+        }
+        catch (ValidationException $e)
+        {
+            if ($isJson)
+            {
                 $this->json(['success' => false, 'errors' => $e->getErrors()], 422);
             }
             Flash::error(implode(' ', $e->getErrors()));
             $this->redirect('/orders/create');
-        } catch (\Throwable $e) {
-            if ($isJson) {
+        }
+        catch (\Throwable $e)
+        {
+            if ($isJson)
+            {
                 $this->json(['success' => false, 'message' => 'Unexpected error while saving the sale.'], 500);
             }
             Flash::error('Unexpected error while saving the sale.');
@@ -127,14 +167,18 @@ final class OrderController extends Controller
     private function readJsonBody(): array
     {
         $raw = file_get_contents('php://input');
-        if ($raw === false || $raw === '') {
+        if ($raw === false || $raw === '')
+        {
             return [];
         }
 
-        try {
+        try
+        {
             $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
             return is_array($data) ? $data : [];
-        } catch (\JsonException $e) {
+        }
+        catch (\JsonException $e)
+        {
             return [];
         }
     }
