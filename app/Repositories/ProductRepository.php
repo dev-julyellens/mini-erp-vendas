@@ -5,11 +5,20 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Core\Database;
+use App\Helpers\ProductPricing;
 use App\Models\Product;
 use PDO;
 
 final class ProductRepository
 {
+    private const SELECT_COLUMNS = '
+        p.id, p.name, p.description, p.sku, p.barcode, p.category_id,
+        p.unit_of_measure, p.cost_price, p.margin_percent, p.markup_percent,
+        p.price, p.stock, p.min_stock, p.type,
+        c.name AS category_name';
+
+    private const FROM_JOIN = ' FROM products p LEFT JOIN categories c ON c.id = p.category_id ';
+
     private PDO $db;
 
     public function __construct(?PDO $db = null)
@@ -19,14 +28,49 @@ final class ProductRepository
 
     public function findById(int $id, bool $forUpdate = false): ?Product
     {
-        $sql = 'SELECT * FROM products WHERE id = :id';
+        $sql = 'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN . ' WHERE p.id = :id';
         if ($forUpdate)
         {
-            $sql .= ' FOR UPDATE';
+            $sql .= ' FOR UPDATE OF p';
         }
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
+
+        return $row ? Product::fromArray($row) : null;
+    }
+
+    public function findBySku(string $sku, ?int $excludeId = null): ?Product
+    {
+        $sql = 'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN
+            . ' WHERE UPPER(p.sku) = UPPER(:sku)';
+        $params = ['sku' => trim($sku)];
+        if ($excludeId !== null)
+        {
+            $sql .= ' AND p.id <> :exclude_id';
+            $params['exclude_id'] = $excludeId;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch();
+
+        return $row ? Product::fromArray($row) : null;
+    }
+
+    public function findByBarcode(string $barcode, ?int $excludeId = null): ?Product
+    {
+        $sql = 'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN
+            . ' WHERE p.barcode = :barcode';
+        $params = ['barcode' => trim($barcode)];
+        if ($excludeId !== null)
+        {
+            $sql .= ' AND p.id <> :exclude_id';
+            $params['exclude_id'] = $excludeId;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch();
+
         return $row ? Product::fromArray($row) : null;
     }
 
@@ -35,71 +79,114 @@ final class ProductRepository
      */
     public function allOrderedByName(): array
     {
-        $stmt = $this->db->query('SELECT * FROM products ORDER BY name ASC');
-        $rows = $stmt->fetchAll();
-        $list = [];
-        foreach ($rows as $row)
-        {
-            $list[] = Product::fromArray($row);
-        }
-        return $list;
+        $stmt = $this->db->query(
+            'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN . ' ORDER BY p.name ASC'
+        );
+
+        return $this->mapRows($stmt->fetchAll());
     }
 
     /**
+     * @param array{q?: string, category_id?: int, type?: string, low_stock?: bool} $filters
      * @return array{items: list<Product>, total: int}
      */
-    public function paginate(int $page, int $perPage): array
+    public function paginate(int $page, int $perPage, array $filters = []): array
     {
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
+        $where = [];
+        $params = [];
 
-        $total = (int) $this->db->query('SELECT COUNT(*) FROM products')->fetchColumn();
+        $q = trim((string) ($filters['q'] ?? ''));
+        if ($q !== '')
+        {
+            $where[] = '(p.name ILIKE :q ESCAPE \'\\\' OR p.sku ILIKE :q ESCAPE \'\\\'
+                OR COALESCE(p.barcode, \'\') ILIKE :q ESCAPE \'\\\')';
+            $params['q'] = '%' . self::escapeIlike($q) . '%';
+        }
 
-        $stmt = $this->db->prepare(
-            'SELECT * FROM products ORDER BY name ASC LIMIT :limit OFFSET :offset'
-        );
+        $categoryId = (int) ($filters['category_id'] ?? 0);
+        if ($categoryId > 0)
+        {
+            $where[] = 'p.category_id = :category_id';
+            $params['category_id'] = $categoryId;
+        }
+
+        $type = trim((string) ($filters['type'] ?? ''));
+        if ($type !== '' && ProductPricing::isValidType($type))
+        {
+            $where[] = 'p.type = :type';
+            $params['type'] = $type;
+        }
+
+        if (!empty($filters['low_stock']))
+        {
+            $where[] = "p.type = 'product' AND p.stock < p.min_stock";
+        }
+
+        $whereSql = $where !== [] ? ' WHERE ' . implode(' AND ', $where) : '';
+
+        $countStmt = $this->db->prepare('SELECT COUNT(*) FROM products p' . $whereSql);
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+
+        $sql = 'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN . $whereSql
+            . ' ORDER BY p.name ASC LIMIT :limit OFFSET :offset';
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $key => $value)
+        {
+            $stmt->bindValue(':' . $key, $value);
+        }
         $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
-        $rows = $stmt->fetchAll();
 
-        $items = [];
-        foreach ($rows as $row)
-        {
-            $items[] = Product::fromArray($row);
-        }
-
-        return ['items' => $items, 'total' => $total];
+        return ['items' => $this->mapRows($stmt->fetchAll()), 'total' => $total];
     }
 
-    public function insert(string $name, ?string $description, string $price, int $stock): int
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function insert(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO products (name, description, price, stock)
-             VALUES (:name, :description, :price, :stock) RETURNING id'
+            'INSERT INTO products (
+                name, description, sku, barcode, category_id, unit_of_measure,
+                cost_price, margin_percent, markup_percent, price, stock, min_stock, type
+             ) VALUES (
+                :name, :description, :sku, :barcode, :category_id, :unit_of_measure,
+                :cost_price, :margin_percent, :markup_percent, :price, :stock, :min_stock, :type
+             ) RETURNING id'
         );
-        $stmt->execute([
-            'name' => $name,
-            'description' => $description,
-            'price' => $price,
-            'stock' => $stock,
-        ]);
+        $stmt->execute($data);
+
         return (int) $stmt->fetchColumn();
     }
 
-    public function update(int $id, string $name, ?string $description, string $price, int $stock): void
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function update(int $id, array $data): void
     {
+        $data['id'] = $id;
         $stmt = $this->db->prepare(
-            'UPDATE products SET name = :name, description = :description, price = :price, stock = :stock
+            'UPDATE products SET
+                name = :name,
+                description = :description,
+                sku = :sku,
+                barcode = :barcode,
+                category_id = :category_id,
+                unit_of_measure = :unit_of_measure,
+                cost_price = :cost_price,
+                margin_percent = :margin_percent,
+                markup_percent = :markup_percent,
+                price = :price,
+                stock = :stock,
+                min_stock = :min_stock,
+                type = :type
              WHERE id = :id'
         );
-        $stmt->execute([
-            'id' => $id,
-            'name' => $name,
-            'description' => $description,
-            'price' => $price,
-            'stock' => $stock,
-        ]);
+        $stmt->execute($data);
     }
 
     public function delete(int $id): void
@@ -167,16 +254,33 @@ final class ProductRepository
     /**
      * @return list<Product>
      */
-    public function findLowStock(int $threshold): array
+    public function findLowStock(): array
     {
-        $stmt = $this->db->prepare('SELECT * FROM products WHERE stock < :t ORDER BY stock ASC, name ASC');
-        $stmt->execute(['t' => $threshold]);
-        $rows = $stmt->fetchAll();
+        $stmt = $this->db->query(
+            'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN
+                . " WHERE p.type = 'product' AND p.stock < p.min_stock ORDER BY p.stock ASC, p.name ASC"
+        );
+
+        return $this->mapRows($stmt->fetchAll());
+    }
+
+    private static function escapeIlike(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $rows
+     * @return list<Product>
+     */
+    private function mapRows(array $rows): array
+    {
         $list = [];
         foreach ($rows as $row)
         {
             $list[] = Product::fromArray($row);
         }
+
         return $list;
     }
 }
