@@ -336,7 +336,7 @@ if ($hasCharts)
                     </a>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-0">
+                    <table class="table table-sm align-middle mb-0 js-datatable">
                         <thead>
                             <tr>
                                 <th>Cliente</th>
