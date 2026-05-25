@@ -35,6 +35,13 @@ $router->get('/products/edit', \App\Controllers\ProductController::class . '@edi
 $router->post('/products/update', \App\Controllers\ProductController::class . '@update');
 $router->post('/products/delete', \App\Controllers\ProductController::class . '@delete');
 
+$router->get('/categories', \App\Controllers\CategoryController::class . '@index');
+$router->get('/categories/create', \App\Controllers\CategoryController::class . '@create');
+$router->post('/categories/store', \App\Controllers\CategoryController::class . '@store');
+$router->get('/categories/edit', \App\Controllers\CategoryController::class . '@edit');
+$router->post('/categories/update', \App\Controllers\CategoryController::class . '@update');
+$router->post('/categories/delete', \App\Controllers\CategoryController::class . '@delete');
+
 $router->get('/orders', \App\Controllers\OrderController::class . '@index');
 $router->get('/orders/show', \App\Controllers\OrderController::class . '@show');
 $router->get('/orders/create', \App\Controllers\OrderController::class . '@create');
