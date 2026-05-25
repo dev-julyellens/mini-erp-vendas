@@ -18,13 +18,81 @@ final class AuthService
     private const MIN_PASSWORD_LENGTH = 8;
 
     private UserRepository $users;
+    private CompanyAuthService $companyAuth;
 
-    public function __construct(?UserRepository $users = null)
+    public function __construct(?UserRepository $users = null, ?CompanyAuthService $companyAuth = null)
     {
         $this->users = $users ?? new UserRepository();
+        $this->companyAuth = $companyAuth ?? new CompanyAuthService();
     }
 
-    public function login(string $email, string $password): User
+    /**
+     * Valida credenciais. Se uma empresa, conclui login; se várias, deixa pendente.
+     *
+     * @return array{completed: bool, user: User, companies?: list<\App\Models\Company>}
+     */
+    public function authenticate(string $email, string $password): array
+    {
+        $user = $this->validateCredentials($email, $password);
+        $flow = $this->companyAuth->resolvePostCredentialFlow($user->id);
+
+        if ($flow['auto'] && isset($flow['company']))
+        {
+            $this->companyAuth->completeLoginWithCompany($user, $flow['company']->id);
+            Audit::record('login', 'usuarios', $user->id, null, AuditService::userSnapshot($user), $user->id);
+
+            return ['completed' => true, 'user' => $user];
+        }
+
+        Auth::setPendingUserId($user->id);
+
+        return [
+            'completed' => false,
+            'user' => $user,
+            'companies' => $flow['companies'] ?? [],
+        ];
+    }
+
+    public function selectCompany(int $companyId): User
+    {
+        $userId = Auth::peekPendingUserId();
+        if ($userId === null)
+        {
+            $snapshot = Auth::sessionSnapshot();
+            $userId = $snapshot !== null ? (int) ($snapshot['id'] ?? 0) : 0;
+        }
+
+        if ($userId <= 0)
+        {
+            throw new ValidationException(['login' => 'Sessão expirada. Faça login novamente.']);
+        }
+
+        $user = $this->users->findById($userId);
+        if ($user === null || !$user->active)
+        {
+            Auth::logout();
+            throw new ValidationException(['login' => 'Sessão expirada. Faça login novamente.']);
+        }
+
+        $this->companyAuth->completeLoginWithCompany($user, $companyId);
+        Auth::pullPendingUserId();
+        Audit::record('login', 'usuarios', $user->id, null, AuditService::userSnapshot($user), $user->id);
+
+        return $user;
+    }
+
+    public function switchCompany(int $companyId): void
+    {
+        $user = Auth::user();
+        if ($user === null)
+        {
+            throw new ValidationException(['login' => 'Não autenticado.']);
+        }
+
+        $this->companyAuth->switchCompany($user->id, $companyId);
+    }
+
+    private function validateCredentials(string $email, string $password): User
     {
         $errors = [];
         $email = trim($email);
@@ -49,9 +117,6 @@ final class AuthService
         {
             throw new ValidationException(['login' => 'E-mail ou senha inválidos.']);
         }
-
-        Auth::login($user);
-        Audit::record('login', 'usuarios', $user->id, null, AuditService::userSnapshot($user), $user->id);
 
         return $user;
     }

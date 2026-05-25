@@ -19,13 +19,14 @@ final class JwtService
         $this->ttl = max(60, (int) ($jwt['ttl'] ?? 3600));
     }
 
-    public function createToken(User $user): string
+    public function createToken(User $user, int $companyId): string
     {
         $now = time();
         $payload = [
             'sub' => $user->id,
             'email' => $user->email,
             'role' => $user->role,
+            'company_id' => $companyId,
             'iat' => $now,
             'exp' => $now + $this->ttl,
         ];
@@ -39,7 +40,7 @@ final class JwtService
     }
 
     /**
-     * @return array{sub: int, email: string, role: string, iat: int, exp: int}|null
+     * @return array{sub: int, email: string, role: string, company_id: int, iat: int, exp: int}|null
      */
     public function decodeToken(string $token): ?array
     {
@@ -91,7 +92,8 @@ final class JwtService
         }
 
         $sub = (int) ($payload['sub'] ?? 0);
-        if ($sub <= 0)
+        $companyId = (int) ($payload['company_id'] ?? 0);
+        if ($sub <= 0 || $companyId <= 0)
         {
             return null;
         }
@@ -100,6 +102,7 @@ final class JwtService
             'sub' => $sub,
             'email' => (string) ($payload['email'] ?? ''),
             'role' => (string) ($payload['role'] ?? ''),
+            'company_id' => $companyId,
             'iat' => (int) ($payload['iat'] ?? 0),
             'exp' => $exp,
         ];
