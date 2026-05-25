@@ -53,7 +53,7 @@ final class BackupSettingsRepository
              WHERE id = 1'
         );
         $stmt->execute([
-            'enabled' => $enabled ? 't' : 'f',
+            'enabled' => $enabled,
             'run_hour' => $runHour,
             'run_minute' => $runMinute,
             'user_id' => $userId,
