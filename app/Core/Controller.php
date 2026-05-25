@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace App\Core;
 
+use App\Helpers\Redirect;
+
 abstract class Controller
 {
     protected function redirect(string $path): void
     {
-        $config = require dirname(__DIR__, 2) . '/config/app.php';
-        $base = rtrim((string) $config['base_url'], '/');
-        if ($path !== '' && $path[0] === '/')
-        {
-            $path = substr($path, 1);
-        }
-        header('Location: ' . $base . '/' . $path);
-        exit;
+        Redirect::to($path);
     }
 
     protected function json(array $data, int $status = 200): void
