@@ -94,6 +94,9 @@ $canUsuarios = \App\Helpers\Permission::canView('usuarios');
                     </span>
                 <?php endif; ?>
                 <?php if ($canUsuarios): ?>
+                    <a class="nav-link <?= $navPrefix('/audit-logs') ?>" href="<?= htmlspecialchars($url('audit-logs'), ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="bi bi-journal-text"></i> Auditoria
+                    </a>
                     <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
                         <i class="bi bi-person-gear"></i> Usuários
                     </span>
