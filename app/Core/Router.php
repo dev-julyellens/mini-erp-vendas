@@ -36,7 +36,8 @@ final class Router
         $path = $this->normalizePath($path);
         $key = $method . ' ' . $path;
 
-        if (!isset($this->routes[$key])) {
+        if (!isset($this->routes[$key]))
+        {
             http_response_code(404);
             echo '404 - Not Found';
             return;
@@ -44,7 +45,8 @@ final class Router
 
         $handler = $this->routes[$key];
         [$class, $action] = explode('@', $handler);
-        if (!class_exists($class) || !method_exists($class, $action)) {
+        if (!class_exists($class) || !method_exists($class, $action))
+        {
             http_response_code(500);
             echo 'Invalid handler';
             return;

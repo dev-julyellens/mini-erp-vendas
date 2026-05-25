@@ -9,14 +9,23 @@ final class View
     /**
      * @param array<string, mixed> $data
      */
-    public static function render(string $template, array $data = []): void
+    public static function render(string $template, array $data = [], string $layout = 'layouts/main'): void
     {
         $viewsPath = dirname(__DIR__) . '/Views/';
         $file = $viewsPath . $template . '.php';
+        $layoutFile = $viewsPath . $layout . '.php';
 
-        if (!is_file($file)) {
+        if (!is_file($file))
+        {
             http_response_code(500);
             echo 'View not found: ' . htmlspecialchars($template, ENT_QUOTES, 'UTF-8');
+            exit;
+        }
+
+        if (!is_file($layoutFile))
+        {
+            http_response_code(500);
+            echo 'Layout not found: ' . htmlspecialchars($layout, ENT_QUOTES, 'UTF-8');
             exit;
         }
 
@@ -26,6 +35,6 @@ final class View
         $baseUrl = rtrim((string) ($config['base_url'] ?? ''), '/');
         $__viewFile = $file;
 
-        require $viewsPath . 'layouts/main.php';
+        require $layoutFile;
     }
 }
