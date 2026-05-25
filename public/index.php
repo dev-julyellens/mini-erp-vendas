@@ -7,6 +7,7 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 use App\Core\Router;
 use App\Helpers\PathHelper;
 use App\Middleware\AuthMiddleware;
+use App\Middleware\PermissionMiddleware;
 
 $router = new Router();
 
@@ -47,5 +48,6 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = PathHelper::requestPath();
 
 AuthMiddleware::handle($method, $path);
+PermissionMiddleware::handle($method, $path);
 
 $router->dispatch($method, $path);
