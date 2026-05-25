@@ -43,8 +43,8 @@ Agendador (cron / Task Scheduler)
 ## Permissões
 
 - Rotas mapeadas no módulo `usuarios` (ACL existente).
-- Operações destrutivas e criação exigem perfil **admin** (validado no service).
-- Usuários com `usuarios.visualizar` podem ver logs e arquivos, mas não executar ações sensíveis.
+- Operações sensíveis (criar, download, restaurar, agendamento) exigem perfil **admin** (validado no service).
+- Usuários com apenas `usuarios.visualizar` podem ver logs e listagem de arquivos, sem ações destrutivas.
 
 ---
 
