@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Helpers\Permission;
 use App\Services\StockService;
 
+/** @var callable(string):string $url */
 /** @var list<\App\Models\StockMovement> $movements */
 /** @var int $total */
 /** @var int $page */

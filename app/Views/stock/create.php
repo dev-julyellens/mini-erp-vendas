@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+/** @var callable(string):string $url */
 /** @var list<\App\Models\Product> $products */
 /** @var list<string> $types */
 /** @var array<string, string> $typeLabels */
