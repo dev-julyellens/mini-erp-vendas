@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-final class User
+final class Company
 {
     public int $id;
     public string $name;
-    public string $email;
-    public string $password_hash;
-    public string $role;
+    public ?string $tax_id;
     public bool $active;
     public string $created_at;
     public string $updated_at;
@@ -23,12 +21,13 @@ final class User
         $m = new self();
         $m->id = (int) $row['id'];
         $m->name = (string) $row['name'];
-        $m->email = (string) $row['email'];
-        $m->password_hash = (string) $row['password_hash'];
-        $m->role = (string) $row['role'];
+        $m->tax_id = isset($row['tax_id']) && $row['tax_id'] !== null && $row['tax_id'] !== ''
+            ? (string) $row['tax_id']
+            : null;
         $m->active = self::parseBool($row['active'] ?? true);
-        $m->created_at = (string) $row['created_at'];
-        $m->updated_at = (string) $row['updated_at'];
+        $m->created_at = (string) ($row['created_at'] ?? '');
+        $m->updated_at = (string) ($row['updated_at'] ?? '');
+
         return $m;
     }
 
@@ -50,30 +49,13 @@ final class User
     }
 
     /**
-     * @return array{
-     *   id: int,
-     *   name: string,
-     *   email: string,
-     *   role: string,
-     *   company_id?: int,
-     *   company_name?: string
-     * }
+     * @return array{id: int, name: string}
      */
-    public function toSessionArray(?int $companyId = null, ?string $companyName = null): array
+    public function toSelectArray(): array
     {
-        $data = [
+        return [
             'id' => $this->id,
             'name' => $this->name,
-            'email' => $this->email,
-            'role' => $this->role,
         ];
-
-        if ($companyId !== null && $companyId > 0)
-        {
-            $data['company_id'] = $companyId;
-            $data['company_name'] = trim((string) $companyName);
-        }
-
-        return $data;
     }
 }
