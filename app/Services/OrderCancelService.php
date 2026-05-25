@@ -83,9 +83,24 @@ final class OrderCancelService
 
             $orderRepo->markCanceled($orderId, $userId);
 
+            $arService = new AccountsReceivableService();
+            $arCanceled = $arService->cancelByOrderId($orderId, $pdo);
+
             $pdo->commit();
 
             $this->recordAudit($order, $orderId, $userId, $items, $stockAudit);
+
+            if ($arCanceled !== null)
+            {
+                Audit::record(
+                    'cancelamento_conta_receber',
+                    'financeiro',
+                    $arCanceled['ar_id'],
+                    ['status' => $arCanceled['old_status'], 'order_id' => $orderId],
+                    ['status' => 'canceled', 'order_id' => $orderId],
+                    $userId
+                );
+            }
         }
         catch (ValidationException $e)
         {

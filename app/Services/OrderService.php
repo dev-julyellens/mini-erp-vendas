@@ -133,7 +133,22 @@ final class OrderService
                 );
             }
 
+            $arService = new AccountsReceivableService();
+            $arId = $arService->createFromApprovedOrder($orderId, $customerId, $total, $pdo);
+
             $pdo->commit();
+
+            $dueDate = (new \DateTimeImmutable('today'))
+                ->modify('+' . AccountsReceivableService::DEFAULT_DUE_DAYS . ' days')
+                ->format('Y-m-d');
+
+            Audit::record('conta_receber', 'financeiro', $arId, null, [
+                'order_id' => $orderId,
+                'customer_id' => $customerId,
+                'amount' => $total,
+                'due_date' => $dueDate,
+                'status' => 'pending',
+            ]);
 
             Audit::record('venda', 'vendas', $orderId, null, [
                 'customer_id' => $customerId,

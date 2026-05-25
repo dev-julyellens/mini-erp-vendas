@@ -14,7 +14,7 @@ use App\Repositories\AuditRepository;
 final class AuditService
 {
     /** @var list<string> */
-    public const ENTITIES = ['produtos', 'clientes', 'vendas', 'estoque', 'usuarios'];
+    public const ENTITIES = ['produtos', 'clientes', 'vendas', 'estoque', 'financeiro', 'usuarios'];
 
     /** @var array<string, string> */
     public const ACTION_LABELS = [
@@ -29,6 +29,9 @@ final class AuditService
         'saida_estoque' => 'Saída de estoque',
         'cancelamento_venda' => 'Cancelamento de venda',
         'entrada_estoque' => 'Entrada de estoque',
+        'conta_receber' => 'Conta a receber',
+        'recebimento' => 'Recebimento',
+        'cancelamento_conta_receber' => 'Cancelamento conta a receber',
     ];
 
     /** @var array<string, string> */
@@ -37,6 +40,7 @@ final class AuditService
         'clientes' => 'Clientes',
         'vendas' => 'Vendas',
         'estoque' => 'Estoque',
+        'financeiro' => 'Financeiro',
         'usuarios' => 'Usuários',
     ];
 

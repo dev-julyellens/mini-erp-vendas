@@ -38,6 +38,13 @@ final class RoutePermissionMap
 
         'GET /audit-logs' => ['usuarios', 'visualizar'],
 
+        'GET /finance' => ['financeiro', 'visualizar'],
+        'GET /finance/cash-flow' => ['financeiro', 'visualizar'],
+        'GET /finance/accounts-receivable' => ['financeiro', 'visualizar'],
+        'GET /finance/accounts-receivable/show' => ['financeiro', 'visualizar'],
+        'GET /finance/accounts-receivable/receive' => ['financeiro', 'criar'],
+        'POST /finance/accounts-receivable/receive' => ['financeiro', 'criar'],
+
         'GET /stock-movements' => ['estoque', 'visualizar'],
         'GET /stock-movements/create' => ['estoque', 'criar'],
         'POST /stock-movements/store' => ['estoque', 'criar'],
