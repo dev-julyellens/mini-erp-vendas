@@ -55,6 +55,20 @@ $router->get('/orders/create', \App\Controllers\OrderController::class . '@creat
 $router->post('/orders/store', \App\Controllers\OrderController::class . '@store');
 $router->post('/orders/cancel', \App\Controllers\OrderController::class . '@cancel');
 
+$router->get('/reports', \App\Controllers\ReportController::class . '@index');
+$router->get('/reports/sales-period', \App\Controllers\ReportController::class . '@salesPeriod');
+$router->get('/reports/sales-period/export', \App\Controllers\ReportController::class . '@exportSalesPeriod');
+$router->get('/reports/sales-customer', \App\Controllers\ReportController::class . '@salesCustomer');
+$router->get('/reports/sales-customer/export', \App\Controllers\ReportController::class . '@exportSalesCustomer');
+$router->get('/reports/sales-product', \App\Controllers\ReportController::class . '@salesProduct');
+$router->get('/reports/sales-product/export', \App\Controllers\ReportController::class . '@exportSalesProduct');
+$router->get('/reports/top-products', \App\Controllers\ReportController::class . '@topProducts');
+$router->get('/reports/top-products/export', \App\Controllers\ReportController::class . '@exportTopProducts');
+$router->get('/reports/low-stock', \App\Controllers\ReportController::class . '@lowStock');
+$router->get('/reports/low-stock/export', \App\Controllers\ReportController::class . '@exportLowStock');
+$router->get('/reports/cash-flow', \App\Controllers\ReportController::class . '@cashFlow');
+$router->get('/reports/cash-flow/export', \App\Controllers\ReportController::class . '@exportCashFlow');
+
 $router->get('/audit-logs', \App\Controllers\AuditLogController::class . '@index');
 
 $router->get('/finance', \App\Controllers\FinanceController::class . '@index');
