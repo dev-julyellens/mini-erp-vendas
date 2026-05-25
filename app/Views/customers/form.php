@@ -33,6 +33,7 @@ $phone = $old['phone'] ?? ($customer ? (string) ($customer->phone ?? '') : '');
     <?php endif; ?>
 
     <form method="post" action="<?= htmlspecialchars($url($isEdit ? 'customers/update' : 'customers/store'), ENT_QUOTES, 'UTF-8') ?>">
+        <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
         <?php if ($isEdit): ?>
             <input type="hidden" name="id" value="<?= (int) $customer->id ?>">
         <?php endif; ?>

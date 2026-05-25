@@ -24,36 +24,37 @@ use App\Helpers\DateHelper;
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead>
-            <tr>
-                <th>Nome</th>
-                <th>E-mail</th>
-                <th>Telefone</th>
-                <th>Criado em</th>
-                <th class="text-end">Ações</th>
-            </tr>
+                <tr>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Telefone</th>
+                    <th>Criado em</th>
+                    <th class="text-end">Ações</th>
+                </tr>
             </thead>
             <tbody>
-            <?php foreach ($customers as $c): ?>
-                <tr>
-                    <td class="fw-semibold"><?= htmlspecialchars($c->name, ENT_QUOTES, 'UTF-8') ?></td>
-                    <td><?= htmlspecialchars($c->email, ENT_QUOTES, 'UTF-8') ?></td>
-                    <td><?= htmlspecialchars((string) ($c->phone ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
-                    <td class="text-muted small"><?= htmlspecialchars(DateHelper::toBrDateTime($c->created_at), ENT_QUOTES, 'UTF-8') ?></td>
-                    <td class="text-end">
-                        <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('customers/edit?id=' . $c->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
-                        <form class="d-inline" method="post" action="<?= htmlspecialchars($url('customers/delete'), ENT_QUOTES, 'UTF-8') ?>"
-                              onsubmit="return confirm('Remover este cliente?');">
-                            <input type="hidden" name="id" value="<?= (int) $c->id ?>">
-                            <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
-                        </form>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            <?php if ($customers === []): ?>
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-4">Nenhum cliente cadastrado.</td>
-                </tr>
-            <?php endif; ?>
+                <?php foreach ($customers as $c): ?>
+                    <tr>
+                        <td class="fw-semibold"><?= htmlspecialchars($c->name, ENT_QUOTES, 'UTF-8') ?></td>
+                        <td><?= htmlspecialchars($c->email, ENT_QUOTES, 'UTF-8') ?></td>
+                        <td><?= htmlspecialchars((string) ($c->phone ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
+                        <td class="text-muted small"><?= htmlspecialchars(DateHelper::toBrDateTime($c->created_at), ENT_QUOTES, 'UTF-8') ?></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('customers/edit?id=' . $c->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
+                            <form class="d-inline" method="post" action="<?= htmlspecialchars($url('customers/delete'), ENT_QUOTES, 'UTF-8') ?>"
+                                onsubmit="return confirm('Remover este cliente?');">
+                                <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
+                                <input type="hidden" name="id" value="<?= (int) $c->id ?>">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php if ($customers === []): ?>
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">Nenhum cliente cadastrado.</td>
+                    </tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
