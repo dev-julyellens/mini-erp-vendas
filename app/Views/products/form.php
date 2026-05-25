@@ -38,6 +38,9 @@ $val = static function (string $key, mixed $default = '') use ($old, $product): 
         'price' => $product->price,
         'min_stock' => (string) $product->minStock,
         'stock' => (string) $product->stock,
+        'estimated_time_minutes' => $product->estimatedTimeMinutes !== null
+            ? (string) $product->estimatedTimeMinutes
+            : '',
         default => (string) $default,
     };
 };
@@ -53,6 +56,7 @@ $costPrice = $val('cost_price', '0');
 $price = $val('price');
 $minStock = $val('min_stock', '5');
 $stock = $val('stock', '0');
+$estimatedTime = $val('estimated_time_minutes');
 
 $margins = ProductPricing::computeMargins($costPrice, $price !== '' ? $price : '0');
 $marginDisplay = $margins['margin'] ?? '—';
@@ -149,6 +153,14 @@ $markupDisplay = $margins['markup'] ?? '—';
                         <label class="form-label">Descrição</label>
                         <textarea class="form-control" name="description" rows="3"><?= htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?></textarea>
                     </div>
+                    <div class="col-md-4 <?= $type !== ProductPricing::TYPE_SERVICE ? 'd-none' : '' ?>" id="estimatedTimeField">
+                        <label class="form-label">Tempo estimado (min)</label>
+                        <input class="form-control <?= isset($errors['estimated_time_minutes']) ? 'is-invalid' : '' ?>"
+                            type="number" min="1" step="1" name="estimated_time_minutes" id="estimatedTimeMinutes"
+                            value="<?= htmlspecialchars($estimatedTime, ENT_QUOTES, 'UTF-8') ?>"
+                            placeholder="ex: 60">
+                        <div class="form-text">Opcional. Usado como referência no cadastro de serviços.</div>
+                    </div>
                 </div>
             </div>
 
@@ -160,7 +172,7 @@ $markupDisplay = $margins['markup'] ?? '—';
                             value="<?= htmlspecialchars($costPrice, ENT_QUOTES, 'UTF-8') ?>" placeholder="0,00">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Preço de venda (R$) <span class="text-danger">*</span></label>
+                        <label class="form-label" id="salePriceLabel">Preço de venda (R$) <span class="text-danger">*</span></label>
                         <input class="form-control <?= isset($errors['price']) ? 'is-invalid' : '' ?>"
                             name="price" id="salePrice" value="<?= htmlspecialchars($price, ENT_QUOTES, 'UTF-8') ?>"
                             placeholder="ex: 19,90" required>

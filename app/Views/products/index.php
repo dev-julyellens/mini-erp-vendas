@@ -26,6 +26,9 @@ $filterQuery = array_filter([
     </div>
     <div class="d-flex flex-wrap gap-2">
         <?php if (\App\Helpers\Permission::can('produtos', 'visualizar')): ?>
+            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>">
+                <i class="bi bi-tools"></i> Serviços
+            </a>
             <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('categories'), ENT_QUOTES, 'UTF-8') ?>">
                 <i class="bi bi-tags"></i> Categorias
             </a>
