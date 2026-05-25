@@ -90,6 +90,7 @@
             e.preventDefault();
 
             var customerId = parseInt(document.getElementById("customerId").value || "0", 10);
+            var installmentCount = parseInt(document.getElementById("installmentCount").value || "1", 10);
             var customerSelect = document.getElementById("customerId");
             if (!customerId) {
                 customerSelect.classList.add("is-invalid");
@@ -137,7 +138,11 @@
                     "Content-Type": "application/json",
                     Accept: "application/json",
                 },
-                body: JSON.stringify({ customer_id: customerId, items: items }),
+                body: JSON.stringify({
+                    customer_id: customerId,
+                    items: items,
+                    installment_count: installmentCount,
+                }),
             })
                 .then(function (res) {
                     return res.json().then(function (body) {
