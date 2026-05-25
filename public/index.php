@@ -6,8 +6,17 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 
 use App\Core\Router;
 use App\Helpers\PathHelper;
+use App\Middleware\AuthMiddleware;
 
 $router = new Router();
+
+$router->get('/login', \App\Controllers\AuthController::class . '@showLogin');
+$router->post('/login', \App\Controllers\AuthController::class . '@login');
+$router->post('/logout', \App\Controllers\AuthController::class . '@logout');
+$router->get('/forgot-password', \App\Controllers\AuthController::class . '@showForgotPassword');
+$router->post('/forgot-password', \App\Controllers\AuthController::class . '@forgotPassword');
+$router->get('/reset-password', \App\Controllers\AuthController::class . '@showResetPassword');
+$router->post('/reset-password', \App\Controllers\AuthController::class . '@resetPassword');
 
 $router->get('/', \App\Controllers\DashboardController::class . '@index');
 
@@ -36,5 +45,7 @@ $router->post('/api/orders', \App\Controllers\ApiOrderController::class . '@stor
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = PathHelper::requestPath();
+
+AuthMiddleware::handle($method, $path);
 
 $router->dispatch($method, $path);
