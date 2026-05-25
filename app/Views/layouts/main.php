@@ -154,6 +154,16 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
                     </button>
                     <?php $authUser = \App\Helpers\Auth::sessionSnapshot(); ?>
                     <?php if ($authUser !== null): ?>
+                        <?php if (!empty($authUser['company_name'])): ?>
+                            <a class="btn btn-sm btn-outline-primary text-nowrap d-inline-flex align-items-center"
+                                href="<?= htmlspecialchars($url('select-company'), ENT_QUOTES, 'UTF-8') ?>"
+                                title="Trocar empresa: <?= htmlspecialchars((string) $authUser['company_name'], ENT_QUOTES, 'UTF-8') ?>">
+                                <i class="bi bi-building me-1"></i>
+                                <span class="text-truncate d-none d-sm-inline" style="max-width: 8rem;">
+                                    <?= htmlspecialchars((string) $authUser['company_name'], ENT_QUOTES, 'UTF-8') ?>
+                                </span>
+                            </a>
+                        <?php endif; ?>
                         <div class="text-end">
                             <div class="small fw-semibold text-dark text-truncate" style="max-width: 10rem;">
                                 <?= htmlspecialchars($authUser['name'], ENT_QUOTES, 'UTF-8') ?>
