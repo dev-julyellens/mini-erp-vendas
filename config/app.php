@@ -18,6 +18,10 @@ $jwtTtl = getenv('JWT_TTL');
 $apiRateLimit = getenv('API_RATE_LIMIT');
 $apiRateLimitWindow = getenv('API_RATE_LIMIT_WINDOW');
 $apiLoginRateLimit = getenv('API_LOGIN_RATE_LIMIT');
+$backupPath = getenv('BACKUP_PATH');
+$backupRetentionDays = getenv('BACKUP_RETENTION_DAYS');
+$pgDumpPath = getenv('PG_DUMP_PATH');
+$psqlPath = getenv('PSQL_PATH');
 
 return [
     'app_name' => 'Mini ERP de Vendas',
@@ -39,5 +43,11 @@ return [
         'database' => ($dbName !== false && $dbName !== '') ? $dbName : 'mini_erp_vendas',
         'username' => ($dbUser !== false && $dbUser !== '') ? $dbUser : 'postgres',
         'password' => ($dbPass !== false && $dbPass !== '') ? $dbPass : 'postgres',
+    ],
+    'backup' => [
+        'storage_path' => ($backupPath !== false && $backupPath !== '') ? $backupPath : dirname(__DIR__) . '/storage/backups',
+        'retention_days' => ($backupRetentionDays !== false && $backupRetentionDays !== '') ? max(1, (int) $backupRetentionDays) : 30,
+        'pg_dump_path' => ($pgDumpPath !== false && $pgDumpPath !== '') ? $pgDumpPath : '',
+        'psql_path' => ($psqlPath !== false && $psqlPath !== '') ? $psqlPath : '',
     ],
 ];
