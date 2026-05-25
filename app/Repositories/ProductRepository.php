@@ -14,7 +14,7 @@ final class ProductRepository
     private const SELECT_COLUMNS = '
         p.id, p.name, p.description, p.sku, p.barcode, p.category_id,
         p.unit_of_measure, p.cost_price, p.margin_percent, p.markup_percent,
-        p.price, p.stock, p.min_stock, p.type,
+        p.price, p.stock, p.min_stock, p.type, p.estimated_time_minutes,
         c.name AS category_name';
 
     private const FROM_JOIN = ' FROM products p LEFT JOIN categories c ON c.id = p.category_id ';
@@ -152,10 +152,12 @@ final class ProductRepository
         $stmt = $this->db->prepare(
             'INSERT INTO products (
                 name, description, sku, barcode, category_id, unit_of_measure,
-                cost_price, margin_percent, markup_percent, price, stock, min_stock, type
+                cost_price, margin_percent, markup_percent, price, stock, min_stock, type,
+                estimated_time_minutes
              ) VALUES (
                 :name, :description, :sku, :barcode, :category_id, :unit_of_measure,
-                :cost_price, :margin_percent, :markup_percent, :price, :stock, :min_stock, :type
+                :cost_price, :margin_percent, :markup_percent, :price, :stock, :min_stock, :type,
+                :estimated_time_minutes
              ) RETURNING id'
         );
         $stmt->execute($data);
@@ -183,7 +185,8 @@ final class ProductRepository
                 price = :price,
                 stock = :stock,
                 min_stock = :min_stock,
-                type = :type
+                type = :type,
+                estimated_time_minutes = :estimated_time_minutes
              WHERE id = :id'
         );
         $stmt->execute($data);

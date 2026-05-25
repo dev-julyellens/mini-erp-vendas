@@ -37,7 +37,8 @@ final class OrderItemRepository
      */
     public function findByOrderId(int $orderId): array
     {
-        $sql = 'SELECT oi.*, p.name AS product_name
+        $sql = 'SELECT oi.id, oi.order_id, oi.product_id, oi.quantity, oi.unit_price, oi.subtotal,
+                       p.name AS product_name, p.type AS product_type
                 FROM order_items oi
                 INNER JOIN products p ON p.id = oi.product_id
                 WHERE oi.order_id = :order_id
@@ -46,7 +47,8 @@ final class OrderItemRepository
         $stmt->execute(['order_id' => $orderId]);
         $rows = $stmt->fetchAll();
         $list = [];
-        foreach ($rows as $row) {
+        foreach ($rows as $row)
+        {
             $list[] = OrderItem::fromArray($row);
         }
         return $list;
