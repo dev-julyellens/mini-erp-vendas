@@ -9,7 +9,7 @@ Sistema web em **PHP (>=7.4)**, arquitetura **MVC**, com **Repositories**, **Ser
 - PostgreSQL 12+ (recomendado)
 - Apache com `mod_rewrite` (XAMPP) **ou** outro servidor apontando o *document root* para a pasta `public/`
 
-> **Autenticação:** este projeto **não** inclui login de usuários. Não há “credenciais padrão” de aplicação — apenas as credenciais do PostgreSQL que você configurar.
+> **Autenticação:** login obrigatório para o painel e APIs. Usuário padrão após instalação: `admin@mini-erp.local` / `Admin@123` (altere após o primeiro acesso).
 
 ## Instalação
 
@@ -27,7 +27,13 @@ CREATE DATABASE mini_erp_vendas;
 psql -U postgres -d mini_erp_vendas -f database/database.sql
 ```
 
-O arquivo cria tabelas, constraints, índices e **dados iniciais** (clientes e produtos).
+O arquivo cria tabelas, constraints, índices e **dados iniciais** (usuário admin, clientes e produtos).
+
+Se o banco já existia antes da autenticação, aplique a migration:
+
+```bash
+php database/run_migration.php
+```
 
 ### 2) Configuração
 
@@ -58,6 +64,7 @@ Ajuste o `RewriteBase` em `public/.htaccess` se o caminho do projeto for diferen
 
 ## Funcionalidades
 
+- **Autenticação:** login, logout, sessão segura, CSRF, recuperação de senha, perfis (`admin`, `vendedor`, `financeiro`, `estoque`)
 - **Clientes:** CRUD com e-mail único
 - **Produtos:** CRUD com `price > 0` e `stock >= 0`
 - **Vendas:** múltiplos itens, total automático, bloqueio de estoque insuficiente, baixa de estoque transacional
