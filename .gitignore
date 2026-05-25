@@ -19,3 +19,6 @@
 
 # Composer
 composer.lock
+
+# Backups
+/storage/backups/*.sql
