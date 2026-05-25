@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+/** @var callable(string):string $url */
 /** @var ?\App\Models\Product $product */
 /** @var array<string, string> $errors */
 /** @var array<string, mixed>|null $old */
