@@ -18,14 +18,11 @@ final class DashboardController extends Controller
         $products = new ProductRepository();
         $customers = new CustomerRepository();
 
-        $lowStockThreshold = 5;
-
         $this->view('dashboard/index', [
             'ordersCount' => $orders->countAll(),
             'productsCount' => $products->countAll(),
             'customersCount' => $customers->countAll(),
-            'lowStockProducts' => $products->findLowStock($lowStockThreshold),
-            'lowStockThreshold' => $lowStockThreshold,
+            'lowStockProducts' => $products->findLowStock(),
             'flash' => Flash::pull(),
         ]);
     }

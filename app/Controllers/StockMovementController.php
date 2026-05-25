@@ -60,7 +60,10 @@ final class StockMovementController extends Controller
         $productRepo = new ProductRepository();
 
         $this->view('stock/create', [
-            'products' => $productRepo->allOrderedByName(),
+            'products' => array_values(array_filter(
+                $productRepo->allOrderedByName(),
+                static fn($p) => !$p->isService()
+            )),
             'types' => StockService::TYPES,
             'typeLabels' => StockService::TYPE_LABELS,
             'errors' => [],

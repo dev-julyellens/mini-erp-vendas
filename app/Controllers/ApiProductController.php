@@ -15,14 +15,25 @@ final class ApiProductController extends Controller
         $products = $repo->allOrderedByName();
 
         $data = [];
-        foreach ($products as $p) {
+        foreach ($products as $p)
+        {
             $data[] = [
                 'id' => $p->id,
                 'name' => $p->name,
                 'description' => $p->description,
+                'sku' => $p->sku,
+                'barcode' => $p->barcode,
+                'category_id' => $p->categoryId,
+                'category_name' => $p->categoryName,
+                'unit_of_measure' => $p->unitOfMeasure,
+                'cost_price' => $p->costPrice,
+                'margin_percent' => $p->marginPercent,
+                'markup_percent' => $p->markupPercent,
                 'price' => $p->price,
                 'stock' => $p->stock,
-                'low_stock' => $p->stock < 5,
+                'min_stock' => $p->minStock,
+                'type' => $p->type,
+                'low_stock' => $p->isLowStock(),
             ];
         }
 
