@@ -14,6 +14,8 @@ foreach ($products as $p)
         'name' => $p->name,
         'price' => $p->price,
         'stock' => $p->stock,
+        'type' => $p->type,
+        'sku' => $p->sku,
     ];
 }
 
@@ -87,8 +89,14 @@ foreach ($products as $p)
                     <?php foreach ($products as $p): ?>
                         <option value="<?= (int) $p->id ?>"
                             data-price="<?= htmlspecialchars((string) $p->price, ENT_QUOTES, 'UTF-8') ?>"
-                            data-stock="<?= (int) $p->stock ?>">
-                            <?= htmlspecialchars($p->name, ENT_QUOTES, 'UTF-8') ?> (estoque: <?= (int) $p->stock ?>)
+                            data-stock="<?= (int) $p->stock ?>"
+                            data-type="<?= htmlspecialchars($p->type, ENT_QUOTES, 'UTF-8') ?>">
+                            <?= htmlspecialchars($p->name, ENT_QUOTES, 'UTF-8') ?>
+                            <?php if ($p->isService()): ?>
+                                (serviço)
+                            <?php else: ?>
+                                (estoque: <?= (int) $p->stock ?>)
+                            <?php endif; ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
