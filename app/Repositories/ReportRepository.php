@@ -7,10 +7,12 @@ namespace App\Repositories;
 use App\Core\Database;
 use App\Models\CashFlow;
 use App\Models\ReportFilter;
+use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
 final class ReportRepository
 {
+    use CompanyScope;
     private PDO $db;
 
     public function __construct(?PDO $db = null)
@@ -139,8 +141,12 @@ final class ReportRepository
      */
     public function lowStock(ReportFilter $filter, int $perPage): array
     {
-        $where = ['p.type = \'product\'', 'p.stock <= p.min_stock'];
-        $params = [];
+        $where = [
+            'p.company_id = :company_id',
+            'p.type = \'product\'',
+            'p.stock <= p.min_stock',
+        ];
+        $params = $this->companyParams();
 
         if ($filter->categoryId !== null && $filter->categoryId > 0)
         {
@@ -187,8 +193,8 @@ final class ReportRepository
      */
     public function cashFlow(ReportFilter $filter, int $perPage): array
     {
-        $where = [];
-        $params = [];
+        $where = ['cf.company_id = :company_id'];
+        $params = $this->companyParams();
 
         if (
             $filter->cashFlowType !== null && $filter->cashFlowType !== ''
@@ -459,7 +465,10 @@ final class ReportRepository
 
     private function orderWhereClause(ReportFilter $filter, string $alias = 'o'): string
     {
-        $where = [$alias . '.status = :order_status'];
+        $where = [
+            $alias . '.status = :order_status',
+            $alias . '.company_id = :company_id',
+        ];
         if ($filter->dateFrom !== null && $filter->dateFrom !== '')
         {
             $where[] = $alias . '.created_at::date >= :date_from';
@@ -481,7 +490,10 @@ final class ReportRepository
      */
     private function orderParams(ReportFilter $filter): array
     {
-        $params = ['order_status' => $filter->effectiveOrderStatus()];
+        $params = [
+            'order_status' => $filter->effectiveOrderStatus(),
+            'company_id' => $this->companyId(),
+        ];
         if ($filter->dateFrom !== null && $filter->dateFrom !== '')
         {
             $params['date_from'] = $filter->dateFrom;
@@ -500,7 +512,11 @@ final class ReportRepository
 
     private function orderItemWhereClause(ReportFilter $filter): string
     {
-        $where = ['o.status = :order_status'];
+        $where = [
+            'o.status = :order_status',
+            'o.company_id = :company_id',
+            'p.company_id = :company_id',
+        ];
         if ($filter->dateFrom !== null && $filter->dateFrom !== '')
         {
             $where[] = 'o.created_at::date >= :date_from';

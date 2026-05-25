@@ -6,10 +6,13 @@ namespace App\Repositories;
 
 use App\Core\Database;
 use App\Models\CashFlow;
+use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
 final class CashFlowRepository
 {
+    use CompanyScope;
+
     private PDO $db;
 
     public function __construct(?PDO $db = null)
@@ -29,9 +32,13 @@ final class CashFlowRepository
     ): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO cash_flow (type, amount, payment_method, reference_type, reference_id, description, occurred_at, created_by)
-             VALUES (:type, :amount, :method, :ref_type, :ref_id, :description, :occurred_at, :created_by)
-             RETURNING id'
+            'INSERT INTO cash_flow (
+                type, amount, payment_method, reference_type, reference_id,
+                description, occurred_at, created_by, company_id
+             ) VALUES (
+                :type, :amount, :method, :ref_type, :ref_id,
+                :description, :occurred_at, :created_by, :company_id
+             ) RETURNING id'
         );
         $stmt->execute([
             'type' => $type,
@@ -42,6 +49,7 @@ final class CashFlowRepository
             'description' => $description,
             'occurred_at' => $occurredAt,
             'created_by' => $createdBy,
+            'company_id' => $this->companyId(),
         ]);
 
         return (int) $stmt->fetchColumn();
@@ -61,8 +69,8 @@ final class CashFlowRepository
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
 
-        $where = [];
-        $params = [];
+        $where = ['cf.company_id = :company_id'];
+        $params = $this->companyParams();
 
         if ($type !== null && $type !== '')
         {
@@ -80,7 +88,7 @@ final class CashFlowRepository
             $params['date_to'] = $dateTo;
         }
 
-        $whereSql = $where === [] ? '' : ('WHERE ' . implode(' AND ', $where));
+        $whereSql = 'WHERE ' . implode(' AND ', $where);
 
         $countSql = 'SELECT COUNT(*) FROM cash_flow cf ' . $whereSql;
         $countStmt = $this->db->prepare($countSql);
@@ -115,10 +123,14 @@ final class CashFlowRepository
 
     public function netBalance(): string
     {
-        $sql = "SELECT COALESCE(SUM(CASE WHEN type = 'entrada' THEN amount ELSE -amount END), 0)
-                FROM cash_flow";
+        $stmt = $this->db->prepare(
+            "SELECT COALESCE(SUM(CASE WHEN type = 'entrada' THEN amount ELSE -amount END), 0)
+             FROM cash_flow
+             WHERE company_id = :company_id"
+        );
+        $stmt->execute($this->companyParams());
 
-        return (string) $this->db->query($sql)->fetchColumn();
+        return (string) $stmt->fetchColumn();
     }
 
     public function sumByTypeBetween(string $type, string $from, string $to): string
@@ -127,10 +139,16 @@ final class CashFlowRepository
             'SELECT COALESCE(SUM(amount), 0)
              FROM cash_flow
              WHERE type = :type
+               AND company_id = :company_id
                AND occurred_at::date >= :from
                AND occurred_at::date <= :to'
         );
-        $stmt->execute(['type' => $type, 'from' => $from, 'to' => $to]);
+        $stmt->execute([
+            'type' => $type,
+            'company_id' => $this->companyId(),
+            'from' => $from,
+            'to' => $to,
+        ]);
 
         return (string) $stmt->fetchColumn();
     }

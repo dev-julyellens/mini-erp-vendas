@@ -6,10 +6,13 @@ namespace App\Repositories;
 
 use App\Core\Database;
 use App\Models\StockMovement;
+use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
 final class StockMovementRepository
 {
+    use CompanyScope;
+
     private PDO $db;
 
     public function __construct(?PDO $db = null)
@@ -62,8 +65,8 @@ final class StockMovementRepository
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
 
-        $where = ['1 = 1'];
-        $params = [];
+        $where = ['p.company_id = :company_id'];
+        $params = $this->companyParams();
 
         if ($productId !== null)
         {
@@ -91,7 +94,10 @@ final class StockMovementRepository
 
         $whereSql = implode(' AND ', $where);
 
-        $countSql = 'SELECT COUNT(*) FROM stock_movements m WHERE ' . $whereSql;
+        $countSql = 'SELECT COUNT(*)
+                     FROM stock_movements m
+                     INNER JOIN products p ON p.id = m.product_id
+                     WHERE ' . $whereSql;
         $countStmt = $this->db->prepare($countSql);
         $countStmt->execute($params);
         $total = (int) $countStmt->fetchColumn();

@@ -6,10 +6,13 @@ namespace App\Repositories;
 
 use App\Core\Database;
 use App\Models\OrderItem;
+use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
 final class OrderItemRepository
 {
+    use CompanyScope;
+
     private PDO $db;
 
     public function __construct(?PDO $db = null)
@@ -40,17 +43,21 @@ final class OrderItemRepository
         $sql = 'SELECT oi.id, oi.order_id, oi.product_id, oi.quantity, oi.unit_price, oi.subtotal,
                        p.name AS product_name, p.type AS product_type
                 FROM order_items oi
-                INNER JOIN products p ON p.id = oi.product_id
+                INNER JOIN orders o ON o.id = oi.order_id AND o.company_id = :company_id
+                INNER JOIN products p ON p.id = oi.product_id AND p.company_id = :company_id
                 WHERE oi.order_id = :order_id
                 ORDER BY oi.id ASC';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['order_id' => $orderId]);
-        $rows = $stmt->fetchAll();
+        $stmt->execute([
+            'order_id' => $orderId,
+            'company_id' => $this->companyId(),
+        ]);
         $list = [];
-        foreach ($rows as $row)
+        foreach ($stmt->fetchAll() as $row)
         {
             $list[] = OrderItem::fromArray($row);
         }
+
         return $list;
     }
 }

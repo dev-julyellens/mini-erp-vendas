@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Core\Database;
+use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
 final class DashboardRepository
 {
+    use CompanyScope;
+
     private PDO $db;
 
     public function __construct(?PDO $db = null)
@@ -38,8 +41,10 @@ final class DashboardRepository
                           AND o.created_at::date < (date_trunc('month', CURRENT_DATE) + INTERVAL '1 month')::date
                     ) AS month_orders
                 FROM orders o
-                WHERE o.status = 'paid'";
-        $row = $this->db->query($sql)->fetch(PDO::FETCH_ASSOC) ?: [];
+                WHERE o.status = 'paid' AND o.company_id = :company_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($this->companyParams());
+        $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
         return [
             'today_amount' => (string) ($row['today_amount'] ?? '0'),
@@ -59,6 +64,7 @@ final class DashboardRepository
                        COALESCE(SUM(o.total_amount), 0) AS total_amount
                 FROM orders o
                 WHERE o.status = :status
+                  AND o.company_id = :company_id
                   AND o.created_at::date >= :date_from
                   AND o.created_at::date <= :date_to
                 GROUP BY o.created_at::date
@@ -66,12 +72,12 @@ final class DashboardRepository
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'status' => 'paid',
+            'company_id' => $this->companyId(),
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
         ]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $items = [];
-        foreach ($rows as $row)
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row)
         {
             $items[] = [
                 'sale_date' => (string) $row['sale_date'],
@@ -93,6 +99,7 @@ final class DashboardRepository
                        COALESCE(SUM(o.total_amount), 0) AS total_amount
                 FROM orders o
                 WHERE o.status = :status
+                  AND o.company_id = :company_id
                   AND to_char(o.created_at, 'YYYY-MM') >= :month_from
                   AND to_char(o.created_at, 'YYYY-MM') <= :month_to
                 GROUP BY to_char(o.created_at, 'YYYY-MM')
@@ -100,12 +107,12 @@ final class DashboardRepository
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'status' => 'paid',
+            'company_id' => $this->companyId(),
             'month_from' => $monthFrom,
             'month_to' => $monthTo,
         ]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $items = [];
-        foreach ($rows as $row)
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row)
         {
             $items[] = [
                 'year_month' => (string) $row['year_month'],
@@ -121,10 +128,11 @@ final class DashboardRepository
     {
         $sql = "SELECT COUNT(*)
                 FROM products p
-                WHERE p.type = 'product'
+                WHERE p.company_id = :company_id
+                  AND p.type = 'product'
                   AND p.stock < p.min_stock";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($this->companyParams());
 
         return (int) $stmt->fetchColumn();
     }
@@ -133,6 +141,7 @@ final class DashboardRepository
     {
         $sql = "SELECT COALESCE(SUM(ar.amount - COALESCE(pay.paid_total, 0)), 0)
                 FROM accounts_receivable ar
+                INNER JOIN orders o ON o.id = ar.order_id AND o.company_id = :company_id
                 LEFT JOIN (
                     SELECT accounts_receivable_id, SUM(amount) AS paid_total
                     FROM payments
@@ -140,7 +149,9 @@ final class DashboardRepository
                 ) pay ON pay.accounts_receivable_id = ar.id
                 WHERE ar.status IN ('pending', 'partial')
                   AND ar.due_date < CURRENT_DATE";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($this->companyParams());
 
-        return (string) $this->db->query($sql)->fetchColumn();
+        return (string) $stmt->fetchColumn();
     }
 }

@@ -6,10 +6,12 @@ namespace App\Repositories;
 
 use App\Core\Database;
 use App\Models\Installment;
+use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
 final class InstallmentRepository
 {
+    use CompanyScope;
     private PDO $db;
 
     private const SELECT_COLUMNS = 'i.id, i.order_id, i.installment_number, i.amount, i.due_date,
@@ -17,8 +19,8 @@ final class InstallmentRepository
         o.customer_id, c.name AS customer_name, o.total_amount AS order_total';
 
     private const FROM_JOIN = 'FROM installments i
-        INNER JOIN orders o ON o.id = i.order_id
-        INNER JOIN customers c ON c.id = o.customer_id';
+        INNER JOIN orders o ON o.id = i.order_id AND o.company_id = :company_id
+        INNER JOIN customers c ON c.id = o.customer_id AND c.company_id = :company_id';
 
     public function __construct(?PDO $db = null)
     {
@@ -51,7 +53,7 @@ final class InstallmentRepository
     {
         $sql = 'SELECT ' . self::SELECT_COLUMNS . ' ' . self::FROM_JOIN . ' WHERE i.id = :id';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
+        $stmt->execute(['id' => $id, 'company_id' => $this->companyId()]);
         $row = $stmt->fetch();
 
         return $row ? Installment::fromArray($row) : null;
@@ -62,10 +64,11 @@ final class InstallmentRepository
         $sql = 'SELECT i.id, i.order_id, i.installment_number, i.amount, i.due_date,
                        i.paid_at, i.status, i.created_at, i.updated_at
                 FROM installments i
+                INNER JOIN orders o ON o.id = i.order_id AND o.company_id = :company_id
                 WHERE i.id = :id
                 FOR UPDATE OF i';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
+        $stmt->execute(['id' => $id, 'company_id' => $this->companyId()]);
         $row = $stmt->fetch();
 
         return $row ? Installment::fromArray($row) : null;
@@ -79,7 +82,7 @@ final class InstallmentRepository
         $sql = 'SELECT ' . self::SELECT_COLUMNS . ' ' . self::FROM_JOIN
             . ' WHERE i.order_id = :order_id ORDER BY i.installment_number ASC';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['order_id' => $orderId]);
+        $stmt->execute(['order_id' => $orderId, 'company_id' => $this->companyId()]);
         $rows = $stmt->fetchAll();
 
         $items = [];
@@ -93,8 +96,16 @@ final class InstallmentRepository
 
     public function countByOrderId(int $orderId): int
     {
-        $stmt = $this->db->prepare('SELECT COUNT(*) FROM installments WHERE order_id = :order_id');
-        $stmt->execute(['order_id' => $orderId]);
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*)
+             FROM installments i
+             INNER JOIN orders o ON o.id = i.order_id AND o.company_id = :company_id
+             WHERE i.order_id = :order_id'
+        );
+        $stmt->execute([
+            'order_id' => $orderId,
+            'company_id' => $this->companyId(),
+        ]);
 
         return (int) $stmt->fetchColumn();
     }
@@ -102,9 +113,15 @@ final class InstallmentRepository
     public function countPaidByOrderId(int $orderId): int
     {
         $stmt = $this->db->prepare(
-            "SELECT COUNT(*) FROM installments WHERE order_id = :order_id AND status = 'paid'"
+            "SELECT COUNT(*)
+             FROM installments i
+             INNER JOIN orders o ON o.id = i.order_id AND o.company_id = :company_id
+             WHERE i.order_id = :order_id AND i.status = 'paid'"
         );
-        $stmt->execute(['order_id' => $orderId]);
+        $stmt->execute([
+            'order_id' => $orderId,
+            'company_id' => $this->companyId(),
+        ]);
 
         return (int) $stmt->fetchColumn();
     }
@@ -112,36 +129,50 @@ final class InstallmentRepository
     public function markPaid(int $id, string $paidAt): void
     {
         $stmt = $this->db->prepare(
-            'UPDATE installments
+            'UPDATE installments i
              SET status = :status, paid_at = :paid_at, updated_at = CURRENT_TIMESTAMP
-             WHERE id = :id'
+             FROM orders o
+             WHERE i.id = :id
+               AND i.order_id = o.id
+               AND o.company_id = :company_id'
         );
         $stmt->execute([
             'id' => $id,
             'status' => 'paid',
             'paid_at' => $paidAt,
+            'company_id' => $this->companyId(),
         ]);
     }
 
     public function cancelOpenByOrderId(int $orderId): void
     {
         $stmt = $this->db->prepare(
-            "UPDATE installments
+            "UPDATE installments i
              SET status = 'canceled', updated_at = CURRENT_TIMESTAMP
-             WHERE order_id = :order_id
-               AND status IN ('pending', 'overdue')"
+             FROM orders o
+             WHERE i.order_id = :order_id
+               AND i.order_id = o.id
+               AND o.company_id = :company_id
+               AND i.status IN ('pending', 'overdue')"
         );
-        $stmt->execute(['order_id' => $orderId]);
+        $stmt->execute([
+            'order_id' => $orderId,
+            'company_id' => $this->companyId(),
+        ]);
     }
 
     public function refreshOverdueStatuses(): void
     {
-        $this->db->exec(
-            "UPDATE installments
+        $stmt = $this->db->prepare(
+            "UPDATE installments i
              SET status = 'overdue', updated_at = CURRENT_TIMESTAMP
-             WHERE status = 'pending'
-               AND due_date < CURRENT_DATE"
+             FROM orders o
+             WHERE i.order_id = o.id
+               AND o.company_id = :company_id
+               AND i.status = 'pending'
+               AND i.due_date < CURRENT_DATE"
         );
+        $stmt->execute($this->companyParams());
     }
 
     /**
@@ -162,7 +193,7 @@ final class InstallmentRepository
         $offset = ($page - 1) * $perPage;
 
         $where = [];
-        $params = [];
+        $params = ['company_id' => $this->companyId()];
 
         if ($listType === 'overdue')
         {
@@ -230,8 +261,13 @@ final class InstallmentRepository
     public function countByStatus(string $status): int
     {
         $this->refreshOverdueStatuses();
-        $stmt = $this->db->prepare('SELECT COUNT(*) FROM installments WHERE status = :status');
-        $stmt->execute(['status' => $status]);
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*)
+             FROM installments i
+             INNER JOIN orders o ON o.id = i.order_id AND o.company_id = :company_id
+             WHERE i.status = :status'
+        );
+        $stmt->execute(['status' => $status, 'company_id' => $this->companyId()]);
 
         return (int) $stmt->fetchColumn();
     }
@@ -239,16 +275,28 @@ final class InstallmentRepository
     public function countOverdue(): int
     {
         $this->refreshOverdueStatuses();
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*)
+             FROM installments i
+             INNER JOIN orders o ON o.id = i.order_id AND o.company_id = :company_id
+             WHERE i.status = 'overdue'"
+        );
+        $stmt->execute($this->companyParams());
 
-        return (int) $this->db->query("SELECT COUNT(*) FROM installments WHERE status = 'overdue'")->fetchColumn();
+        return (int) $stmt->fetchColumn();
     }
 
     public function countOpen(): int
     {
         $this->refreshOverdueStatuses();
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*)
+             FROM installments i
+             INNER JOIN orders o ON o.id = i.order_id AND o.company_id = :company_id
+             WHERE i.status IN ('pending', 'overdue')"
+        );
+        $stmt->execute($this->companyParams());
 
-        return (int) $this->db->query(
-            "SELECT COUNT(*) FROM installments WHERE status IN ('pending', 'overdue')"
-        )->fetchColumn();
+        return (int) $stmt->fetchColumn();
     }
 }

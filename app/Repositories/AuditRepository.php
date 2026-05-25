@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Core\Database;
+use App\Helpers\CompanyContext;
 use App\Models\AuditLog;
 use PDO;
 
@@ -35,10 +36,10 @@ final class AuditRepository
         $stmt = $this->db->prepare(
             'INSERT INTO audit_logs (
                 user_id, action, entity, entity_id,
-                old_values, new_values, ip_address, user_agent
+                old_values, new_values, ip_address, user_agent, company_id
              ) VALUES (
                 :user_id, :action, :entity, :entity_id,
-                :old_values, :new_values, :ip_address, :user_agent
+                :old_values, :new_values, :ip_address, :user_agent, :company_id
              ) RETURNING id'
         );
         $stmt->execute([
@@ -50,6 +51,7 @@ final class AuditRepository
             'new_values' => $this->encodeJson($newValues),
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
+            'company_id' => CompanyContext::id(),
         ]);
 
         return (int) $stmt->fetchColumn();
@@ -70,8 +72,18 @@ final class AuditRepository
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
 
-        $where = ['1 = 1'];
+        $where = [];
         $params = [];
+        $companyId = CompanyContext::id();
+        if ($companyId !== null)
+        {
+            $where[] = '(a.company_id = :company_id OR a.company_id IS NULL)';
+            $params['company_id'] = $companyId;
+        }
+        if ($where === [])
+        {
+            $where[] = '1 = 1';
+        }
 
         if ($userId !== null)
         {
@@ -136,12 +148,27 @@ final class AuditRepository
      */
     public function listUsersForFilter(): array
     {
-        $stmt = $this->db->query(
-            'SELECT DISTINCT u.id, u.name, u.email
-             FROM users u
-             INNER JOIN audit_logs a ON a.user_id = u.id
-             ORDER BY u.name ASC'
-        );
+        $companyId = CompanyContext::id();
+        if ($companyId !== null)
+        {
+            $stmt = $this->db->prepare(
+                'SELECT DISTINCT u.id, u.name, u.email
+                 FROM users u
+                 INNER JOIN audit_logs a ON a.user_id = u.id
+                 WHERE a.company_id = :company_id OR a.company_id IS NULL
+                 ORDER BY u.name ASC'
+            );
+            $stmt->execute(['company_id' => $companyId]);
+        }
+        else
+        {
+            $stmt = $this->db->query(
+                'SELECT DISTINCT u.id, u.name, u.email
+                 FROM users u
+                 INNER JOIN audit_logs a ON a.user_id = u.id
+                 ORDER BY u.name ASC'
+            );
+        }
         $rows = $stmt->fetchAll();
         $list = [];
         foreach ($rows as $row)

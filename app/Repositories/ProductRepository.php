@@ -7,17 +7,19 @@ namespace App\Repositories;
 use App\Core\Database;
 use App\Helpers\ProductPricing;
 use App\Models\Product;
+use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
 final class ProductRepository
 {
+    use CompanyScope;
     private const SELECT_COLUMNS = '
         p.id, p.name, p.description, p.sku, p.barcode, p.category_id,
         p.unit_of_measure, p.cost_price, p.margin_percent, p.markup_percent,
         p.price, p.stock, p.min_stock, p.type, p.estimated_time_minutes,
         c.name AS category_name';
 
-    private const FROM_JOIN = ' FROM products p LEFT JOIN categories c ON c.id = p.category_id ';
+    private const FROM_JOIN = ' FROM products p LEFT JOIN categories c ON c.id = p.category_id AND c.company_id = p.company_id ';
 
     private PDO $db;
 
@@ -28,13 +30,14 @@ final class ProductRepository
 
     public function findById(int $id, bool $forUpdate = false): ?Product
     {
-        $sql = 'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN . ' WHERE p.id = :id';
+        $sql = 'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN
+            . ' WHERE p.id = :id AND p.company_id = :company_id';
         if ($forUpdate)
         {
             $sql .= ' FOR UPDATE OF p';
         }
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
+        $stmt->execute(['id' => $id, 'company_id' => $this->companyId()]);
         $row = $stmt->fetch();
 
         return $row ? Product::fromArray($row) : null;
@@ -43,8 +46,8 @@ final class ProductRepository
     public function findBySku(string $sku, ?int $excludeId = null): ?Product
     {
         $sql = 'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN
-            . ' WHERE UPPER(p.sku) = UPPER(:sku)';
-        $params = ['sku' => trim($sku)];
+            . ' WHERE UPPER(p.sku) = UPPER(:sku) AND p.company_id = :company_id';
+        $params = ['sku' => trim($sku), 'company_id' => $this->companyId()];
         if ($excludeId !== null)
         {
             $sql .= ' AND p.id <> :exclude_id';
@@ -60,8 +63,8 @@ final class ProductRepository
     public function findByBarcode(string $barcode, ?int $excludeId = null): ?Product
     {
         $sql = 'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN
-            . ' WHERE p.barcode = :barcode';
-        $params = ['barcode' => trim($barcode)];
+            . ' WHERE p.barcode = :barcode AND p.company_id = :company_id';
+        $params = ['barcode' => trim($barcode), 'company_id' => $this->companyId()];
         if ($excludeId !== null)
         {
             $sql .= ' AND p.id <> :exclude_id';
@@ -79,9 +82,11 @@ final class ProductRepository
      */
     public function allOrderedByName(): array
     {
-        $stmt = $this->db->query(
-            'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN . ' ORDER BY p.name ASC'
+        $stmt = $this->db->prepare(
+            'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN
+                . ' WHERE p.company_id = :company_id ORDER BY p.name ASC'
         );
+        $stmt->execute($this->companyParams());
 
         return $this->mapRows($stmt->fetchAll());
     }
@@ -94,8 +99,8 @@ final class ProductRepository
     {
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
-        $where = [];
-        $params = [];
+        $where = ['p.company_id = :company_id'];
+        $params = $this->companyParams();
 
         $q = trim((string) ($filters['q'] ?? ''));
         if ($q !== '')
@@ -150,13 +155,14 @@ final class ProductRepository
             'INSERT INTO products (
                 name, description, sku, barcode, category_id, unit_of_measure,
                 cost_price, margin_percent, markup_percent, price, stock, min_stock, type,
-                estimated_time_minutes
+                estimated_time_minutes, company_id
              ) VALUES (
                 :name, :description, :sku, :barcode, :category_id, :unit_of_measure,
                 :cost_price, :margin_percent, :markup_percent, :price, :stock, :min_stock, :type,
-                :estimated_time_minutes
+                :estimated_time_minutes, :company_id
              ) RETURNING id'
         );
+        $data['company_id'] = $this->companyId();
         $stmt->execute($data);
 
         return (int) $stmt->fetchColumn();
@@ -184,15 +190,16 @@ final class ProductRepository
                 min_stock = :min_stock,
                 type = :type,
                 estimated_time_minutes = :estimated_time_minutes
-             WHERE id = :id'
+             WHERE id = :id AND company_id = :company_id'
         );
+        $data['company_id'] = $this->companyId();
         $stmt->execute($data);
     }
 
     public function delete(int $id): void
     {
-        $stmt = $this->db->prepare('DELETE FROM products WHERE id = :id');
-        $stmt->execute(['id' => $id]);
+        $stmt = $this->db->prepare('DELETE FROM products WHERE id = :id AND company_id = :company_id');
+        $stmt->execute(['id' => $id, 'company_id' => $this->companyId()]);
     }
 
     public function getConnection(): PDO
@@ -220,23 +227,26 @@ final class ProductRepository
         if ($delta > 0)
         {
             $stmt = $this->db->prepare(
-                'UPDATE products SET stock = stock + :qty WHERE id = :id'
+                'UPDATE products SET stock = stock + :qty WHERE id = :id AND company_id = :company_id'
             );
             $stmt->execute([
                 'qty' => $delta,
                 'id' => $productId,
+                'company_id' => $this->companyId(),
             ]);
         }
         else
         {
             $qty = abs($delta);
             $stmt = $this->db->prepare(
-                'UPDATE products SET stock = stock - :qty WHERE id = :id AND stock >= :qty2'
+                'UPDATE products SET stock = stock - :qty
+                 WHERE id = :id AND stock >= :qty2 AND company_id = :company_id'
             );
             $stmt->execute([
                 'qty' => $qty,
                 'id' => $productId,
                 'qty2' => $qty,
+                'company_id' => $this->companyId(),
             ]);
         }
 
@@ -248,7 +258,10 @@ final class ProductRepository
 
     public function countAll(): int
     {
-        return (int) $this->db->query('SELECT COUNT(*) FROM products')->fetchColumn();
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM products WHERE company_id = :company_id');
+        $stmt->execute($this->companyParams());
+
+        return (int) $stmt->fetchColumn();
     }
 
     /**
@@ -256,10 +269,12 @@ final class ProductRepository
      */
     public function findLowStock(): array
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->prepare(
             'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN
-                . " WHERE p.type = 'product' AND p.stock < p.min_stock ORDER BY p.stock ASC, p.name ASC"
+                . " WHERE p.company_id = :company_id AND p.type = 'product'
+                   AND p.stock < p.min_stock ORDER BY p.stock ASC, p.name ASC"
         );
+        $stmt->execute($this->companyParams());
 
         return $this->mapRows($stmt->fetchAll());
     }

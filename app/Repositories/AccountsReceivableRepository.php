@@ -6,10 +6,12 @@ namespace App\Repositories;
 
 use App\Core\Database;
 use App\Models\AccountsReceivable;
+use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
 final class AccountsReceivableRepository
 {
+    use CompanyScope;
     private PDO $db;
 
     private const SELECT_COLUMNS = 'ar.id, ar.order_id, ar.customer_id, ar.amount, ar.due_date, ar.status,
@@ -20,8 +22,8 @@ final class AccountsReceivableRepository
         EXISTS (SELECT 1 FROM installments inst WHERE inst.order_id = ar.order_id) AS has_installments';
 
     private const FROM_JOIN = 'FROM accounts_receivable ar
-        INNER JOIN customers c ON c.id = ar.customer_id
-        INNER JOIN orders o ON o.id = ar.order_id
+        INNER JOIN customers c ON c.id = ar.customer_id AND c.company_id = :company_id
+        INNER JOIN orders o ON o.id = ar.order_id AND o.company_id = :company_id
         LEFT JOIN (
             SELECT accounts_receivable_id, SUM(amount) AS paid_total
             FROM payments
@@ -55,7 +57,7 @@ final class AccountsReceivableRepository
     {
         $sql = 'SELECT ' . self::SELECT_COLUMNS . ' ' . self::FROM_JOIN . ' WHERE ar.id = :id';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
+        $stmt->execute(['id' => $id, 'company_id' => $this->companyId()]);
         $row = $stmt->fetch();
 
         return $row ? AccountsReceivable::fromArray($row) : null;
@@ -66,10 +68,11 @@ final class AccountsReceivableRepository
         $sql = 'SELECT ar.id, ar.order_id, ar.customer_id, ar.amount, ar.due_date, ar.status,
                        ar.created_at, ar.updated_at
                 FROM accounts_receivable ar
+                INNER JOIN orders o ON o.id = ar.order_id AND o.company_id = :company_id
                 WHERE ar.id = :id
                 FOR UPDATE OF ar';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
+        $stmt->execute(['id' => $id, 'company_id' => $this->companyId()]);
         $row = $stmt->fetch();
 
         return $row ? AccountsReceivable::fromArray($row) : null;
@@ -79,7 +82,7 @@ final class AccountsReceivableRepository
     {
         $sql = 'SELECT ' . self::SELECT_COLUMNS . ' ' . self::FROM_JOIN . ' WHERE ar.order_id = :order_id';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['order_id' => $orderId]);
+        $stmt->execute(['order_id' => $orderId, 'company_id' => $this->companyId()]);
         $row = $stmt->fetch();
 
         return $row ? AccountsReceivable::fromArray($row) : null;
@@ -90,10 +93,11 @@ final class AccountsReceivableRepository
         $sql = 'SELECT ar.id, ar.order_id, ar.customer_id, ar.amount, ar.due_date, ar.status,
                        ar.created_at, ar.updated_at
                 FROM accounts_receivable ar
+                INNER JOIN orders o ON o.id = ar.order_id AND o.company_id = :company_id
                 WHERE ar.order_id = :order_id
                 FOR UPDATE OF ar';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['order_id' => $orderId]);
+        $stmt->execute(['order_id' => $orderId, 'company_id' => $this->companyId()]);
         $row = $stmt->fetch();
 
         return $row ? AccountsReceivable::fromArray($row) : null;
@@ -102,24 +106,33 @@ final class AccountsReceivableRepository
     public function updateStatus(int $id, string $status): void
     {
         $stmt = $this->db->prepare(
-            'UPDATE accounts_receivable
+            'UPDATE accounts_receivable ar
              SET status = :status, updated_at = CURRENT_TIMESTAMP
-             WHERE id = :id'
+             FROM orders o
+             WHERE ar.id = :id AND ar.order_id = o.id AND o.company_id = :company_id'
         );
-        $stmt->execute(['id' => $id, 'status' => $status]);
+        $stmt->execute([
+            'id' => $id,
+            'status' => $status,
+            'company_id' => $this->companyId(),
+        ]);
     }
 
     public function cancelOpenByOrderId(int $orderId): void
     {
         $stmt = $this->db->prepare(
-            'UPDATE accounts_receivable
+            'UPDATE accounts_receivable ar
              SET status = :canceled, updated_at = CURRENT_TIMESTAMP
-             WHERE order_id = :order_id
-               AND status IN (\'pending\', \'partial\')'
+             FROM orders o
+             WHERE ar.order_id = :order_id
+               AND ar.order_id = o.id
+               AND o.company_id = :company_id
+               AND ar.status IN (\'pending\', \'partial\')'
         );
         $stmt->execute([
             'order_id' => $orderId,
             'canceled' => 'canceled',
+            'company_id' => $this->companyId(),
         ]);
     }
 
@@ -140,7 +153,7 @@ final class AccountsReceivableRepository
         $offset = ($page - 1) * $perPage;
 
         $where = [];
-        $params = [];
+        $params = ['company_id' => $this->companyId()];
 
         if ($status !== null && $status !== '')
         {
@@ -199,30 +212,44 @@ final class AccountsReceivableRepository
     {
         $sql = 'SELECT COALESCE(SUM(ar.amount - COALESCE(pay.paid_total, 0)), 0)
                 FROM accounts_receivable ar
+                INNER JOIN orders o ON o.id = ar.order_id AND o.company_id = :company_id
                 LEFT JOIN (
                     SELECT accounts_receivable_id, SUM(amount) AS paid_total
                     FROM payments
                     GROUP BY accounts_receivable_id
                 ) pay ON pay.accounts_receivable_id = ar.id
                 WHERE ar.status IN (\'pending\', \'partial\')';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($this->companyParams());
 
-        return (string) $this->db->query($sql)->fetchColumn();
+        return (string) $stmt->fetchColumn();
     }
 
     public function countOverdueOpen(): int
     {
         $sql = "SELECT COUNT(*)
                 FROM accounts_receivable ar
+                INNER JOIN orders o ON o.id = ar.order_id AND o.company_id = :company_id
                 WHERE ar.status IN ('pending', 'partial')
                   AND ar.due_date < CURRENT_DATE";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($this->companyParams());
 
-        return (int) $this->db->query($sql)->fetchColumn();
+        return (int) $stmt->fetchColumn();
     }
 
     public function countByStatus(string $status): int
     {
-        $stmt = $this->db->prepare('SELECT COUNT(*) FROM accounts_receivable WHERE status = :status');
-        $stmt->execute(['status' => $status]);
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*)
+             FROM accounts_receivable ar
+             INNER JOIN orders o ON o.id = ar.order_id AND o.company_id = :company_id
+             WHERE ar.status = :status'
+        );
+        $stmt->execute([
+            'status' => $status,
+            'company_id' => $this->companyId(),
+        ]);
 
         return (int) $stmt->fetchColumn();
     }
