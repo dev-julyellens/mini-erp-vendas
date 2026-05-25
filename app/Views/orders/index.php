@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Helpers\DateHelper;
+use App\Models\Order;
 
+/** @var callable(string):string $url */
 /** @var list<\App\Models\Order> $orders */
 /** @var int $total */
 /** @var int $page */
@@ -73,6 +75,7 @@ if ($filters['date_to'] !== '')
                     <th>#</th>
                     <th>Cliente</th>
                     <th>Total</th>
+                    <th>Status</th>
                     <th>Data</th>
                     <th class="text-end">Ações</th>
                 </tr>
@@ -83,6 +86,11 @@ if ($filters['date_to'] !== '')
                         <td class="fw-semibold">#<?= (int) $o->id ?></td>
                         <td><?= htmlspecialchars((string) ($o->customer_name ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                         <td>R$ <?= htmlspecialchars(number_format((float) $o->total_amount, 2, ',', '.'), ENT_QUOTES, 'UTF-8') ?></td>
+                        <td>
+                            <span class="badge text-bg-<?= htmlspecialchars(Order::statusBadge($o->status), ENT_QUOTES, 'UTF-8') ?>">
+                                <?= htmlspecialchars(Order::statusLabel($o->status), ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                        </td>
                         <td class="text-muted small"><?= htmlspecialchars(DateHelper::toBrDateTime($o->created_at), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-end">
                             <a class="btn btn-sm btn-outline-primary" href="<?= htmlspecialchars($url('orders/show?id=' . $o->id), ENT_QUOTES, 'UTF-8') ?>">Detalhes</a>
@@ -91,7 +99,7 @@ if ($filters['date_to'] !== '')
                 <?php endforeach; ?>
                 <?php if ($orders === []): ?>
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">Nenhuma venda encontrada para os filtros atuais.</td>
+                        <td colspan="6" class="text-center text-muted py-4">Nenhuma venda encontrada para os filtros atuais.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>

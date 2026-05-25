@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+/** @var callable(string):string $url */
 /** @var list<\App\Models\Customer> $customers */
 /** @var list<\App\Models\Product> $products */
 
 $productPayload = [];
-foreach ($products as $p) {
+foreach ($products as $p)
+{
     $productPayload[] = [
         'id' => $p->id,
         'name' => $p->name,
@@ -74,8 +76,8 @@ foreach ($products as $p) {
                     <option value="">Selecione...</option>
                     <?php foreach ($products as $p): ?>
                         <option value="<?= (int) $p->id ?>"
-                                data-price="<?= htmlspecialchars((string) $p->price, ENT_QUOTES, 'UTF-8') ?>"
-                                data-stock="<?= (int) $p->stock ?>">
+                            data-price="<?= htmlspecialchars((string) $p->price, ENT_QUOTES, 'UTF-8') ?>"
+                            data-stock="<?= (int) $p->stock ?>">
                             <?= htmlspecialchars($p->name, ENT_QUOTES, 'UTF-8') ?> (estoque: <?= (int) $p->stock ?>)
                         </option>
                     <?php endforeach; ?>
