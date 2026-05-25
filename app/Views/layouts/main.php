@@ -77,6 +77,9 @@ $canUsuarios = \App\Helpers\Permission::canView('usuarios');
                     <a class="nav-link <?= $navPrefix('/products') ?>" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-box-seam"></i> Produtos
                     </a>
+                    <a class="nav-link <?= $navPrefix('/services') ?>" href="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="bi bi-tools"></i> Serviços
+                    </a>
                 <?php endif; ?>
                 <?php if ($canVendas): ?>
                     <a class="nav-link <?= $navPrefix('/orders') ?>" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">
