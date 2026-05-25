@@ -1,6 +1,7 @@
 -- Mini ERP de Vendas - PostgreSQL schema + seed
 -- Encoding: UTF-8
 
+DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS role_permissions CASCADE;
 DROP TABLE IF EXISTS permissions CASCADE;
 DROP TABLE IF EXISTS password_reset_tokens CASCADE;
@@ -105,6 +106,41 @@ CREATE TABLE order_items (
 
 CREATE INDEX idx_order_items_order ON order_items (order_id);
 CREATE INDEX idx_order_items_product ON order_items (product_id);
+
+CREATE TABLE audit_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    action VARCHAR(50) NOT NULL,
+    entity VARCHAR(50) NOT NULL,
+    entity_id INTEGER,
+    old_values JSONB,
+    new_values JSONB,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT audit_logs_action_check CHECK (
+        action IN (
+            'criar',
+            'editar',
+            'excluir',
+            'login',
+            'logout',
+            'solicitar_redefinir_senha',
+            'redefinir_senha',
+            'venda',
+            'saida_estoque'
+        )
+    ),
+    CONSTRAINT audit_logs_entity_check CHECK (
+        entity IN ('produtos', 'clientes', 'vendas', 'estoque', 'usuarios')
+    )
+);
+
+CREATE INDEX idx_audit_logs_user_id ON audit_logs (user_id);
+CREATE INDEX idx_audit_logs_entity ON audit_logs (entity);
+CREATE INDEX idx_audit_logs_entity_id ON audit_logs (entity_id);
+CREATE INDEX idx_audit_logs_created_at ON audit_logs (created_at DESC);
+CREATE INDEX idx_audit_logs_user_created ON audit_logs (user_id, created_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- Seed data
