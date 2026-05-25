@@ -193,8 +193,17 @@ final class AuditService
             'id' => $product->id,
             'name' => $product->name,
             'description' => $product->description,
+            'sku' => $product->sku,
+            'barcode' => $product->barcode,
+            'category_id' => $product->categoryId,
+            'unit_of_measure' => $product->unitOfMeasure,
+            'cost_price' => $product->costPrice,
+            'margin_percent' => $product->marginPercent,
+            'markup_percent' => $product->markupPercent,
             'price' => $product->price,
             'stock' => $product->stock,
+            'min_stock' => $product->minStock,
+            'type' => $product->type,
         ];
     }
 

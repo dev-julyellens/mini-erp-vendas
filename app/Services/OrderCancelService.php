@@ -65,20 +65,23 @@ final class OrderCancelService
                 $product = $productRepo->findById($productId, false);
                 $stockBefore = $product !== null ? $product->stock : 0;
 
-                $stockService->registerReturn(
-                    $productId,
-                    $quantity,
-                    $orderId,
-                    'Devolução por cancelamento da venda #' . $orderId,
-                    false,
-                    $pdo
-                );
+                if ($product !== null && !$product->isService())
+                {
+                    $stockService->registerReturn(
+                        $productId,
+                        $quantity,
+                        $orderId,
+                        'Devolução por cancelamento da venda #' . $orderId,
+                        false,
+                        $pdo
+                    );
 
-                $stockAudit[] = [
-                    'product_id' => $productId,
-                    'quantity' => $quantity,
-                    'stock_before' => $stockBefore,
-                ];
+                    $stockAudit[] = [
+                        'product_id' => $productId,
+                        'quantity' => $quantity,
+                        'stock_before' => $stockBefore,
+                    ];
+                }
             }
 
             $orderRepo->markCanceled($orderId, $userId);

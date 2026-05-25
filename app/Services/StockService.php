@@ -86,6 +86,13 @@ final class StockService
                 throw new ValidationException(['product_id' => 'Product not found.']);
             }
 
+            if ($product->isService())
+            {
+                throw new ValidationException([
+                    'product_id' => 'Serviços não possuem movimentação de estoque.',
+                ]);
+            }
+
             if ($delta < 0 && $product->stock + $delta < 0)
             {
                 throw new ValidationException([
@@ -143,6 +150,13 @@ final class StockService
         if ($product === null)
         {
             throw new ValidationException(['product_id' => 'Product not found.']);
+        }
+
+        if ($product->isService())
+        {
+            throw new ValidationException([
+                'product_id' => 'Serviços não possuem movimentação de estoque.',
+            ]);
         }
 
         $delta = $targetStock - $product->stock;

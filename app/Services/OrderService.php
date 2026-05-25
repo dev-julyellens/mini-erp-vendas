@@ -80,7 +80,7 @@ final class OrderService
                     throw new ValidationException(['items' => 'Quantity must be positive.']);
                 }
 
-                if ($product->stock < $quantity)
+                if (!$product->isService() && $product->stock < $quantity)
                 {
                     throw new ValidationException([
                         'items' => sprintf(
@@ -108,11 +108,14 @@ final class OrderService
                     'unit_price' => $unitPriceAtSaleMoment,
                     'subtotal' => $subtotal,
                 ];
-                $stockAudit[] = [
-                    'product_id' => $productId,
-                    'stock_before' => $product->stock,
-                    'quantity' => $quantity,
-                ];
+                if (!$product->isService())
+                {
+                    $stockAudit[] = [
+                        'product_id' => $productId,
+                        'stock_before' => $product->stock,
+                        'quantity' => $quantity,
+                    ];
+                }
             }
 
             $orderId = $orderRepo->insert($customerId, $total);
@@ -126,10 +129,14 @@ final class OrderService
                     (string) $row['unit_price'],
                     (string) $row['subtotal']
                 );
+            }
+
+            foreach ($stockAudit as $stockLine)
+            {
                 $stockService->apply(
                     'saida',
-                    (int) $row['product_id'],
-                    (int) $row['quantity'],
+                    (int) $stockLine['product_id'],
+                    (int) $stockLine['quantity'],
                     'order',
                     $orderId,
                     'Saída por venda #' . $orderId,
