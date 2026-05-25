@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Core\ValidationException;
 use App\Helpers\Flash;
+use App\Helpers\Redirect;
 use App\Services\AuthService;
 
 final class AuthController extends Controller
@@ -30,11 +31,8 @@ final class AuthController extends Controller
                 (string) ($_POST['password'] ?? '')
             );
 
-            $intended = $_SESSION['intended_url'] ?? '/';
+            $intended = Redirect::sanitizeIntendedUrl($_SESSION['intended_url'] ?? '/');
             unset($_SESSION['intended_url']);
-            $intended = is_string($intended) && $intended !== '' && $intended !== '/login'
-                ? $intended
-                : '/';
 
             Flash::success('Login realizado com sucesso.');
             $this->redirect($intended);
