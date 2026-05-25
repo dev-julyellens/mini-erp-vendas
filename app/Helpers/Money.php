@@ -51,7 +51,7 @@ final class Money
 
     public static function normalizeDecimal(string $value): string
     {
-        $value = trim(str_replace([' ', "\u{00A0}"], '', $value));
+        $value = trim(preg_replace('/\s+/u', '', $value) ?? $value);
         if (str_contains($value, ',') && str_contains($value, '.'))
         {
             $value = str_replace('.', '', $value);
