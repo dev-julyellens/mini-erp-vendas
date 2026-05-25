@@ -77,6 +77,13 @@ final class Money
         return (bool) preg_match('/^\d+$/', $value) && (int) $value >= 0;
     }
 
+    public static function validateNonNegativeDecimal(string $value): bool
+    {
+        $value = self::normalizeDecimal($value);
+
+        return (bool) preg_match('/^\d+(\.\d{1,2})?$/', $value) && (float) $value >= 0;
+    }
+
     /**
      * Divide um valor em N parcelas; a última absorve centavos residuais.
      *
