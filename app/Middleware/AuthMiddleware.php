@@ -7,6 +7,7 @@ namespace App\Middleware;
 use App\Helpers\ApiRequest;
 use App\Helpers\ApiResponse;
 use App\Helpers\Auth;
+use App\Helpers\CompanyContext;
 use App\Helpers\Csrf;
 use App\Helpers\PathHelper;
 use App\Helpers\Redirect;
@@ -21,7 +22,16 @@ final class AuthMiddleware
         'POST /forgot-password',
         'GET /reset-password',
         'POST /reset-password',
+        'GET /select-company',
+        'POST /select-company',
         'POST /api/auth/login',
+    ];
+
+    /** @var list<string> */
+    private const COMPANY_OPTIONAL_ROUTES = [
+        'GET /select-company',
+        'POST /select-company',
+        'POST /logout',
     ];
 
     public static function handle(?string $method = null, ?string $path = null): void
@@ -39,6 +49,10 @@ final class AuthMiddleware
         {
             if (Auth::check() && in_array($routeKey, ['GET /login', 'GET /forgot-password'], true))
             {
+                if (!CompanyContext::hasSelected() || Auth::peekPendingUserId() !== null)
+                {
+                    Redirect::to('/select-company');
+                }
                 Redirect::to('/');
             }
             return;
@@ -47,6 +61,22 @@ final class AuthMiddleware
         if (!Auth::check())
         {
             self::denyUnauthenticated($path);
+        }
+
+        if (
+            !in_array($routeKey, self::COMPANY_OPTIONAL_ROUTES, true)
+            && Auth::peekPendingUserId() !== null
+        )
+        {
+            Redirect::to('/select-company');
+        }
+
+        if (
+            !in_array($routeKey, self::COMPANY_OPTIONAL_ROUTES, true)
+            && !CompanyContext::hasSelected()
+        )
+        {
+            Redirect::to('/select-company');
         }
 
         $user = Auth::user();

@@ -30,13 +30,17 @@ final class JwtAuthMiddleware
         }
 
         $service = new ApiAuthService();
-        $user = $service->resolveUserFromToken($token);
-        if ($user === null)
+        $resolved = $service->resolveUserFromToken($token);
+        if ($resolved === null)
         {
             ApiResponse::error('Token JWT inválido ou expirado.', 401);
         }
 
-        Auth::setJwtUser($user);
-        ApiMiddleware::attachUserToLog($user->id);
+        Auth::setJwtUser(
+            $resolved['user'],
+            $resolved['company_id'],
+            $resolved['company_name']
+        );
+        ApiMiddleware::attachUserToLog($resolved['user']->id);
     }
 }
