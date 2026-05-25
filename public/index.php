@@ -43,6 +43,13 @@ $router->post('/orders/cancel', \App\Controllers\OrderController::class . '@canc
 
 $router->get('/audit-logs', \App\Controllers\AuditLogController::class . '@index');
 
+$router->get('/finance', \App\Controllers\FinanceController::class . '@index');
+$router->get('/finance/cash-flow', \App\Controllers\FinanceController::class . '@cashFlow');
+$router->get('/finance/accounts-receivable', \App\Controllers\AccountsReceivableController::class . '@index');
+$router->get('/finance/accounts-receivable/show', \App\Controllers\AccountsReceivableController::class . '@show');
+$router->get('/finance/accounts-receivable/receive', \App\Controllers\AccountsReceivableController::class . '@receive');
+$router->post('/finance/accounts-receivable/receive', \App\Controllers\AccountsReceivableController::class . '@storePayment');
+
 $router->get('/stock-movements', \App\Controllers\StockMovementController::class . '@index');
 $router->get('/stock-movements/create', \App\Controllers\StockMovementController::class . '@create');
 $router->post('/stock-movements/store', \App\Controllers\StockMovementController::class . '@store');
