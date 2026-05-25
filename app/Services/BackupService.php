@@ -9,7 +9,6 @@ use App\Helpers\PgCli;
 use App\Models\BackupSettings;
 use App\Repositories\BackupLogRepository;
 use App\Repositories\BackupSettingsRepository;
-use App\Services\PermissionService;
 
 final class BackupService
 {
@@ -198,16 +197,7 @@ final class BackupService
     {
         $this->assertAdmin($role);
 
-        if (!$this->isValidBackupFilename($filename))
-        {
-            throw new BackupException('Nome de arquivo inválido.');
-        }
-
-        $path = $this->storagePath() . DIRECTORY_SEPARATOR . $filename;
-        if (!is_file($path))
-        {
-            throw new BackupException('Arquivo de backup não encontrado.');
-        }
+        $path = $this->resolveBackupFilePath($filename);
 
         $started = microtime(true);
 
@@ -252,16 +242,7 @@ final class BackupService
     {
         $this->assertAdmin($role);
 
-        if (!$this->isValidBackupFilename($filename))
-        {
-            throw new BackupException('Nome de arquivo inválido.');
-        }
-
-        $path = $this->storagePath() . DIRECTORY_SEPARATOR . $filename;
-        if (!is_file($path))
-        {
-            throw new BackupException('Arquivo de backup não encontrado.');
-        }
+        $path = $this->resolveBackupFilePath($filename);
 
         return ['path' => $path, 'filename' => $filename];
     }
@@ -298,7 +279,15 @@ final class BackupService
 
         foreach ($this->listBackupFiles() as $file)
         {
-            $path = $this->storagePath() . DIRECTORY_SEPARATOR . $file['filename'];
+            try
+            {
+                $path = $this->resolveBackupFilePath($file['filename']);
+            }
+            catch (BackupException $ignored)
+            {
+                continue;
+            }
+
             $mtime = filemtime($path);
             if ($mtime === false || $mtime >= $cutoff)
             {
@@ -384,6 +373,51 @@ final class BackupService
         return (bool) preg_match('/^backup_\d{4}-\d{2}-\d{2}_\d{6}\.sql$/', $filename);
     }
 
+    private function resolveBackupFilePath(string $filename): string
+    {
+        if (!$this->isValidBackupFilename($filename))
+        {
+            throw new BackupException('Nome de arquivo inválido.');
+        }
+
+        $this->ensureStorageDirectory();
+
+        $storageDir = $this->storagePath();
+        $realStorage = realpath($storageDir);
+        if ($realStorage === false)
+        {
+            throw new BackupException('Diretório de backups indisponível.');
+        }
+
+        $candidate = $realStorage . DIRECTORY_SEPARATOR . $filename;
+        $realPath = realpath($candidate);
+        if ($realPath === false || !is_file($realPath))
+        {
+            throw new BackupException('Arquivo de backup não encontrado.');
+        }
+
+        if (!$this->isPathInsideDirectory($realPath, $realStorage))
+        {
+            throw new BackupException('Arquivo de backup inválido.');
+        }
+
+        return $realPath;
+    }
+
+    private function isPathInsideDirectory(string $path, string $directory): bool
+    {
+        $path = rtrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
+        $directory = rtrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $directory), DIRECTORY_SEPARATOR);
+        $prefix = $directory . DIRECTORY_SEPARATOR;
+
+        if (PHP_OS_FAMILY === 'Windows')
+        {
+            return str_starts_with(strtolower($path), strtolower($prefix));
+        }
+
+        return str_starts_with($path, $prefix);
+    }
+
     private function ensureStorageDirectory(): void
     {
         $dir = $this->storagePath();
@@ -400,11 +434,7 @@ final class BackupService
 
     private function storagePath(): string
     {
-        $backup = $this->config()['backup'] ?? [];
-        if (!is_array($backup))
-        {
-            $backup = [];
-        }
+        $backup = $this->backupConfig();
 
         $configured = (string) ($backup['storage_path'] ?? '');
         if ($configured !== '')
@@ -415,14 +445,20 @@ final class BackupService
         return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'backups';
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    private function backupConfig(): array
+    {
+        $backup = $this->config()['backup'] ?? [];
+
+        return is_array($backup) ? $backup : [];
+    }
+
     private function runPgDump(string $outputPath): void
     {
         $db = $this->databaseConfig();
-        $backup = $this->config()['backup'] ?? [];
-        if (!is_array($backup))
-        {
-            $backup = [];
-        }
+        $backup = $this->backupConfig();
 
         $pgDump = PgCli::resolveBinary((string) ($backup['pg_dump_path'] ?? ''), 'pg_dump');
 
@@ -449,11 +485,7 @@ final class BackupService
     private function runPsqlRestore(string $inputPath): void
     {
         $db = $this->databaseConfig();
-        $backup = $this->config()['backup'] ?? [];
-        if (!is_array($backup))
-        {
-            $backup = [];
-        }
+        $backup = $this->backupConfig();
 
         $psql = PgCli::resolveBinary((string) ($backup['psql_path'] ?? ''), 'psql');
 

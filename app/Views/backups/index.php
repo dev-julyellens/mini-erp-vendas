@@ -92,9 +92,11 @@ $totalPages = max(1, (int) ceil($total / $perPage));
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h2 class="h5 mb-0"><i class="bi bi-file-earmark-zip"></i> Arquivos de backup</h2>
                 <?php if ($isAdmin): ?>
-                    <form method="post" action="<?= htmlspecialchars($url('backups/cleanup'), ENT_QUOTES, 'UTF-8') ?>" class="m-0">
+                    <form method="post" action="<?= htmlspecialchars($url('backups/cleanup'), ENT_QUOTES, 'UTF-8') ?>" class="m-0"
+                        data-confirm="Remover backups antigos conforme política de retenção?"
+                        data-confirm-title="Limpar backups antigos">
                         <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                        <button type="submit" class="btn btn-outline-secondary btn-sm" data-confirm="Remover backups antigos conforme política de retenção?">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
                             Limpar antigos
                         </button>
                     </form>
@@ -116,19 +118,21 @@ $totalPages = max(1, (int) ceil($total / $perPage));
                         <tbody>
                             <?php foreach ($files as $file): ?>
                                 <tr>
-                                    <td class="font-monospace small"><?= htmlspecialchars($file['filename'], ENT_QUOTES, 'UTF-8') ?></td>
+                                    <td class="font-monospace small text-break"><?= htmlspecialchars($file['filename'], ENT_QUOTES, 'UTF-8') ?></td>
                                     <td><?= htmlspecialchars($formatBytes($file['size']), ENT_QUOTES, 'UTF-8') ?></td>
                                     <td><?= htmlspecialchars($file['created_at'], ENT_QUOTES, 'UTF-8') ?></td>
-                                    <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-primary" href="<?= htmlspecialchars($url('backups/download?file=' . rawurlencode($file['filename'])), ENT_QUOTES, 'UTF-8') ?>">
-                                            <i class="bi bi-download"></i>
-                                        </a>
+                                    <td class="text-end text-nowrap">
                                         <?php if ($isAdmin): ?>
+                                            <a class="btn btn-sm btn-outline-primary" href="<?= htmlspecialchars($url('backups/download?file=' . rawurlencode($file['filename'])), ENT_QUOTES, 'UTF-8') ?>">
+                                                <i class="bi bi-download"></i>
+                                            </a>
                                             <button type="button" class="btn btn-sm btn-outline-danger"
                                                 data-bs-toggle="modal" data-bs-target="#restoreModal"
                                                 data-filename="<?= htmlspecialchars($file['filename'], ENT_QUOTES, 'UTF-8') ?>">
                                                 <i class="bi bi-arrow-counterclockwise"></i>
                                             </button>
+                                        <?php else: ?>
+                                            <span class="text-muted small">—</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -165,7 +169,7 @@ $totalPages = max(1, (int) ceil($total / $perPage));
                             <td class="text-nowrap small"><?= htmlspecialchars($log->created_at, ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars($operationLabels[$log->operation] ?? $log->operation, ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars($triggerLabels[$log->trigger_type] ?? $log->trigger_type, ENT_QUOTES, 'UTF-8') ?></td>
-                            <td class="font-monospace small"><?= htmlspecialchars($log->filename ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
+                            <td class="font-monospace small text-break"><?= htmlspecialchars($log->filename ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
                             <td>
                                 <?php
                                 $badge = match ($log->status)

@@ -69,7 +69,7 @@ final class RoutePermissionMap
 
         'GET /backups' => ['usuarios', 'visualizar'],
         'POST /backups/create' => ['usuarios', 'criar'],
-        'GET /backups/download' => ['usuarios', 'visualizar'],
+        'GET /backups/download' => ['usuarios', 'criar'],
         'POST /backups/restore' => ['usuarios', 'excluir'],
         'POST /backups/settings' => ['usuarios', 'editar'],
         'POST /backups/cleanup' => ['usuarios', 'editar'],
