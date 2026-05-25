@@ -100,8 +100,7 @@ final class ProductRepository
         $q = trim((string) ($filters['q'] ?? ''));
         if ($q !== '')
         {
-            $where[] = '(p.name ILIKE :q ESCAPE \'\\\' OR p.sku ILIKE :q ESCAPE \'\\\'
-                OR COALESCE(p.barcode, \'\') ILIKE :q ESCAPE \'\\\')';
+            $where[] = "(p.name || ' ' || p.sku || ' ' || COALESCE(p.barcode, '')) ILIKE :q ESCAPE '\\'";
             $params['q'] = '%' . self::escapeIlike($q) . '%';
         }
 
@@ -127,16 +126,14 @@ final class ProductRepository
         $whereSql = $where !== [] ? ' WHERE ' . implode(' AND ', $where) : '';
 
         $countStmt = $this->db->prepare('SELECT COUNT(*) FROM products p' . $whereSql);
-        $countStmt->execute($params);
+        $this->bindNamedParams($countStmt, $params);
+        $countStmt->execute();
         $total = (int) $countStmt->fetchColumn();
 
         $sql = 'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN . $whereSql
             . ' ORDER BY p.name ASC LIMIT :limit OFFSET :offset';
         $stmt = $this->db->prepare($sql);
-        foreach ($params as $key => $value)
-        {
-            $stmt->bindValue(':' . $key, $value);
-        }
+        $this->bindNamedParams($stmt, $params);
         $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
@@ -270,6 +267,18 @@ final class ProductRepository
     private static function escapeIlike(string $value): string
     {
         return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     */
+    private function bindNamedParams(\PDOStatement $stmt, array $params): void
+    {
+        foreach ($params as $key => $value)
+        {
+            $type = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+            $stmt->bindValue(':' . $key, $value, $type);
+        }
     }
 
     /**
