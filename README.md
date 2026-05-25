@@ -45,6 +45,7 @@ Edite `config/app.php` **ou** defina variáveis de ambiente:
 - `DB_USER` (padrão: `postgres`)
 - `DB_PASSWORD` (padrão: `postgres`)
 - `APP_BASE_URL` (ex.: `http://localhost/mini-erp-vendas/public`)
+- `APP_DEBUG` (`true` em desenvolvimento: exibe dica de login e link de reset de senha na tela)
 
 ### 3) Composer
 
