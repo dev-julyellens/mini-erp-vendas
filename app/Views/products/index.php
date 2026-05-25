@@ -41,8 +41,8 @@ $filterQuery = array_filter([
     </div>
 </div>
 
-<div class="card-soft p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>" class="row g-2 align-items-end">
+<div class="card-soft filter-panel p-3 p-md-4 mb-3">
+    <form method="get" action="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>" class="row g-2 align-items-end filter-form">
         <div class="col-12 col-md-4">
             <label class="form-label small text-muted mb-1">Buscar</label>
             <input class="form-control" name="q" placeholder="Nome, SKU ou código de barras"
@@ -86,7 +86,7 @@ $filterQuery = array_filter([
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 js-datatable" data-dt-actions-col="6">
             <thead>
                 <tr>
                     <th>Produto</th>
@@ -142,7 +142,8 @@ $filterQuery = array_filter([
                             <?php if (\App\Helpers\Permission::can('produtos', 'excluir')): ?>
                                 <form class="d-inline" method="post"
                                     action="<?= htmlspecialchars($url('products/delete'), ENT_QUOTES, 'UTF-8') ?>"
-                                    onsubmit="return confirm('Remover este produto?');">
+                                    data-confirm="Remover este produto? Esta ação não pode ser desfeita."
+                                    data-confirm-title="Excluir produto">
                                     <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                                     <input type="hidden" name="id" value="<?= (int) $p->id ?>">
                                     <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
@@ -152,8 +153,13 @@ $filterQuery = array_filter([
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($products === []): ?>
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-4">Nenhum produto encontrado.</td>
+                    <tr class="empty-row">
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="bi bi-box-seam"></i>
+                                Nenhum produto encontrado.
+                            </div>
+                        </td>
                     </tr>
                 <?php endif; ?>
             </tbody>

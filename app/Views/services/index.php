@@ -33,8 +33,8 @@ $filterQuery = array_filter([
     </div>
 </div>
 
-<div class="card-soft p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>" class="row g-2 align-items-end">
+<div class="card-soft filter-panel p-3 p-md-4 mb-3">
+    <form method="get" action="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>" class="row g-2 align-items-end filter-form">
         <div class="col-12 col-md-5">
             <label class="form-label small text-muted mb-1">Buscar</label>
             <input class="form-control" name="q" placeholder="Nome ou SKU"
@@ -62,7 +62,7 @@ $filterQuery = array_filter([
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 js-datatable" data-dt-actions-col="5">
             <thead>
                 <tr>
                     <th>Serviço</th>
@@ -100,7 +100,8 @@ $filterQuery = array_filter([
                             <?php if (\App\Helpers\Permission::can('produtos', 'excluir')): ?>
                                 <form class="d-inline" method="post"
                                     action="<?= htmlspecialchars($url('services/delete'), ENT_QUOTES, 'UTF-8') ?>"
-                                    onsubmit="return confirm('Remover este serviço?');">
+                                    data-confirm="Remover este serviço? Esta ação não pode ser desfeita."
+                                    data-confirm-title="Excluir serviço">
                                     <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                                     <input type="hidden" name="id" value="<?= (int) $s->id ?>">
                                     <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
@@ -110,8 +111,13 @@ $filterQuery = array_filter([
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($services === []): ?>
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-4">Nenhum serviço encontrado.</td>
+                    <tr class="empty-row">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="bi bi-tools"></i>
+                                Nenhum serviço encontrado.
+                            </div>
+                        </td>
                     </tr>
                 <?php endif; ?>
             </tbody>

@@ -40,8 +40,8 @@ if ($filters['date_to'] !== '')
     <?php endif; ?>
 </div>
 
-<div class="card-soft p-3 p-md-4 mb-3">
-    <form class="row g-2 align-items-end" method="get" action="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">
+<div class="card-soft filter-panel p-3 p-md-4 mb-3">
+    <form class="row g-2 align-items-end filter-form" method="get" action="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">
         <div class="col-md-4">
             <label class="form-label">Cliente</label>
             <select class="form-select" name="customer_id">
@@ -69,7 +69,7 @@ if ($filters['date_to'] !== '')
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 js-datatable" data-dt-actions-col="5">
             <thead>
                 <tr>
                     <th>#</th>
@@ -98,8 +98,13 @@ if ($filters['date_to'] !== '')
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($orders === []): ?>
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-4">Nenhuma venda encontrada para os filtros atuais.</td>
+                    <tr class="empty-row">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="bi bi-receipt"></i>
+                                Nenhuma venda encontrada para os filtros atuais.
+                            </div>
+                        </td>
                     </tr>
                 <?php endif; ?>
             </tbody>

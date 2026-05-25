@@ -48,14 +48,24 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?></title>
+    <script>
+        (function() {
+            try {
+                var t = localStorage.getItem("mini-erp-theme");
+                if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
+            } catch (e) {}
+        })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="<?= htmlspecialchars($url('favicon.svg'), ENT_QUOTES, 'UTF-8') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="<?= htmlspecialchars($url('assets/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>">
+    <div class="sidebar-backdrop" aria-hidden="true"></div>
     <div class="app-shell">
         <aside class="sidebar">
             <div class="brand">
@@ -129,10 +139,16 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
         <div class="content">
             <header class="topbar">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge text-bg-light border">PHP + PostgreSQL</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary d-lg-none" data-sidebar-toggle aria-label="Abrir menu">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <span class="badge text-bg-light border d-none d-sm-inline">PHP + PostgreSQL</span>
                     <span class="text-muted small d-none d-md-inline">MVC · Services · Repositories</span>
                 </div>
                 <div class="d-flex align-items-center gap-2 gap-md-3 flex-wrap justify-content-end">
+                    <button type="button" class="btn btn-sm btn-outline-secondary theme-toggle-btn" data-theme-toggle aria-label="Modo escuro" title="Modo escuro">
+                        <i class="bi bi-moon-stars"></i>
+                    </button>
                     <?php $authUser = \App\Helpers\Auth::sessionSnapshot(); ?>
                     <?php if ($authUser !== null): ?>
                         <div class="text-end">
@@ -143,7 +159,7 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
                                 <?= htmlspecialchars($authUser['role'], ENT_QUOTES, 'UTF-8') ?>
                             </div>
                         </div>
-                        <form method="post" action="<?= htmlspecialchars($url('logout'), ENT_QUOTES, 'UTF-8') ?>" class="m-0">
+                        <form method="post" action="<?= htmlspecialchars($url('logout'), ENT_QUOTES, 'UTF-8') ?>" class="m-0" data-global-loading="false">
                             <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                             <button type="submit" class="btn btn-sm btn-outline-secondary text-nowrap">
                                 <i class="bi bi-box-arrow-right"></i><span class="d-none d-sm-inline"> Sair</span>
@@ -164,9 +180,20 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
 
     <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
+    <div id="globalLoading" class="global-loading" aria-hidden="true" aria-busy="false">
+        <div class="spinner-wrap">
+            <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+            <span class="text-muted">Processando...</span>
+        </div>
+    </div>
+
+    <?php require dirname(__DIR__) . '/partials/confirm-modal.php'; ?>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
     <script src="<?= htmlspecialchars($url('assets/js/app.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
     <?php if (!empty($pageScripts) && is_array($pageScripts)): ?>
         <?php foreach ($pageScripts as $scriptSrc): ?>

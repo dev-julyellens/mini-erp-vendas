@@ -39,7 +39,7 @@ require dirname(__DIR__) . '/reports/_report-header.php';
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 js-datatable">
             <thead>
                 <tr>
                     <th>Produto</th>

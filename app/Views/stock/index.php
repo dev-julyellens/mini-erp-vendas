@@ -32,8 +32,8 @@ $canCreate = Permission::can('estoque', 'criar');
     <?php endif; ?>
 </div>
 
-<div class="card-soft p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url('stock-movements'), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end">
+<div class="card-soft filter-panel p-3 p-md-4 mb-3">
+    <form method="get" action="<?= htmlspecialchars($url('stock-movements'), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end filter-form">
         <div class="col-12 col-md-4">
             <label class="form-label" for="product_id">Produto</label>
             <select class="form-select" id="product_id" name="product_id">
@@ -77,7 +77,7 @@ $canCreate = Permission::can('estoque', 'criar');
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 js-datatable">
             <thead>
                 <tr>
                     <th>Data/Hora</th>
