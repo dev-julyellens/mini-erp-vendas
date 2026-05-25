@@ -1,5 +1,21 @@
+# Vendor
 /vendor/
+
+# IDEs
 .idea/
 .vscode/
+
+# Logs
 *.log
+
+# Environment variables
 .env
+
+# Cursor
+.cursor/
+.cursorignore
+.cursorrules
+.gitmessage
+
+# Composer
+composer.lock
