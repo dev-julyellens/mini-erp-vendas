@@ -39,6 +39,7 @@ $router->get('/orders', \App\Controllers\OrderController::class . '@index');
 $router->get('/orders/show', \App\Controllers\OrderController::class . '@show');
 $router->get('/orders/create', \App\Controllers\OrderController::class . '@create');
 $router->post('/orders/store', \App\Controllers\OrderController::class . '@store');
+$router->post('/orders/cancel', \App\Controllers\OrderController::class . '@cancel');
 
 $router->get('/audit-logs', \App\Controllers\AuditLogController::class . '@index');
 
@@ -49,6 +50,7 @@ $router->post('/stock-movements/store', \App\Controllers\StockMovementController
 $router->get('/api/products', \App\Controllers\ApiProductController::class . '@index');
 $router->get('/api/orders', \App\Controllers\ApiOrderController::class . '@index');
 $router->post('/api/orders', \App\Controllers\ApiOrderController::class . '@store');
+$router->post('/api/orders/cancel', \App\Controllers\ApiOrderController::class . '@cancel');
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = PathHelper::requestPath();
