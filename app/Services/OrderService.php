@@ -21,9 +21,15 @@ final class OrderService
     /**
      * @param array<int, array{product_id?: mixed, quantity?: mixed}> $lines
      */
-    public function placeOrder(int $customerId, array $lines): int
+    public function placeOrder(int $customerId, array $lines, int $installmentCount = 1): int
     {
         $normalized = $this->normalizeLines($lines);
+        $installmentCount = InstallmentService::normalizeInstallmentCount($installmentCount);
+
+        if ($installmentCount >= InstallmentService::MIN_COUNT)
+        {
+            (new InstallmentService())->assertValidCount($installmentCount);
+        }
 
         $pdo = Database::getConnection();
         $customerRepo = new CustomerRepository($pdo);
@@ -133,14 +139,23 @@ final class OrderService
                 );
             }
 
-            $arService = new AccountsReceivableService();
-            $arId = $arService->createFromApprovedOrder($orderId, $customerId, $total, $pdo);
-
-            $pdo->commit();
-
+            $installmentService = new InstallmentService();
             $dueDate = (new \DateTimeImmutable('today'))
                 ->modify('+' . AccountsReceivableService::DEFAULT_DUE_DAYS . ' days')
                 ->format('Y-m-d');
+            $installmentRows = [];
+
+            if ($installmentCount >= InstallmentService::MIN_COUNT)
+            {
+                $installmentService->assertValidCount($installmentCount);
+                $installmentRows = $installmentService->generateForOrder($orderId, $total, $installmentCount, $pdo);
+                $dueDate = $installmentService->firstDueDate($installmentCount);
+            }
+
+            $arService = new AccountsReceivableService();
+            $arId = $arService->createFromApprovedOrder($orderId, $customerId, $total, $pdo, $dueDate);
+
+            $pdo->commit();
 
             Audit::record('conta_receber', 'financeiro', $arId, null, [
                 'order_id' => $orderId,
@@ -148,7 +163,17 @@ final class OrderService
                 'amount' => $total,
                 'due_date' => $dueDate,
                 'status' => 'pending',
+                'installment_count' => $installmentCount >= InstallmentService::MIN_COUNT ? $installmentCount : 1,
             ]);
+
+            if ($installmentRows !== [])
+            {
+                Audit::record('parcelamento', 'financeiro', $orderId, null, [
+                    'order_id' => $orderId,
+                    'installment_count' => $installmentCount,
+                    'installments' => $installmentRows,
+                ]);
+            }
 
             Audit::record('venda', 'vendas', $orderId, null, [
                 'customer_id' => $customerId,

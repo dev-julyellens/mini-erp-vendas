@@ -45,6 +45,12 @@ final class RoutePermissionMap
         'GET /finance/accounts-receivable/receive' => ['financeiro', 'criar'],
         'POST /finance/accounts-receivable/receive' => ['financeiro', 'criar'],
 
+        'GET /finance/installments/overdue' => ['financeiro', 'visualizar'],
+        'GET /finance/installments/open' => ['financeiro', 'visualizar'],
+        'GET /finance/installments/history' => ['financeiro', 'visualizar'],
+        'GET /finance/installments/pay' => ['financeiro', 'criar'],
+        'POST /finance/installments/pay' => ['financeiro', 'criar'],
+
         'GET /stock-movements' => ['estoque', 'visualizar'],
         'GET /stock-movements/create' => ['estoque', 'criar'],
         'POST /stock-movements/store' => ['estoque', 'criar'],

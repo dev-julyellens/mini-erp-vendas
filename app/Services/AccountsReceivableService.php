@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Core\ValidationException;
 use App\Repositories\AccountsReceivableRepository;
+use App\Repositories\InstallmentRepository;
 use App\Repositories\PaymentRepository;
 use PDO;
 
@@ -24,7 +25,8 @@ final class AccountsReceivableService
         int $orderId,
         int $customerId,
         string $totalAmount,
-        PDO $pdo
+        PDO $pdo,
+        ?string $dueDate = null
     ): int
     {
         $repo = new AccountsReceivableRepository($pdo);
@@ -34,7 +36,7 @@ final class AccountsReceivableService
             return $existing->id;
         }
 
-        $dueDate = (new \DateTimeImmutable('today'))
+        $dueDate ??= (new \DateTimeImmutable('today'))
             ->modify('+' . self::DEFAULT_DUE_DAYS . ' days')
             ->format('Y-m-d');
 
@@ -73,6 +75,14 @@ final class AccountsReceivableService
         {
             throw new ValidationException([
                 'finance' => 'Não é possível cancelar uma venda com recebimentos já registrados na conta.',
+            ]);
+        }
+
+        $installmentRepo = new InstallmentRepository($pdo);
+        if ($installmentRepo->countPaidByOrderId($orderId) > 0)
+        {
+            throw new ValidationException([
+                'finance' => 'Não é possível cancelar uma venda com parcelas já pagas.',
             ]);
         }
 

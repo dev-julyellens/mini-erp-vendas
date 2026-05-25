@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Repositories\AccountsReceivableRepository;
 use App\Repositories\CashFlowRepository;
+use App\Repositories\InstallmentRepository;
 use App\Repositories\PaymentRepository;
 
 final class FinanceDashboardService
@@ -13,16 +14,19 @@ final class FinanceDashboardService
     private AccountsReceivableRepository $accounts;
     private PaymentRepository $payments;
     private CashFlowRepository $cashFlow;
+    private InstallmentRepository $installments;
 
     public function __construct(
         ?AccountsReceivableRepository $accounts = null,
         ?PaymentRepository $payments = null,
-        ?CashFlowRepository $cashFlow = null
+        ?CashFlowRepository $cashFlow = null,
+        ?InstallmentRepository $installments = null
     )
     {
         $this->accounts = $accounts ?? new AccountsReceivableRepository();
         $this->payments = $payments ?? new PaymentRepository();
         $this->cashFlow = $cashFlow ?? new CashFlowRepository();
+        $this->installments = $installments ?? new InstallmentRepository();
     }
 
     /**
@@ -36,7 +40,9 @@ final class FinanceDashboardService
      *   received_month: string,
      *   cash_balance: string,
      *   entries_month: string,
-     *   exits_month: string
+     *   exits_month: string,
+     *   installment_overdue_count: int,
+     *   installment_open_count: int
      * }
      */
     public function summary(): array
@@ -56,6 +62,8 @@ final class FinanceDashboardService
             'cash_balance' => $this->cashFlow->netBalance(),
             'entries_month' => $this->cashFlow->sumByTypeBetween('entrada', $monthStart, $monthEnd),
             'exits_month' => $this->cashFlow->sumByTypeBetween('saida', $monthStart, $monthEnd),
+            'installment_overdue_count' => $this->installments->countOverdue(),
+            'installment_open_count' => $this->installments->countOpen(),
         ];
     }
 }

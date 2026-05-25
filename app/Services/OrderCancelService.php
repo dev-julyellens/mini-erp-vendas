@@ -83,12 +83,27 @@ final class OrderCancelService
 
             $orderRepo->markCanceled($orderId, $userId);
 
+            $installmentService = new InstallmentService();
+            $installmentsCanceled = $installmentService->cancelByOrderId($orderId, $pdo);
+
             $arService = new AccountsReceivableService();
             $arCanceled = $arService->cancelByOrderId($orderId, $pdo);
 
             $pdo->commit();
 
             $this->recordAudit($order, $orderId, $userId, $items, $stockAudit);
+
+            if ($installmentsCanceled !== null)
+            {
+                Audit::record(
+                    'cancelamento_parcelas',
+                    'financeiro',
+                    $orderId,
+                    ['order_id' => $orderId],
+                    ['status' => 'canceled', 'order_id' => $orderId, 'count' => $installmentsCanceled['count']],
+                    $userId
+                );
+            }
 
             if ($arCanceled !== null)
             {

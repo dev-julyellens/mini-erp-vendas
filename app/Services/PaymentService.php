@@ -12,6 +12,7 @@ use App\Helpers\Money;
 use App\Models\Payment;
 use App\Repositories\AccountsReceivableRepository;
 use App\Repositories\CashFlowRepository;
+use App\Repositories\InstallmentRepository;
 use App\Repositories\PaymentRepository;
 use PDO;
 use PDOException;
@@ -61,6 +62,14 @@ final class PaymentService
             if (!$ar->canReceive())
             {
                 throw new ValidationException(['status' => 'Esta conta não aceita novos recebimentos.']);
+            }
+
+            $installmentRepo = new InstallmentRepository($pdo);
+            if ($installmentRepo->countByOrderId($ar->order_id) > 0)
+            {
+                throw new ValidationException([
+                    'finance' => 'Esta venda possui parcelamento. Registre o recebimento pela baixa de cada parcela.',
+                ]);
             }
 
             $paidTotal = $paymentRepo->sumByAccountsReceivableId($accountsReceivableId);
