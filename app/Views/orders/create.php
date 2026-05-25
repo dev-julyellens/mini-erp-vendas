@@ -22,7 +22,7 @@ foreach ($products as $p)
 ?>
 <div class="mb-3">
     <h1 class="h3 mb-1">Nova venda</h1>
-    <div class="text-muted">Selecione o cliente, adicione itens e finalize com um clique (via AJAX).</div>
+    <div class="text-muted">Venda híbrida: produtos (com estoque) e serviços (sem estoque) na mesma venda.</div>
 </div>
 
 <div class="card-soft p-3 p-md-4">
@@ -83,7 +83,7 @@ foreach ($products as $p)
     <div class="order-line" data-line>
         <div class="row g-2 align-items-end">
             <div class="col-md-6">
-                <label class="form-label">Produto</label>
+                <label class="form-label">Produto / serviço</label>
                 <select class="form-select product-select" required>
                     <option value="">Selecione...</option>
                     <?php foreach ($products as $p): ?>

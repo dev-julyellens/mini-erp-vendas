@@ -73,7 +73,8 @@ $statusBadge = Order::statusBadge($order->status);
                 <table class="table table-sm align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Produto</th>
+                            <th>Item</th>
+                            <th>Tipo</th>
                             <th>Qtd</th>
                             <th>Preço unit.</th>
                             <th class="text-end">Subtotal</th>
@@ -83,6 +84,11 @@ $statusBadge = Order::statusBadge($order->status);
                         <?php foreach ($items as $it): ?>
                             <tr>
                                 <td><?= htmlspecialchars((string) ($it->product_name ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                                <td>
+                                    <span class="badge <?= $it->isService() ? 'text-bg-info' : 'text-bg-secondary' ?>">
+                                        <?= htmlspecialchars($it->typeLabel(), ENT_QUOTES, 'UTF-8') ?>
+                                    </span>
+                                </td>
                                 <td><?= (int) $it->quantity ?></td>
                                 <td>R$ <?= htmlspecialchars(number_format((float) $it->unit_price, 2, ',', '.'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td class="text-end">R$ <?= htmlspecialchars(number_format((float) $it->subtotal, 2, ',', '.'), ENT_QUOTES, 'UTF-8') ?></td>
@@ -150,7 +156,7 @@ $statusBadge = Order::statusBadge($order->status);
                             Deseja cancelar a venda <strong>#<?= (int) $order->id ?></strong>?
                         </p>
                         <ul class="small text-muted mb-0">
-                            <li>O estoque dos itens será devolvido automaticamente.</li>
+                            <li>O estoque dos produtos será devolvido automaticamente (serviços não movimentam estoque).</li>
                             <li>A venda ficará bloqueada para edição.</li>
                             <li>Esta ação será registrada na auditoria.</li>
                         </ul>
