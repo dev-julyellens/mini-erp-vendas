@@ -14,9 +14,11 @@ declare(strict_types=1);
         <h1 class="h3 mb-1">Produtos</h1>
         <div class="text-muted">Catálogo, preços e estoque</div>
     </div>
-    <a class="btn btn-primary" href="<?= htmlspecialchars($url('products/create'), ENT_QUOTES, 'UTF-8') ?>">
-        <i class="bi bi-plus-lg"></i> Novo produto
-    </a>
+    <?php if (\App\Helpers\Permission::can('produtos', 'criar')): ?>
+        <a class="btn btn-primary" href="<?= htmlspecialchars($url('products/create'), ENT_QUOTES, 'UTF-8') ?>">
+            <i class="bi bi-plus-lg"></i> Novo produto
+        </a>
+    <?php endif; ?>
 </div>
 
 <div class="card-soft p-3 p-md-4">
@@ -49,13 +51,17 @@ declare(strict_types=1);
                             <?php endif; ?>
                         </td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('products/edit?id=' . $p->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
-                            <form class="d-inline" method="post" action="<?= htmlspecialchars($url('products/delete'), ENT_QUOTES, 'UTF-8') ?>"
-                                onsubmit="return confirm('Remover este produto?');">
-                                <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                                <input type="hidden" name="id" value="<?= (int) $p->id ?>">
-                                <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
-                            </form>
+                            <?php if (\App\Helpers\Permission::can('produtos', 'editar')): ?>
+                                <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('products/edit?id=' . $p->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
+                            <?php endif; ?>
+                            <?php if (\App\Helpers\Permission::can('produtos', 'excluir')): ?>
+                                <form class="d-inline" method="post" action="<?= htmlspecialchars($url('products/delete'), ENT_QUOTES, 'UTF-8') ?>"
+                                    onsubmit="return confirm('Remover este produto?');">
+                                    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
+                                    <input type="hidden" name="id" value="<?= (int) $p->id ?>">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+                                </form>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
