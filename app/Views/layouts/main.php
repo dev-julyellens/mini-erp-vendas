@@ -86,23 +86,25 @@ $navPrefix = static function (string $prefix) use ($currentPath): string
                     <span class="badge text-bg-light border">PHP + PostgreSQL</span>
                     <span class="text-muted small d-none d-md-inline">MVC · Services · Repositories</span>
                 </div>
-                <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2 gap-md-3 flex-wrap justify-content-end">
                     <?php $authUser = \App\Helpers\Auth::sessionSnapshot(); ?>
                     <?php if ($authUser !== null): ?>
-                        <div class="text-end d-none d-sm-block">
-                            <div class="small fw-semibold text-dark"><?= htmlspecialchars($authUser['name'], ENT_QUOTES, 'UTF-8') ?></div>
-                            <div class="text-muted" style="font-size: 0.75rem;">
+                        <div class="text-end">
+                            <div class="small fw-semibold text-dark text-truncate" style="max-width: 10rem;">
+                                <?= htmlspecialchars($authUser['name'], ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                            <div class="text-muted d-none d-md-block" style="font-size: 0.75rem;">
                                 <?= htmlspecialchars($authUser['role'], ENT_QUOTES, 'UTF-8') ?>
                             </div>
                         </div>
                         <form method="post" action="<?= htmlspecialchars($url('logout'), ENT_QUOTES, 'UTF-8') ?>" class="m-0">
                             <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-box-arrow-right"></i> Sair
+                            <button type="submit" class="btn btn-sm btn-outline-secondary text-nowrap">
+                                <i class="bi bi-box-arrow-right"></i><span class="d-none d-sm-inline"> Sair</span>
                             </button>
                         </form>
                     <?php endif; ?>
-                    <div class="text-muted small">
+                    <div class="text-muted small text-nowrap">
                         <?= date('d/m/Y H:i') ?>
                     </div>
                 </div>
