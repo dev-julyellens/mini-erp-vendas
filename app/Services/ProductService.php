@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\Database;
 use App\Core\ValidationException;
 use App\Helpers\Audit;
 use App\Helpers\Money;
 use App\Repositories\ProductRepository;
+use App\Repositories\StockMovementRepository;
 
 final class ProductService
 {
@@ -65,7 +67,43 @@ final class ProductService
             throw new ValidationException($v['errors']);
         }
 
-        $id = $this->products->insert($v['name'], $v['description'], $v['price'], $v['stock']);
+        $pdo = Database::getConnection();
+        $pdo->beginTransaction();
+
+        try
+        {
+            $id = $this->products->insert($v['name'], $v['description'], $v['price'], 0);
+
+            if ($v['stock'] > 0)
+            {
+                $stockService = new StockService(
+                    new StockMovementRepository($pdo),
+                    new ProductRepository($pdo),
+                    $pdo
+                );
+                $stockService->apply(
+                    'entrada',
+                    $id,
+                    $v['stock'],
+                    'product',
+                    $id,
+                    'Estoque inicial',
+                    null,
+                    false
+                );
+            }
+
+            $pdo->commit();
+        }
+        catch (\Throwable $e)
+        {
+            if ($pdo->inTransaction())
+            {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
+
         $created = $this->products->findById($id);
         if ($created !== null)
         {
@@ -90,7 +128,41 @@ final class ProductService
         }
 
         $oldSnapshot = AuditService::productSnapshot($existing);
-        $this->products->update($id, $v['name'], $v['description'], $v['price'], $v['stock']);
+
+        $pdo = Database::getConnection();
+        $pdo->beginTransaction();
+
+        try
+        {
+            $this->products->update($id, $v['name'], $v['description'], $v['price'], $existing->stock);
+
+            if ($existing->stock !== $v['stock'])
+            {
+                $stockService = new StockService(
+                    new StockMovementRepository($pdo),
+                    new ProductRepository($pdo),
+                    $pdo
+                );
+                $stockService->applyAbsoluteStock(
+                    $id,
+                    $v['stock'],
+                    'ajuste',
+                    'Ajuste manual via cadastro de produto',
+                    false
+                );
+            }
+
+            $pdo->commit();
+        }
+        catch (\Throwable $e)
+        {
+            if ($pdo->inTransaction())
+            {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
+
         $updated = $this->products->findById($id);
         if ($updated !== null)
         {

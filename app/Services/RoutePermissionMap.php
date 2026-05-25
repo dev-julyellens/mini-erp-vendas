@@ -35,6 +35,10 @@ final class RoutePermissionMap
         'POST /api/orders' => ['vendas', 'criar'],
 
         'GET /audit-logs' => ['usuarios', 'visualizar'],
+
+        'GET /stock-movements' => ['estoque', 'visualizar'],
+        'GET /stock-movements/create' => ['estoque', 'criar'],
+        'POST /stock-movements/store' => ['estoque', 'criar'],
     ];
 
     /**

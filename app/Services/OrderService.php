@@ -12,6 +12,7 @@ use App\Repositories\CustomerRepository;
 use App\Repositories\OrderItemRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
+use App\Repositories\StockMovementRepository;
 use PDO;
 use PDOException;
 
@@ -46,6 +47,11 @@ final class OrderService
             $productRepo = new ProductRepository($pdo);
             $orderRepo = new OrderRepository($pdo);
             $itemRepo = new OrderItemRepository($pdo);
+            $stockService = new StockService(
+                new StockMovementRepository($pdo),
+                $productRepo,
+                $pdo
+            );
 
             $prepared = [];
             /** @var list<array{product_id: int, stock_before: int, quantity: int}> $stockAudit */
@@ -114,7 +120,17 @@ final class OrderService
                     (string) $row['unit_price'],
                     (string) $row['subtotal']
                 );
-                $productRepo->decrementStock((int) $row['product_id'], (int) $row['quantity']);
+                $stockService->apply(
+                    'saida',
+                    (int) $row['product_id'],
+                    (int) $row['quantity'],
+                    'order',
+                    $orderId,
+                    'Saída por venda #' . $orderId,
+                    null,
+                    false,
+                    false
+                );
             }
 
             $pdo->commit();
