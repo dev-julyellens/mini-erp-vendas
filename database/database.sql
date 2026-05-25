@@ -1,10 +1,39 @@
 -- Mini ERP de Vendas - PostgreSQL schema + seed
 -- Encoding: UTF-8
 
+DROP TABLE IF EXISTS password_reset_tokens CASCADE;
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS products CASCADE;
 DROP TABLE IF EXISTS customers CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT users_email_unique UNIQUE (email),
+    CONSTRAINT users_role_check CHECK (role IN ('admin', 'vendedor', 'financeiro', 'estoque'))
+);
+
+CREATE INDEX idx_users_email_lower ON users (LOWER(email));
+CREATE INDEX idx_users_active ON users (active) WHERE active = TRUE;
+
+CREATE TABLE password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    token_hash VARCHAR(64) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_password_reset_token_hash ON password_reset_tokens (token_hash);
+CREATE INDEX idx_password_reset_user ON password_reset_tokens (user_id);
 
 CREATE TABLE customers (
     id SERIAL PRIMARY KEY,
@@ -57,6 +86,9 @@ INSERT INTO customers (name, email, phone) VALUES
     ('Maria Silva', 'maria.silva@example.com', '(11) 98888-1111'),
     ('João Santos', 'joao.santos@example.com', '(21) 97777-2222'),
     ('Tech LTDA', 'contato@techltda.example.com', '(31) 96666-3333');
+
+INSERT INTO users (name, email, password_hash, role, active) VALUES
+    ('Administrador', 'admin@mini-erp.local', '$2y$10$XNyBEjcS0aobvO6spDzXWOSwE.SxMSJhh59KUBcOOFTGSlAZdSwxe', 'admin', TRUE);
 
 INSERT INTO products (name, description, price, stock) VALUES
     ('Notebook Pro 14', 'Ultrafino, 16GB RAM', 4599.90, 8),
