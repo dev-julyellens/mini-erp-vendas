@@ -29,11 +29,13 @@ psql -U postgres -d mini_erp_vendas -f database/database.sql
 
 O arquivo cria tabelas, constraints, índices e **dados iniciais** (usuário admin, clientes e produtos).
 
-Se o banco já existia antes da autenticação, aplique a migration:
+Se o banco já existia antes da autenticação ou permissões, aplique as migrations:
 
 ```bash
 php database/run_migration.php
 ```
+
+(O script executa todos os arquivos em `database/migrations/` em ordem.)
 
 ### 2) Configuração
 
@@ -66,6 +68,7 @@ Ajuste o `RewriteBase` em `public/.htaccess` se o caminho do projeto for diferen
 ## Funcionalidades
 
 - **Autenticação:** login, logout, sessão segura, CSRF, recuperação de senha, perfis (`admin`, `vendedor`, `financeiro`, `estoque`)
+- **Permissões (ACL):** controle por módulo e ação (`visualizar`, `criar`, `editar`, `excluir`); `admin` com acesso total; middleware + menus condicionais
 - **Clientes:** CRUD com e-mail único
 - **Produtos:** CRUD com `price > 0` e `stock >= 0`
 - **Vendas:** múltiplos itens, total automático, bloqueio de estoque insuficiente, baixa de estoque transacional
