@@ -49,8 +49,26 @@ final class Money
         return $fa <=> $fb;
     }
 
+    public static function normalizeDecimal(string $value): string
+    {
+        $value = trim(str_replace([' ', "\u{00A0}"], '', $value));
+        if (str_contains($value, ',') && str_contains($value, '.'))
+        {
+            $value = str_replace('.', '', $value);
+            $value = str_replace(',', '.', $value);
+        }
+        elseif (str_contains($value, ','))
+        {
+            $value = str_replace(',', '.', $value);
+        }
+
+        return $value;
+    }
+
     public static function validatePositive(string $value): bool
     {
+        $value = self::normalizeDecimal($value);
+
         return (bool) preg_match('/^\d+(\.\d{1,2})?$/', $value) && (float) $value > 0;
     }
 
