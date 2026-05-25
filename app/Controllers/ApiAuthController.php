@@ -32,12 +32,19 @@ final class ApiAuthController extends Controller
             $this->json(['success' => false, 'errors' => $errors], 422);
         }
 
+        $companyId = isset($payload['company_id']) ? (int) $payload['company_id'] : null;
+        if ($companyId !== null && $companyId <= 0)
+        {
+            $companyId = null;
+        }
+
         $service = new ApiAuthService();
         try
         {
             $result = $service->login(
                 (string) $payload['email'],
-                (string) $payload['password']
+                (string) $payload['password'],
+                $companyId
             );
             ApiMiddleware::attachUserToLog($result['user']['id']);
             ApiResponse::send([

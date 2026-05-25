@@ -6,9 +6,12 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\ValidationException;
+use App\Helpers\Auth;
+use App\Helpers\CompanyContext;
 use App\Helpers\Flash;
 use App\Helpers\Redirect;
 use App\Services\AuthService;
+use App\Services\CompanyAuthService;
 
 final class AuthController extends Controller
 {
@@ -26,10 +29,15 @@ final class AuthController extends Controller
         $service = new AuthService();
         try
         {
-            $service->login(
+            $result = $service->authenticate(
                 (string) ($_POST['email'] ?? ''),
                 (string) ($_POST['password'] ?? '')
             );
+
+            if (!$result['completed'])
+            {
+                $this->redirect('/select-company');
+            }
 
             $intended = Redirect::sanitizeIntendedUrl($_SESSION['intended_url'] ?? '/');
             unset($_SESSION['intended_url']);
@@ -42,6 +50,89 @@ final class AuthController extends Controller
             $this->view('auth/login', [
                 'errors' => $e->getErrors(),
                 'old' => $_POST,
+                'flash' => Flash::pull(),
+            ], 'layouts/auth');
+        }
+    }
+
+    public function showSelectCompany(): void
+    {
+        $pendingId = Auth::peekPendingUserId();
+        if ($pendingId === null && !Auth::check())
+        {
+            $this->redirect('/login');
+        }
+
+        $userId = $pendingId ?? Auth::id();
+        if ($userId === null)
+        {
+            $this->redirect('/login');
+        }
+
+        $companyAuth = new CompanyAuthService();
+        $companies = $companyAuth->listAccessibleCompanies($userId);
+
+        if ($companies === [])
+        {
+            Flash::error('Nenhuma empresa disponível para este usuário.');
+            Auth::logout();
+            $this->redirect('/login');
+        }
+
+        if (count($companies) === 1 && $pendingId !== null)
+        {
+            $service = new AuthService();
+            try
+            {
+                $service->selectCompany($companies[0]->id);
+                Flash::success('Login realizado com sucesso.');
+                $this->redirect('/');
+            }
+            catch (ValidationException $e)
+            {
+                Flash::error($e->getErrors()['company_id'] ?? 'Não foi possível selecionar a empresa.');
+                $this->redirect('/login');
+            }
+        }
+
+        $this->view('auth/select-company', [
+            'errors' => [],
+            'companies' => $companies,
+            'canSwitch' => $pendingId === null && CompanyContext::hasSelected(),
+            'flash' => Flash::pull(),
+        ], 'layouts/auth');
+    }
+
+    public function selectCompany(): void
+    {
+        $service = new AuthService();
+        $completingLogin = Auth::peekPendingUserId() !== null;
+        try
+        {
+            $service->selectCompany((int) ($_POST['company_id'] ?? 0));
+
+            if ($completingLogin)
+            {
+                $intended = Redirect::sanitizeIntendedUrl($_SESSION['intended_url'] ?? '/');
+                unset($_SESSION['intended_url']);
+                Flash::success('Login realizado com sucesso.');
+                $this->redirect($intended);
+            }
+
+            Flash::success('Empresa alterada com sucesso.');
+            $this->redirect('/');
+        }
+        catch (ValidationException $e)
+        {
+            $userId = Auth::peekPendingUserId() ?? Auth::id();
+            $companies = $userId !== null
+                ? (new CompanyAuthService())->listAccessibleCompanies($userId)
+                : [];
+
+            $this->view('auth/select-company', [
+                'errors' => $e->getErrors(),
+                'companies' => $companies,
+                'canSwitch' => Auth::peekPendingUserId() === null,
                 'flash' => Flash::pull(),
             ], 'layouts/auth');
         }
