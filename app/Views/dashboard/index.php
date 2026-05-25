@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Helpers\Permission;
 
+/** @var callable(string):string $url */
 /** @var int $ordersCount */
 /** @var int $productsCount */
 /** @var int $customersCount */

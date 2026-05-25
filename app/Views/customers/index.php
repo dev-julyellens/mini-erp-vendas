@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Helpers\DateHelper;
 
+/** @var callable(string):string $url */
 /** @var list<\App\Models\Customer> $customers */
 /** @var int $total */
 /** @var int $page */
