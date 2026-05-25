@@ -1,6 +1,9 @@
 -- Mini ERP de Vendas - PostgreSQL schema + seed
 -- Encoding: UTF-8
 
+DROP TABLE IF EXISTS cash_flow CASCADE;
+DROP TABLE IF EXISTS payments CASCADE;
+DROP TABLE IF EXISTS accounts_receivable CASCADE;
 DROP TABLE IF EXISTS stock_movements CASCADE;
 DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS role_permissions CASCADE;
@@ -115,6 +118,69 @@ CREATE TABLE order_items (
 CREATE INDEX idx_order_items_order ON order_items (order_id);
 CREATE INDEX idx_order_items_product ON order_items (product_id);
 
+CREATE TABLE accounts_receivable (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER NOT NULL REFERENCES orders (id) ON DELETE RESTRICT,
+    customer_id INTEGER NOT NULL REFERENCES customers (id) ON DELETE RESTRICT,
+    amount NUMERIC(14, 2) NOT NULL,
+    due_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT accounts_receivable_order_unique UNIQUE (order_id),
+    CONSTRAINT accounts_receivable_amount_positive CHECK (amount > 0),
+    CONSTRAINT accounts_receivable_status_check CHECK (
+        status IN ('pending', 'partial', 'paid', 'canceled')
+    )
+);
+
+CREATE INDEX idx_accounts_receivable_customer ON accounts_receivable (customer_id);
+CREATE INDEX idx_accounts_receivable_status ON accounts_receivable (status);
+CREATE INDEX idx_accounts_receivable_due_date ON accounts_receivable (due_date);
+CREATE INDEX idx_accounts_receivable_order ON accounts_receivable (order_id);
+
+CREATE TABLE payments (
+    id SERIAL PRIMARY KEY,
+    accounts_receivable_id INTEGER NOT NULL REFERENCES accounts_receivable (id) ON DELETE RESTRICT,
+    amount NUMERIC(14, 2) NOT NULL,
+    payment_method VARCHAR(20) NOT NULL,
+    paid_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    received_by INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT payments_amount_positive CHECK (amount > 0),
+    CONSTRAINT payments_method_check CHECK (
+        payment_method IN ('dinheiro', 'pix', 'cartao', 'boleto')
+    )
+);
+
+CREATE INDEX idx_payments_accounts_receivable ON payments (accounts_receivable_id);
+CREATE INDEX idx_payments_paid_at ON payments (paid_at DESC);
+CREATE INDEX idx_payments_method ON payments (payment_method);
+
+CREATE TABLE cash_flow (
+    id SERIAL PRIMARY KEY,
+    type VARCHAR(10) NOT NULL,
+    amount NUMERIC(14, 2) NOT NULL,
+    payment_method VARCHAR(20),
+    reference_type VARCHAR(50),
+    reference_id INTEGER,
+    description TEXT,
+    occurred_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT cash_flow_type_check CHECK (type IN ('entrada', 'saida')),
+    CONSTRAINT cash_flow_amount_positive CHECK (amount > 0),
+    CONSTRAINT cash_flow_method_check CHECK (
+        payment_method IS NULL
+        OR payment_method IN ('dinheiro', 'pix', 'cartao', 'boleto')
+    )
+);
+
+CREATE INDEX idx_cash_flow_type ON cash_flow (type);
+CREATE INDEX idx_cash_flow_occurred_at ON cash_flow (occurred_at DESC);
+CREATE INDEX idx_cash_flow_reference ON cash_flow (reference_type, reference_id);
+
 CREATE TABLE stock_movements (
     id SERIAL PRIMARY KEY,
     product_id INTEGER NOT NULL REFERENCES products (id) ON DELETE RESTRICT,
@@ -160,11 +226,14 @@ CREATE TABLE audit_logs (
             'venda',
             'saida_estoque',
             'cancelamento_venda',
-            'entrada_estoque'
+            'entrada_estoque',
+            'conta_receber',
+            'recebimento',
+            'cancelamento_conta_receber'
         )
     ),
     CONSTRAINT audit_logs_entity_check CHECK (
-        entity IN ('produtos', 'clientes', 'vendas', 'estoque', 'usuarios')
+        entity IN ('produtos', 'clientes', 'vendas', 'estoque', 'usuarios', 'financeiro')
     )
 );
 
