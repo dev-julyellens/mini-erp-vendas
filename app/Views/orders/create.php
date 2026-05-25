@@ -26,7 +26,7 @@ foreach ($products as $p)
 <div class="card-soft p-3 p-md-4">
     <form id="orderForm" class="needs-validation" novalidate>
         <div class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label">Cliente</label>
                 <select class="form-select" id="customerId" required>
                     <option value="">Selecione...</option>
@@ -36,7 +36,17 @@ foreach ($products as $p)
                 </select>
                 <div class="invalid-feedback">Selecione um cliente.</div>
             </div>
-            <div class="col-md-6 d-flex align-items-end justify-content-md-end gap-2">
+            <div class="col-md-4">
+                <label class="form-label" for="installmentCount">Parcelas</label>
+                <select class="form-select" id="installmentCount">
+                    <option value="1">À vista (1x — sem parcelamento)</option>
+                    <?php for ($n = 2; $n <= 12; $n++): ?>
+                        <option value="<?= $n ?>"><?= $n ?>x (vencimento a cada 30 dias)</option>
+                    <?php endfor; ?>
+                </select>
+                <div class="form-text">A partir de 2x o valor é dividido automaticamente.</div>
+            </div>
+            <div class="col-md-4 d-flex align-items-end justify-content-md-end gap-2">
                 <button class="btn btn-outline-primary" type="button" id="btnAddLine">
                     <i class="bi bi-plus-circle"></i> Adicionar item
                 </button>

@@ -3,11 +3,14 @@
 declare(strict_types=1);
 
 use App\Helpers\DateHelper;
+use App\Helpers\Permission;
+use App\Models\Installment;
 use App\Models\Order;
 
 /** @var callable(string):string $url */
 /** @var \App\Models\Order $order */
 /** @var list<\App\Models\OrderItem> $items */
+/** @var list<Installment> $installments */
 
 $statusLabel = Order::statusLabel($order->status);
 $statusBadge = Order::statusBadge($order->status);
@@ -91,6 +94,45 @@ $statusBadge = Order::statusBadge($order->status);
         </div>
     </div>
 </div>
+
+<?php if (($installments ?? []) !== []): ?>
+    <div class="card-soft p-3 p-md-4 mt-3">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+            <div class="fw-semibold">Parcelamento</div>
+            <?php if (Permission::can('financeiro', 'visualizar')): ?>
+                <a class="btn btn-sm btn-outline-primary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">
+                    Ver parcelas abertas
+                </a>
+            <?php endif; ?>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Parcela</th>
+                        <th>Valor</th>
+                        <th>Vencimento</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($installments as $inst): ?>
+                        <tr>
+                            <td><?= (int) $inst->installment_number ?></td>
+                            <td>R$ <?= htmlspecialchars(number_format((float) $inst->amount, 2, ',', '.'), ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars(DateHelper::toBrDate($inst->due_date), ENT_QUOTES, 'UTF-8') ?></td>
+                            <td>
+                                <span class="badge text-bg-<?= htmlspecialchars(Installment::statusBadge($inst->status), ENT_QUOTES, 'UTF-8') ?>">
+                                    <?= htmlspecialchars(Installment::statusLabel($inst->status), ENT_QUOTES, 'UTF-8') ?>
+                                </span>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<?php endif; ?>
 
 <?php if ($order->canCancel() && \App\Helpers\Permission::can('vendas', 'excluir')): ?>
     <div class="modal fade" id="cancel-order-modal" tabindex="-1" aria-labelledby="cancel-order-modal-label" aria-hidden="true">
