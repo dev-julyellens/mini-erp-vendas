@@ -87,12 +87,19 @@ CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     customer_id INTEGER NOT NULL REFERENCES customers (id) ON DELETE RESTRICT,
     total_amount NUMERIC(14, 2) NOT NULL DEFAULT 0,
+    status VARCHAR(20) NOT NULL DEFAULT 'paid',
+    canceled_by INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    canceled_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT orders_total_non_negative CHECK (total_amount >= 0)
+    CONSTRAINT orders_total_non_negative CHECK (total_amount >= 0),
+    CONSTRAINT orders_status_check CHECK (
+        status IN ('pending', 'paid', 'canceled', 'refunded')
+    )
 );
 
 CREATE INDEX idx_orders_customer ON orders (customer_id);
 CREATE INDEX idx_orders_created_at ON orders (created_at);
+CREATE INDEX idx_orders_status ON orders (status);
 
 CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
@@ -151,7 +158,9 @@ CREATE TABLE audit_logs (
             'solicitar_redefinir_senha',
             'redefinir_senha',
             'venda',
-            'saida_estoque'
+            'saida_estoque',
+            'cancelamento_venda',
+            'entrada_estoque'
         )
     ),
     CONSTRAINT audit_logs_entity_check CHECK (
