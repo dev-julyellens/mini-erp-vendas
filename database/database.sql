@@ -1,6 +1,8 @@
 -- Mini ERP de Vendas - PostgreSQL schema + seed
 -- Encoding: UTF-8
 
+DROP TABLE IF EXISTS role_permissions CASCADE;
+DROP TABLE IF EXISTS permissions CASCADE;
 DROP TABLE IF EXISTS password_reset_tokens CASCADE;
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
@@ -34,6 +36,32 @@ CREATE TABLE password_reset_tokens (
 
 CREATE INDEX idx_password_reset_token_hash ON password_reset_tokens (token_hash);
 CREATE INDEX idx_password_reset_user ON password_reset_tokens (user_id);
+
+CREATE TABLE permissions (
+    id SERIAL PRIMARY KEY,
+    module VARCHAR(50) NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    CONSTRAINT permissions_module_action_unique UNIQUE (module, action),
+    CONSTRAINT permissions_module_check CHECK (
+        module IN ('produtos', 'clientes', 'vendas', 'estoque', 'financeiro', 'usuarios')
+    ),
+    CONSTRAINT permissions_action_check CHECK (
+        action IN ('visualizar', 'criar', 'editar', 'excluir')
+    )
+);
+
+CREATE INDEX idx_permissions_module ON permissions (module);
+
+CREATE TABLE role_permissions (
+    role VARCHAR(50) NOT NULL,
+    permission_id INTEGER NOT NULL REFERENCES permissions (id) ON DELETE CASCADE,
+    CONSTRAINT role_permissions_pkey PRIMARY KEY (role, permission_id),
+    CONSTRAINT role_permissions_role_check CHECK (
+        role IN ('admin', 'vendedor', 'financeiro', 'estoque')
+    )
+);
+
+CREATE INDEX idx_role_permissions_role ON role_permissions (role);
 
 CREATE TABLE customers (
     id SERIAL PRIMARY KEY,
@@ -96,3 +124,42 @@ INSERT INTO products (name, description, price, stock) VALUES
     ('Teclado mecânico', 'Switch brown, RGB', 549.00, 12),
     ('Monitor 27" 4K', 'IPS, 60Hz', 1899.00, 3),
     ('Webcam HD', '1080p, microfone integrado', 249.90, 2);
+
+INSERT INTO permissions (module, action)
+SELECT m.module, a.action
+FROM (
+    VALUES
+        ('produtos'),
+        ('clientes'),
+        ('vendas'),
+        ('estoque'),
+        ('financeiro'),
+        ('usuarios')
+) AS m (module)
+CROSS JOIN (
+    VALUES
+        ('visualizar'),
+        ('criar'),
+        ('editar'),
+        ('excluir')
+) AS a (action);
+
+INSERT INTO role_permissions (role, permission_id)
+SELECT 'vendedor', p.id
+FROM permissions p
+WHERE (p.module = 'clientes' AND p.action IN ('visualizar', 'criar', 'editar', 'excluir'))
+   OR (p.module = 'vendas' AND p.action IN ('visualizar', 'criar', 'editar'))
+   OR (p.module IN ('produtos', 'estoque') AND p.action = 'visualizar');
+
+INSERT INTO role_permissions (role, permission_id)
+SELECT 'financeiro', p.id
+FROM permissions p
+WHERE (p.module = 'financeiro' AND p.action IN ('visualizar', 'criar', 'editar', 'excluir'))
+   OR (p.module IN ('clientes', 'vendas', 'produtos') AND p.action = 'visualizar');
+
+INSERT INTO role_permissions (role, permission_id)
+SELECT 'estoque', p.id
+FROM permissions p
+WHERE (p.module = 'estoque' AND p.action IN ('visualizar', 'criar', 'editar', 'excluir'))
+   OR (p.module = 'produtos' AND p.action IN ('visualizar', 'editar'))
+   OR (p.module = 'vendas' AND p.action = 'visualizar');
