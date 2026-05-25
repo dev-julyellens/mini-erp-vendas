@@ -19,31 +19,78 @@ final class OrderRepository
 
     public function findById(int $id): ?Order
     {
-        $sql = 'SELECT o.*, c.name AS customer_name
+        $sql = 'SELECT o.*, c.name AS customer_name, u.name AS canceled_by_name
                 FROM orders o
                 INNER JOIN customers c ON c.id = o.customer_id
+                LEFT JOIN users u ON u.id = o.canceled_by
                 WHERE o.id = :id';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
+
         return $row ? Order::fromArray($row) : null;
     }
 
-    public function insert(int $customerId, string $totalAmount): int
+    public function findByIdForUpdate(int $id): ?Order
+    {
+        $sql = 'SELECT o.*, c.name AS customer_name
+                FROM orders o
+                INNER JOIN customers c ON c.id = o.customer_id
+                WHERE o.id = :id
+                FOR UPDATE OF o';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+
+        return $row ? Order::fromArray($row) : null;
+    }
+
+    public function insert(int $customerId, string $totalAmount, string $status = 'paid'): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO orders (customer_id, total_amount) VALUES (:customer_id, :total) RETURNING id'
+            'INSERT INTO orders (customer_id, total_amount, status)
+             VALUES (:customer_id, :total, :status)
+             RETURNING id'
         );
         $stmt->execute([
             'customer_id' => $customerId,
             'total' => $totalAmount,
+            'status' => $status,
         ]);
+
         return (int) $stmt->fetchColumn();
+    }
+
+    public function markCanceled(int $orderId, int $canceledBy): void
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE orders
+             SET status = :status,
+                 canceled_by = :canceled_by,
+                 canceled_at = CURRENT_TIMESTAMP
+             WHERE id = :id
+               AND status IN (\'pending\', \'paid\')'
+        );
+        $stmt->execute([
+            'id' => $orderId,
+            'status' => 'canceled',
+            'canceled_by' => $canceledBy,
+        ]);
+
+        if ($stmt->rowCount() === 0)
+        {
+            throw new \RuntimeException('Order status could not be updated to canceled.');
+        }
     }
 
     public function updateTotal(int $orderId, string $totalAmount): void
     {
-        $stmt = $this->db->prepare('UPDATE orders SET total_amount = :total WHERE id = :id');
+        $stmt = $this->db->prepare(
+            'UPDATE orders
+             SET total_amount = :total
+             WHERE id = :id
+               AND status NOT IN (\'canceled\', \'refunded\')'
+        );
         $stmt->execute(['id' => $orderId, 'total' => $totalAmount]);
     }
 
@@ -57,15 +104,18 @@ final class OrderRepository
 
         $where = [];
         $params = [];
-        if ($customerId !== null) {
+        if ($customerId !== null)
+        {
             $where[] = 'o.customer_id = :customer_id';
             $params['customer_id'] = $customerId;
         }
-        if ($dateFrom !== null && $dateFrom !== '') {
+        if ($dateFrom !== null && $dateFrom !== '')
+        {
             $where[] = 'o.created_at::date >= :date_from';
             $params['date_from'] = $dateFrom;
         }
-        if ($dateTo !== null && $dateTo !== '') {
+        if ($dateTo !== null && $dateTo !== '')
+        {
             $where[] = 'o.created_at::date <= :date_to';
             $params['date_to'] = $dateTo;
         }
@@ -83,7 +133,8 @@ final class OrderRepository
                     ORDER BY o.created_at DESC
                     LIMIT :limit OFFSET :offset";
         $stmt = $this->db->prepare($listSql);
-        foreach ($params as $k => $v) {
+        foreach ($params as $k => $v)
+        {
             $stmt->bindValue(':' . $k, $v);
         }
         $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
@@ -92,7 +143,8 @@ final class OrderRepository
         $rows = $stmt->fetchAll();
 
         $items = [];
-        foreach ($rows as $row) {
+        foreach ($rows as $row)
+        {
             $items[] = Order::fromArray($row);
         }
 
