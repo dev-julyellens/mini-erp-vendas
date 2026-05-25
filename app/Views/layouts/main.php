@@ -61,23 +61,50 @@ $navPrefix = static function (string $prefix) use ($currentPath): string
                 <a class="nav-link <?= $navActive('/') ?>" href="<?= htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') ?>">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
-                <a class="nav-link <?= $navPrefix('/customers') ?>" href="<?= htmlspecialchars($url('customers'), ENT_QUOTES, 'UTF-8') ?>">
-                    <i class="bi bi-people"></i> Clientes
-                </a>
-                <a class="nav-link <?= $navPrefix('/products') ?>" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">
-                    <i class="bi bi-box-seam"></i> Produtos
-                </a>
-                <a class="nav-link <?= $navPrefix('/orders') ?>" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">
-                    <i class="bi bi-receipt"></i> Vendas
-                </a>
-                <hr class="border-secondary-subtle">
-                <div class="px-2 pb-1 small text-secondary text-uppercase">API</div>
-                <a class="nav-link" href="<?= htmlspecialchars($url('api/products'), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer">
-                    <i class="bi bi-braces"></i> /api/products
-                </a>
-                <a class="nav-link" href="<?= htmlspecialchars($url('api/orders'), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer">
-                    <i class="bi bi-braces"></i> /api/orders
-                </a>
+                <?php if (\App\Helpers\Permission::canView('clientes')): ?>
+                    <a class="nav-link <?= $navPrefix('/customers') ?>" href="<?= htmlspecialchars($url('customers'), ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="bi bi-people"></i> Clientes
+                    </a>
+                <?php endif; ?>
+                <?php if (\App\Helpers\Permission::canView('produtos')): ?>
+                    <a class="nav-link <?= $navPrefix('/products') ?>" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="bi bi-box-seam"></i> Produtos
+                    </a>
+                <?php endif; ?>
+                <?php if (\App\Helpers\Permission::canView('vendas')): ?>
+                    <a class="nav-link <?= $navPrefix('/orders') ?>" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="bi bi-receipt"></i> Vendas
+                    </a>
+                <?php endif; ?>
+                <?php if (\App\Helpers\Permission::canView('estoque')): ?>
+                    <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
+                        <i class="bi bi-archive"></i> Estoque
+                    </span>
+                <?php endif; ?>
+                <?php if (\App\Helpers\Permission::canView('financeiro')): ?>
+                    <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
+                        <i class="bi bi-cash-stack"></i> Financeiro
+                    </span>
+                <?php endif; ?>
+                <?php if (\App\Helpers\Permission::canView('usuarios')): ?>
+                    <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
+                        <i class="bi bi-person-gear"></i> Usuários
+                    </span>
+                <?php endif; ?>
+                <?php if (\App\Helpers\Permission::canView('produtos') || \App\Helpers\Permission::canView('vendas')): ?>
+                    <hr class="border-secondary-subtle">
+                    <div class="px-2 pb-1 small text-secondary text-uppercase">API</div>
+                    <?php if (\App\Helpers\Permission::canView('produtos')): ?>
+                        <a class="nav-link" href="<?= htmlspecialchars($url('api/products'), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer">
+                            <i class="bi bi-braces"></i> /api/products
+                        </a>
+                    <?php endif; ?>
+                    <?php if (\App\Helpers\Permission::canView('vendas')): ?>
+                        <a class="nav-link" href="<?= htmlspecialchars($url('api/orders'), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer">
+                            <i class="bi bi-braces"></i> /api/orders
+                        </a>
+                    <?php endif; ?>
+                <?php endif; ?>
             </nav>
         </aside>
         <div class="content">
