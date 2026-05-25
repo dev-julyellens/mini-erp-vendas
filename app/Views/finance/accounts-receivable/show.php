@@ -11,10 +11,12 @@ use App\Models\Payment;
 /** @var AccountsReceivable $account */
 /** @var list<Payment> $payments */
 /** @var array<string, string> $methodLabels */
-
 $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 $remaining = $account->remaining_amount ?? $account->amount;
 $canReceive = Permission::can('financeiro', 'criar') && $account->canReceive();
+$canPayInstallments = Permission::can('financeiro', 'criar')
+    && $account->has_installments
+    && in_array($account->status, ['pending', 'partial'], true);
 
 ?>
 <div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
@@ -26,6 +28,10 @@ $canReceive = Permission::can('financeiro', 'criar') && $account->canReceive();
         <?php if ($canReceive): ?>
             <a class="btn btn-primary" href="<?= htmlspecialchars($url('finance/accounts-receivable/receive?id=' . $account->id), ENT_QUOTES, 'UTF-8') ?>">
                 <i class="bi bi-cash-coin"></i> Registrar recebimento
+            </a>
+        <?php elseif ($canPayInstallments): ?>
+            <a class="btn btn-primary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">
+                <i class="bi bi-calendar2-check"></i> Baixar parcelas
             </a>
         <?php endif; ?>
         <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
