@@ -11,8 +11,15 @@ final class Auth
 {
     private const SESSION_KEY = 'auth_user';
 
+    private static ?User $jwtUser = null;
+
     public static function check(): bool
     {
+        if (self::$jwtUser !== null)
+        {
+            return true;
+        }
+
         $data = $_SESSION[self::SESSION_KEY] ?? null;
 
         return is_array($data) && isset($data['id']);
@@ -26,6 +33,11 @@ final class Auth
 
     public static function user(): ?User
     {
+        if (self::$jwtUser !== null)
+        {
+            return self::$jwtUser;
+        }
+
         $data = $_SESSION[self::SESSION_KEY] ?? null;
         if (!is_array($data) || !isset($data['id']))
         {
@@ -67,13 +79,20 @@ final class Auth
 
     public static function login(User $user): void
     {
+        self::$jwtUser = null;
         session_regenerate_id(true);
         $_SESSION[self::SESSION_KEY] = $user->toSessionArray();
         Csrf::regenerate();
     }
 
+    public static function setJwtUser(User $user): void
+    {
+        self::$jwtUser = $user;
+    }
+
     public static function logout(): void
     {
+        self::$jwtUser = null;
         unset($_SESSION[self::SESSION_KEY]);
         Csrf::regenerate();
 

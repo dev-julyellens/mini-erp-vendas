@@ -5,8 +5,12 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/app/bootstrap.php';
 
 use App\Core\Router;
+use App\Helpers\ApiRequest;
 use App\Helpers\PathHelper;
+use App\Middleware\ApiErrorHandlerMiddleware;
+use App\Middleware\ApiMiddleware;
 use App\Middleware\AuthMiddleware;
+use App\Middleware\JwtAuthMiddleware;
 use App\Middleware\PermissionMiddleware;
 
 $router = new Router();
@@ -88,6 +92,7 @@ $router->get('/stock-movements', \App\Controllers\StockMovementController::class
 $router->get('/stock-movements/create', \App\Controllers\StockMovementController::class . '@create');
 $router->post('/stock-movements/store', \App\Controllers\StockMovementController::class . '@store');
 
+$router->post('/api/auth/login', \App\Controllers\ApiAuthController::class . '@login');
 $router->get('/api/products', \App\Controllers\ApiProductController::class . '@index');
 $router->get('/api/orders', \App\Controllers\ApiOrderController::class . '@index');
 $router->post('/api/orders', \App\Controllers\ApiOrderController::class . '@store');
@@ -96,6 +101,13 @@ $router->post('/api/orders/cancel', \App\Controllers\ApiOrderController::class .
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = PathHelper::requestPath();
 
+if (ApiRequest::isApiPath($path))
+{
+    ApiErrorHandlerMiddleware::register();
+    ApiMiddleware::handle($method, $path);
+}
+
+JwtAuthMiddleware::handle($method, $path);
 AuthMiddleware::handle($method, $path);
 PermissionMiddleware::handle($method, $path);
 

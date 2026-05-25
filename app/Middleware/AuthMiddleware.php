@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
+use App\Helpers\ApiRequest;
+use App\Helpers\ApiResponse;
 use App\Helpers\Auth;
 use App\Helpers\Csrf;
 use App\Helpers\PathHelper;
@@ -19,6 +21,7 @@ final class AuthMiddleware
         'POST /forgot-password',
         'GET /reset-password',
         'POST /reset-password',
+        'POST /api/auth/login',
     ];
 
     public static function handle(?string $method = null, ?string $path = null): void
@@ -46,22 +49,23 @@ final class AuthMiddleware
             self::denyUnauthenticated($path);
         }
 
-        Auth::user();
+        $user = Auth::user();
+        if ($user !== null && self::isApiPath($path))
+        {
+            ApiMiddleware::attachUserToLog($user->id);
+        }
     }
 
     private static function isApiPath(string $path): bool
     {
-        return strpos($path, '/api/') === 0;
+        return ApiRequest::isApiPath($path);
     }
 
     private static function denyUnauthenticated(string $path): void
     {
         if (self::isApiPath($path))
         {
-            http_response_code(401);
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['success' => false, 'message' => 'Não autenticado.'], JSON_UNESCAPED_UNICODE);
-            exit;
+            ApiResponse::error('Não autenticado.', 401);
         }
 
         $_SESSION['intended_url'] = PathHelper::requestPath()
@@ -76,10 +80,7 @@ final class AuthMiddleware
     {
         if (self::isApiPath($path))
         {
-            http_response_code(403);
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['success' => false, 'message' => 'Token CSRF inválido.'], JSON_UNESCAPED_UNICODE);
-            exit;
+            ApiResponse::error('Token CSRF inválido.', 403);
         }
 
         http_response_code(403);

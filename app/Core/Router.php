@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core;
 
+use App\Helpers\ApiRequest;
+use App\Helpers\ApiResponse;
+
 final class Router
 {
     /** @var array<string, string> */
@@ -38,6 +41,11 @@ final class Router
 
         if (!isset($this->routes[$key]))
         {
+            if (ApiRequest::isApiPath($path))
+            {
+                ApiResponse::error('Endpoint não encontrado.', 404);
+            }
+
             http_response_code(404);
             echo '404 - Not Found';
             return;
@@ -47,6 +55,11 @@ final class Router
         [$class, $action] = explode('@', $handler);
         if (!class_exists($class) || !method_exists($class, $action))
         {
+            if (ApiRequest::isApiPath($path))
+            {
+                ApiResponse::error('Handler inválido.', 500);
+            }
+
             http_response_code(500);
             echo 'Invalid handler';
             return;

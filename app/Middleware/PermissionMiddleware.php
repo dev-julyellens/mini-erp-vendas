@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
+use App\Helpers\ApiRequest;
+use App\Helpers\ApiResponse;
 use App\Helpers\Auth;
 use App\Helpers\PathHelper;
 use App\Services\PermissionService;
@@ -55,15 +57,9 @@ final class PermissionMiddleware
 
     private static function denyForbidden(string $path): void
     {
-        if (strpos($path, '/api/') === 0)
+        if (ApiRequest::isApiPath($path))
         {
-            http_response_code(403);
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(
-                ['success' => false, 'message' => 'Sem permissão para esta ação.'],
-                JSON_UNESCAPED_UNICODE
-            );
-            exit;
+            ApiResponse::error('Sem permissão para esta ação.', 403);
         }
 
         http_response_code(403);

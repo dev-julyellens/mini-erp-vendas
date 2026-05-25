@@ -8,6 +8,7 @@ use App\Core\Controller;
 use App\Core\ValidationException;
 use App\Repositories\OrderItemRepository;
 use App\Repositories\OrderRepository;
+use App\Services\ApiPayloadService;
 use App\Services\OrderCancelService;
 use App\Services\OrderService;
 
@@ -75,24 +76,15 @@ final class ApiOrderController extends Controller
 
     public function cancel(): void
     {
-        $raw = file_get_contents('php://input');
-        if ($raw === false || $raw === '')
-        {
-            $this->json(['success' => false, 'message' => 'Empty body.'], 400);
-        }
+        $payloadService = new ApiPayloadService();
 
         try
         {
-            $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+            $data = $payloadService->requireJsonObject();
         }
-        catch (\JsonException $e)
+        catch (ValidationException $e)
         {
-            $this->json(['success' => false, 'message' => 'Invalid JSON.'], 400);
-        }
-
-        if (!is_array($data))
-        {
-            $this->json(['success' => false, 'message' => 'Invalid payload.'], 400);
+            $this->json(['success' => false, 'errors' => $e->getErrors()], 422);
         }
 
         $orderId = (int) ($data['order_id'] ?? $data['id'] ?? 0);
@@ -119,31 +111,28 @@ final class ApiOrderController extends Controller
 
     public function store(): void
     {
-        $raw = file_get_contents('php://input');
-        if ($raw === false || $raw === '')
-        {
-            $this->json(['success' => false, 'message' => 'Empty body.'], 400);
-        }
+        $payloadService = new ApiPayloadService();
 
         try
         {
-            $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+            $data = $payloadService->requireJsonObject();
         }
-        catch (\JsonException $e)
+        catch (ValidationException $e)
         {
-            $this->json(['success' => false, 'message' => 'Invalid JSON.'], 400);
+            $this->json(['success' => false, 'errors' => $e->getErrors()], 422);
         }
 
-        if (!is_array($data))
+        $errors = $payloadService->validateRequired($data, ['customer_id', 'items']);
+        if ($errors !== [])
         {
-            $this->json(['success' => false, 'message' => 'Invalid payload.'], 400);
+            $this->json(['success' => false, 'errors' => $errors], 422);
         }
 
         $customerId = (int) ($data['customer_id'] ?? 0);
         $items = $data['items'] ?? [];
         if (!is_array($items))
         {
-            $items = [];
+            $this->json(['success' => false, 'errors' => ['items' => 'Campo inválido.']], 422);
         }
         $installmentCount = \App\Services\InstallmentService::normalizeInstallmentCount(
             $data['installment_count'] ?? 1
