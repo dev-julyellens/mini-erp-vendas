@@ -25,7 +25,7 @@ use App\Helpers\DateHelper;
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 js-datatable" data-dt-actions-col="4">
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -48,7 +48,8 @@ use App\Helpers\DateHelper;
                             <?php endif; ?>
                             <?php if (\App\Helpers\Permission::can('clientes', 'excluir')): ?>
                                 <form class="d-inline" method="post" action="<?= htmlspecialchars($url('customers/delete'), ENT_QUOTES, 'UTF-8') ?>"
-                                    onsubmit="return confirm('Remover este cliente?');">
+                                    data-confirm="Remover este cliente? Esta ação não pode ser desfeita."
+                                    data-confirm-title="Excluir cliente">
                                     <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                                     <input type="hidden" name="id" value="<?= (int) $c->id ?>">
                                     <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
@@ -58,8 +59,13 @@ use App\Helpers\DateHelper;
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($customers === []): ?>
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">Nenhum cliente cadastrado.</td>
+                    <tr class="empty-row">
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <i class="bi bi-people"></i>
+                                Nenhum cliente cadastrado.
+                            </div>
+                        </td>
                     </tr>
                 <?php endif; ?>
             </tbody>
