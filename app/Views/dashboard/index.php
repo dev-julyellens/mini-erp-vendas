@@ -8,8 +8,7 @@ use App\Helpers\Permission;
 /** @var int $ordersCount */
 /** @var int $productsCount */
 /** @var int $customersCount */
-/** @var array $lowStockProducts */
-/** @var int $lowStockThreshold */
+/** @var list<\App\Models\Product> $lowStockProducts */
 
 $canVendas = Permission::canView('vendas');
 $canProdutos = Permission::canView('produtos');
@@ -85,7 +84,7 @@ $canClientes = Permission::canView('clientes');
             <div class="card-soft p-3 p-md-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="fw-semibold">Alerta de estoque baixo</div>
-                    <span class="badge badge-low">&lt; <?= (int) $lowStockThreshold ?> un.</span>
+                    <span class="badge badge-low">Abaixo do mínimo</span>
                 </div>
                 <?php if ($lowStockProducts === []): ?>
                     <div class="text-muted">Nenhum produto abaixo do limite.</div>
@@ -95,9 +94,11 @@ $canClientes = Permission::canView('clientes');
                             <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                                 <div>
                                     <div class="fw-semibold"><?= htmlspecialchars($p->name, ENT_QUOTES, 'UTF-8') ?></div>
-                                    <div class="text-muted small">Estoque atual</div>
+                                    <div class="text-muted small">
+                                        <?= (int) $p->stock ?> un. · mín. <?= (int) $p->minStock ?>
+                                    </div>
                                 </div>
-                                <span class="badge text-bg-warning"><?= (int) $p->stock ?></span>
+                                <span class="badge text-bg-warning">Baixo</span>
                             </li>
                         <?php endforeach; ?>
                     </ul>
