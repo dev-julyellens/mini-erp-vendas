@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Helpers\Auth;
+use App\Models\Product;
 use App\Models\AuditLog;
 use App\Models\Customer;
-use App\Models\Product;
-use App\Models\User;
 use App\Repositories\AuditRepository;
 
 final class AuditService
@@ -27,6 +27,8 @@ final class AuditService
         'redefinir_senha' => 'Redefinir senha',
         'venda' => 'Venda',
         'saida_estoque' => 'Saída de estoque',
+        'cancelamento_venda' => 'Cancelamento de venda',
+        'entrada_estoque' => 'Entrada de estoque',
     ];
 
     /** @var array<string, string> */
@@ -163,7 +165,7 @@ final class AuditService
         {
             $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
         }
-        catch (\JsonException)
+        catch (\JsonException $e)
         {
             return '—';
         }

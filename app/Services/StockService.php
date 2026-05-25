@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Core\Database;
-use App\Core\ValidationException;
+use PDO;
 use App\Helpers\Auth;
+use App\Core\Database;
 use App\Models\StockMovement;
+use App\Core\ValidationException;
 use App\Repositories\ProductRepository;
 use App\Repositories\StockMovementRepository;
-use PDO;
 
 final class StockService
 {

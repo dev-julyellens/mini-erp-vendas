@@ -138,6 +138,7 @@ final class OrderService
             Audit::record('venda', 'vendas', $orderId, null, [
                 'customer_id' => $customerId,
                 'total_amount' => $total,
+                'status' => 'paid',
                 'items' => $prepared,
             ]);
 

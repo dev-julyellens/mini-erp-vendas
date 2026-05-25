@@ -29,10 +29,12 @@ final class RoutePermissionMap
         'GET /orders/show' => ['vendas', 'visualizar'],
         'GET /orders/create' => ['vendas', 'criar'],
         'POST /orders/store' => ['vendas', 'criar'],
+        'POST /orders/cancel' => ['vendas', 'excluir'],
 
         'GET /api/products' => ['produtos', 'visualizar'],
         'GET /api/orders' => ['vendas', 'visualizar'],
         'POST /api/orders' => ['vendas', 'criar'],
+        'POST /api/orders/cancel' => ['vendas', 'excluir'],
 
         'GET /audit-logs' => ['usuarios', 'visualizar'],
 
