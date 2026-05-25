@@ -12,13 +12,16 @@ use App\Helpers\DateHelper;
 /** @var array{customer_id: ?int, date_from: string, date_to: string} $filters */
 
 $query = [];
-if ($filters['customer_id'] !== null) {
+if ($filters['customer_id'] !== null)
+{
     $query['customer_id'] = (string) $filters['customer_id'];
 }
-if ($filters['date_from'] !== '') {
+if ($filters['date_from'] !== '')
+{
     $query['date_from'] = $filters['date_from'];
 }
-if ($filters['date_to'] !== '') {
+if ($filters['date_to'] !== '')
+{
     $query['date_to'] = $filters['date_to'];
 }
 
@@ -28,9 +31,11 @@ if ($filters['date_to'] !== '') {
         <h1 class="h3 mb-1">Vendas</h1>
         <div class="text-muted">Listagem, filtros e detalhes</div>
     </div>
-    <a class="btn btn-primary" href="<?= htmlspecialchars($url('orders/create'), ENT_QUOTES, 'UTF-8') ?>">
-        <i class="bi bi-plus-lg"></i> Nova venda
-    </a>
+    <?php if (\App\Helpers\Permission::can('vendas', 'criar')): ?>
+        <a class="btn btn-primary" href="<?= htmlspecialchars($url('orders/create'), ENT_QUOTES, 'UTF-8') ?>">
+            <i class="bi bi-plus-lg"></i> Nova venda
+        </a>
+    <?php endif; ?>
 </div>
 
 <div class="card-soft p-3 p-md-4 mb-3">
@@ -64,31 +69,31 @@ if ($filters['date_to'] !== '') {
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead>
-            <tr>
-                <th>#</th>
-                <th>Cliente</th>
-                <th>Total</th>
-                <th>Data</th>
-                <th class="text-end">Ações</th>
-            </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Data</th>
+                    <th class="text-end">Ações</th>
+                </tr>
             </thead>
             <tbody>
-            <?php foreach ($orders as $o): ?>
-                <tr>
-                    <td class="fw-semibold">#<?= (int) $o->id ?></td>
-                    <td><?= htmlspecialchars((string) ($o->customer_name ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
-                    <td>R$ <?= htmlspecialchars(number_format((float) $o->total_amount, 2, ',', '.'), ENT_QUOTES, 'UTF-8') ?></td>
-                    <td class="text-muted small"><?= htmlspecialchars(DateHelper::toBrDateTime($o->created_at), ENT_QUOTES, 'UTF-8') ?></td>
-                    <td class="text-end">
-                        <a class="btn btn-sm btn-outline-primary" href="<?= htmlspecialchars($url('orders/show?id=' . $o->id), ENT_QUOTES, 'UTF-8') ?>">Detalhes</a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            <?php if ($orders === []): ?>
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-4">Nenhuma venda encontrada para os filtros atuais.</td>
-                </tr>
-            <?php endif; ?>
+                <?php foreach ($orders as $o): ?>
+                    <tr>
+                        <td class="fw-semibold">#<?= (int) $o->id ?></td>
+                        <td><?= htmlspecialchars((string) ($o->customer_name ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                        <td>R$ <?= htmlspecialchars(number_format((float) $o->total_amount, 2, ',', '.'), ENT_QUOTES, 'UTF-8') ?></td>
+                        <td class="text-muted small"><?= htmlspecialchars(DateHelper::toBrDateTime($o->created_at), ENT_QUOTES, 'UTF-8') ?></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" href="<?= htmlspecialchars($url('orders/show?id=' . $o->id), ENT_QUOTES, 'UTF-8') ?>">Detalhes</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php if ($orders === []): ?>
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">Nenhuma venda encontrada para os filtros atuais.</td>
+                    </tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
