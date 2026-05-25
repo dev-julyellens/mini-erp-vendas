@@ -33,6 +33,8 @@ final class RoutePermissionMap
         'GET /api/products' => ['produtos', 'visualizar'],
         'GET /api/orders' => ['vendas', 'visualizar'],
         'POST /api/orders' => ['vendas', 'criar'],
+
+        'GET /audit-logs' => ['usuarios', 'visualizar'],
     ];
 
     /**

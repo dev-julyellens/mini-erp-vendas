@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Core\Database;
 use App\Core\ValidationException;
+use App\Helpers\Audit;
 use App\Helpers\Money;
 use App\Repositories\CustomerRepository;
 use App\Repositories\OrderItemRepository;
@@ -25,41 +26,50 @@ final class OrderService
 
         $pdo = Database::getConnection();
         $customerRepo = new CustomerRepository($pdo);
-        if ($customerRepo->findById($customerId) === null) {
+        if ($customerRepo->findById($customerId) === null)
+        {
             throw new ValidationException(['customer_id' => 'Customer not found.']);
         }
 
         usort(
             $normalized,
-            static function (array $a, array $b): int {
+            static function (array $a, array $b): int
+            {
                 return $a['product_id'] <=> $b['product_id'];
             }
         );
 
         $pdo->beginTransaction();
 
-        try {
+        try
+        {
             $productRepo = new ProductRepository($pdo);
             $orderRepo = new OrderRepository($pdo);
             $itemRepo = new OrderItemRepository($pdo);
 
             $prepared = [];
+            /** @var list<array{product_id: int, stock_before: int, quantity: int}> $stockAudit */
+            $stockAudit = [];
             $total = '0.00';
 
-            foreach ($normalized as $line) {
+            foreach ($normalized as $line)
+            {
                 $productId = (int) $line['product_id'];
                 $quantity = (int) $line['quantity'];
 
                 $product = $productRepo->findById($productId, true);
-                if ($product === null) {
+                if ($product === null)
+                {
                     throw new ValidationException(['items' => 'Product not found: ' . $productId]);
                 }
 
-                if ($quantity <= 0) {
+                if ($quantity <= 0)
+                {
                     throw new ValidationException(['items' => 'Quantity must be positive.']);
                 }
 
-                if ($product->stock < $quantity) {
+                if ($product->stock < $quantity)
+                {
                     throw new ValidationException([
                         'items' => sprintf(
                             'Insufficient stock for "%s". Available: %d, requested: %d.',
@@ -86,11 +96,17 @@ final class OrderService
                     'unit_price' => $unitPriceAtSaleMoment,
                     'subtotal' => $subtotal,
                 ];
+                $stockAudit[] = [
+                    'product_id' => $productId,
+                    'stock_before' => $product->stock,
+                    'quantity' => $quantity,
+                ];
             }
 
             $orderId = $orderRepo->insert($customerId, $total);
 
-            foreach ($prepared as $row) {
+            foreach ($prepared as $row)
+            {
                 $itemRepo->insert(
                     $orderId,
                     (int) $row['product_id'],
@@ -103,19 +119,48 @@ final class OrderService
 
             $pdo->commit();
 
+            Audit::record('venda', 'vendas', $orderId, null, [
+                'customer_id' => $customerId,
+                'total_amount' => $total,
+                'items' => $prepared,
+            ]);
+
+            foreach ($stockAudit as $stockLine)
+            {
+                $productId = (int) $stockLine['product_id'];
+                $qty = (int) $stockLine['quantity'];
+                $before = (int) $stockLine['stock_before'];
+                Audit::record(
+                    'saida_estoque',
+                    'estoque',
+                    $productId,
+                    ['product_id' => $productId, 'stock' => $before],
+                    ['product_id' => $productId, 'stock' => $before - $qty, 'order_id' => $orderId, 'quantity' => $qty]
+                );
+            }
+
             return $orderId;
-        } catch (ValidationException $e) {
-            if ($pdo->inTransaction()) {
+        }
+        catch (ValidationException $e)
+        {
+            if ($pdo->inTransaction())
+            {
                 $pdo->rollBack();
             }
             throw $e;
-        } catch (PDOException $e) {
-            if ($pdo->inTransaction()) {
+        }
+        catch (PDOException $e)
+        {
+            if ($pdo->inTransaction())
+            {
                 $pdo->rollBack();
             }
             throw $e;
-        } catch (\Throwable $e) {
-            if ($pdo->inTransaction()) {
+        }
+        catch (\Throwable $e)
+        {
+            if ($pdo->inTransaction())
+            {
                 $pdo->rollBack();
             }
             throw $e;
@@ -128,29 +173,34 @@ final class OrderService
      */
     private function normalizeLines(array $lines): array
     {
-        if ($lines === []) {
+        if ($lines === [])
+        {
             throw new ValidationException(['items' => 'The sale must contain at least one item.']);
         }
 
         /** @var array<int, int> $merged */
         $merged = [];
 
-        foreach ($lines as $line) {
+        foreach ($lines as $line)
+        {
             $productId = (int) ($line['product_id'] ?? 0);
             $quantity = (int) ($line['quantity'] ?? 0);
 
-            if ($productId <= 0 || $quantity <= 0) {
+            if ($productId <= 0 || $quantity <= 0)
+            {
                 throw new ValidationException(['items' => 'Each line needs a valid product and a positive quantity.']);
             }
 
-            if (!isset($merged[$productId])) {
+            if (!isset($merged[$productId]))
+            {
                 $merged[$productId] = 0;
             }
             $merged[$productId] += $quantity;
         }
 
         $out = [];
-        foreach ($merged as $pid => $qty) {
+        foreach ($merged as $pid => $qty)
+        {
             $out[] = ['product_id' => $pid, 'quantity' => $qty];
         }
 

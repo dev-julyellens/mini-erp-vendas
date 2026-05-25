@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\ValidationException;
+use App\Helpers\Audit;
 use App\Repositories\CustomerRepository;
+use App\Services\AuditService;
 
 final class CustomerService
 {
@@ -23,25 +25,30 @@ final class CustomerService
     {
         $errors = [];
         $name = trim($name);
-        if ($name === '') {
+        if ($name === '')
+        {
             $errors['name'] = 'Name is required.';
         }
 
         $email = trim($email);
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL))
+        {
             $errors['email'] = 'Valid email is required.';
         }
 
-        if ($email !== '' && $excludeId === null && $this->customers->findByEmail($email) !== null) {
+        if ($email !== '' && $excludeId === null && $this->customers->findByEmail($email) !== null)
+        {
             $errors['email'] = 'Email already registered.';
         }
 
-        if ($email !== '' && $excludeId !== null && $this->customers->emailExistsForOther($email, $excludeId)) {
+        if ($email !== '' && $excludeId !== null && $this->customers->emailExistsForOther($email, $excludeId))
+        {
             $errors['email'] = 'Email already registered.';
         }
 
         $phone = $phone !== null ? trim($phone) : null;
-        if ($phone === '') {
+        if ($phone === '')
+        {
             $phone = null;
         }
 
@@ -51,37 +58,63 @@ final class CustomerService
     public function create(string $name, string $email, ?string $phone): int
     {
         $v = $this->validate($name, $email, $phone, null);
-        if ($v['errors'] !== []) {
+        if ($v['errors'] !== [])
+        {
             throw new ValidationException($v['errors']);
         }
 
-        return $this->customers->insert($v['name'], $v['email'], $v['phone']);
+        $id = $this->customers->insert($v['name'], $v['email'], $v['phone']);
+        $created = $this->customers->findById($id);
+        if ($created !== null)
+        {
+            Audit::record('criar', 'clientes', $id, null, AuditService::customerSnapshot($created));
+        }
+
+        return $id;
     }
 
     public function update(int $id, string $name, string $email, ?string $phone): void
     {
-        if ($this->customers->findById($id) === null) {
+        $existing = $this->customers->findById($id);
+        if ($existing === null)
+        {
             throw new ValidationException(['id' => 'Customer not found.']);
         }
 
         $v = $this->validate($name, $email, $phone, $id);
-        if ($v['errors'] !== []) {
+        if ($v['errors'] !== [])
+        {
             throw new ValidationException($v['errors']);
         }
 
+        $oldSnapshot = AuditService::customerSnapshot($existing);
         $this->customers->update($id, $v['name'], $v['email'], $v['phone']);
+        $updated = $this->customers->findById($id);
+        if ($updated !== null)
+        {
+            Audit::record('editar', 'clientes', $id, $oldSnapshot, AuditService::customerSnapshot($updated));
+        }
     }
 
     public function delete(int $id): void
     {
-        if ($this->customers->findById($id) === null) {
+        $existing = $this->customers->findById($id);
+        if ($existing === null)
+        {
             throw new ValidationException(['id' => 'Customer not found.']);
         }
 
-        try {
+        $oldSnapshot = AuditService::customerSnapshot($existing);
+
+        try
+        {
             $this->customers->delete($id);
-        } catch (\PDOException $e) {
-            if (isset($e->errorInfo[0]) && $e->errorInfo[0] === '23503') {
+            Audit::record('excluir', 'clientes', $id, $oldSnapshot, null);
+        }
+        catch (\PDOException $e)
+        {
+            if (isset($e->errorInfo[0]) && $e->errorInfo[0] === '23503')
+            {
                 throw new ValidationException(['id' => 'Cannot delete customer with existing orders.']);
             }
             throw $e;

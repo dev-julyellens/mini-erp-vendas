@@ -7,7 +7,9 @@ namespace App\Services;
 use App\Core\Database;
 use App\Core\ValidationException;
 use App\Helpers\AppConfig;
+use App\Helpers\Audit;
 use App\Helpers\Auth;
+use App\Services\AuditService;
 use App\Models\User;
 use App\Repositories\UserRepository;
 
@@ -50,11 +52,19 @@ final class AuthService
         }
 
         Auth::login($user);
+        Audit::record('login', 'usuarios', $user->id, null, AuditService::userSnapshot($user), $user->id);
+
         return $user;
     }
 
     public function logout(): void
     {
+        $user = Auth::user();
+        if ($user !== null)
+        {
+            Audit::record('logout', 'usuarios', $user->id, AuditService::userSnapshot($user), null, $user->id);
+        }
+
         Auth::logout();
     }
 
@@ -82,6 +92,14 @@ final class AuthService
         $expiresAt = date('Y-m-d H:i:s', time() + self::RESET_TOKEN_TTL_HOURS * 3600);
 
         $this->users->insertResetToken($user->id, $tokenHash, $expiresAt);
+        Audit::record(
+            'solicitar_redefinir_senha',
+            'usuarios',
+            $user->id,
+            null,
+            ['email' => $user->email],
+            $user->id
+        );
 
         $config = require dirname(__DIR__, 2) . '/config/app.php';
         $base = rtrim((string) $config['base_url'], '/');
@@ -135,6 +153,19 @@ final class AuthService
                 $db->rollBack();
             }
             throw $e;
+        }
+
+        $user = $this->users->findById($userId);
+        if ($user !== null)
+        {
+            Audit::record(
+                'redefinir_senha',
+                'usuarios',
+                $userId,
+                null,
+                ['email' => $user->email],
+                $userId
+            );
         }
     }
 
