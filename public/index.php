@@ -50,6 +50,12 @@ $router->get('/finance/accounts-receivable/show', \App\Controllers\AccountsRecei
 $router->get('/finance/accounts-receivable/receive', \App\Controllers\AccountsReceivableController::class . '@receive');
 $router->post('/finance/accounts-receivable/receive', \App\Controllers\AccountsReceivableController::class . '@storePayment');
 
+$router->get('/finance/installments/overdue', \App\Controllers\InstallmentController::class . '@overdue');
+$router->get('/finance/installments/open', \App\Controllers\InstallmentController::class . '@open');
+$router->get('/finance/installments/history', \App\Controllers\InstallmentController::class . '@history');
+$router->get('/finance/installments/pay', \App\Controllers\InstallmentController::class . '@pay');
+$router->post('/finance/installments/pay', \App\Controllers\InstallmentController::class . '@storePayment');
+
 $router->get('/stock-movements', \App\Controllers\StockMovementController::class . '@index');
 $router->get('/stock-movements/create', \App\Controllers\StockMovementController::class . '@create');
 $router->post('/stock-movements/store', \App\Controllers\StockMovementController::class . '@store');
