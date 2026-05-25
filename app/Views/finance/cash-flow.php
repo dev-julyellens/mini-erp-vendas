@@ -101,6 +101,6 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
     <?php
     $path = 'finance/cash-flow';
     $query = $paginationQuery;
-    require dirname(__DIR__, 2) . '/partials/pagination.php';
+    require dirname(__DIR__) . '/partials/pagination.php';
     ?>
 </div>

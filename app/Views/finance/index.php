@@ -15,7 +15,9 @@ use App\Helpers\Permission;
  *   received_month: string,
  *   cash_balance: string,
  *   entries_month: string,
- *   exits_month: string
+ *   exits_month: string,
+ *   installment_overdue_count: int,
+ *   installment_open_count: int
  * } $summary */
 
 $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
@@ -33,6 +35,15 @@ $canReceive = Permission::can('financeiro', 'criar');
         </a>
         <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') ?>">
             <i class="bi bi-arrow-left-right"></i> Fluxo de caixa
+        </a>
+        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/installments/overdue'), ENT_QUOTES, 'UTF-8') ?>">
+            <i class="bi bi-exclamation-triangle"></i> Vencidas
+        </a>
+        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">
+            <i class="bi bi-calendar2-check"></i> Parcelas abertas
+        </a>
+        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/installments/history'), ENT_QUOTES, 'UTF-8') ?>">
+            <i class="bi bi-clock-history"></i> Histórico
         </a>
     </div>
 </div>
@@ -81,6 +92,14 @@ $canReceive = Permission::can('financeiro', 'criar');
                 <li class="list-group-item d-flex justify-content-between px-0">
                     <span>Vencidas (abertas)</span>
                     <span class="badge text-bg-danger"><?= (int) $summary['overdue_count'] ?></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between px-0">
+                    <span>Parcelas vencidas</span>
+                    <span class="badge text-bg-danger"><?= (int) ($summary['installment_overdue_count'] ?? 0) ?></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between px-0">
+                    <span>Parcelas abertas</span>
+                    <span class="badge text-bg-warning"><?= (int) ($summary['installment_open_count'] ?? 0) ?></span>
                 </li>
             </ul>
         </div>
