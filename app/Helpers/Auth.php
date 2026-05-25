@@ -10,6 +10,7 @@ use App\Repositories\UserRepository;
 final class Auth
 {
     private const SESSION_KEY = 'auth_user';
+    private const PENDING_USER_KEY = 'pending_auth_user_id';
 
     private static ?User $jwtUser = null;
 
@@ -59,13 +60,15 @@ final class Auth
 
     private static function syncSessionFromUser(User $user): void
     {
-        $fresh = $user->toSessionArray();
         $current = $_SESSION[self::SESSION_KEY] ?? null;
         if (!is_array($current))
         {
-            $_SESSION[self::SESSION_KEY] = $fresh;
             return;
         }
+
+        $companyId = isset($current['company_id']) ? (int) $current['company_id'] : null;
+        $companyName = isset($current['company_name']) ? (string) $current['company_name'] : null;
+        $fresh = $user->toSessionArray($companyId, $companyName);
 
         if (
             $current['role'] !== $fresh['role']
@@ -77,23 +80,71 @@ final class Auth
         }
     }
 
-    public static function login(User $user): void
+    public static function login(User $user, ?int $companyId = null, ?string $companyName = null): void
     {
         self::$jwtUser = null;
+        CompanyContext::clearJwt();
         session_regenerate_id(true);
-        $_SESSION[self::SESSION_KEY] = $user->toSessionArray();
+        $_SESSION[self::SESSION_KEY] = $user->toSessionArray($companyId, $companyName);
+        unset($_SESSION[self::PENDING_USER_KEY]);
         Csrf::regenerate();
     }
 
-    public static function setJwtUser(User $user): void
+    public static function setCompany(int $companyId, string $companyName): void
+    {
+        $data = $_SESSION[self::SESSION_KEY] ?? null;
+        if (!is_array($data) || !isset($data['id']))
+        {
+            return;
+        }
+
+        $data['company_id'] = $companyId;
+        $data['company_name'] = trim($companyName);
+        $_SESSION[self::SESSION_KEY] = $data;
+    }
+
+    public static function setPendingUserId(int $userId): void
+    {
+        $_SESSION[self::PENDING_USER_KEY] = $userId;
+    }
+
+    public static function pullPendingUserId(): ?int
+    {
+        if (!isset($_SESSION[self::PENDING_USER_KEY]))
+        {
+            return null;
+        }
+
+        $id = (int) $_SESSION[self::PENDING_USER_KEY];
+        unset($_SESSION[self::PENDING_USER_KEY]);
+
+        return $id > 0 ? $id : null;
+    }
+
+    public static function peekPendingUserId(): ?int
+    {
+        if (!isset($_SESSION[self::PENDING_USER_KEY]))
+        {
+            return null;
+        }
+
+        $id = (int) $_SESSION[self::PENDING_USER_KEY];
+
+        return $id > 0 ? $id : null;
+    }
+
+    public static function setJwtUser(User $user, int $companyId, string $companyName): void
     {
         self::$jwtUser = $user;
+        CompanyContext::setJwtCompanyId($companyId);
+        $_SESSION[self::SESSION_KEY] = $user->toSessionArray($companyId, $companyName);
     }
 
     public static function logout(): void
     {
         self::$jwtUser = null;
-        unset($_SESSION[self::SESSION_KEY]);
+        CompanyContext::clearJwt();
+        unset($_SESSION[self::SESSION_KEY], $_SESSION[self::PENDING_USER_KEY]);
         Csrf::regenerate();
 
         if (session_status() === PHP_SESSION_ACTIVE)
@@ -103,7 +154,14 @@ final class Auth
     }
 
     /**
-     * @return array{id: int, name: string, email: string, role: string}|null
+     * @return array{
+     *   id: int,
+     *   name: string,
+     *   email: string,
+     *   role: string,
+     *   company_id?: int,
+     *   company_name?: string
+     * }|null
      */
     public static function sessionSnapshot(): ?array
     {
