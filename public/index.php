@@ -17,6 +17,8 @@ $router = new Router();
 
 $router->get('/login', \App\Controllers\AuthController::class . '@showLogin');
 $router->post('/login', \App\Controllers\AuthController::class . '@login');
+$router->get('/select-company', \App\Controllers\AuthController::class . '@showSelectCompany');
+$router->post('/select-company', \App\Controllers\AuthController::class . '@selectCompany');
 $router->post('/logout', \App\Controllers\AuthController::class . '@logout');
 $router->get('/forgot-password', \App\Controllers\AuthController::class . '@showForgotPassword');
 $router->post('/forgot-password', \App\Controllers\AuthController::class . '@forgotPassword');
