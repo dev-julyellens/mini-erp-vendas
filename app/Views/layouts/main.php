@@ -84,9 +84,9 @@ $canUsuarios = \App\Helpers\Permission::canView('usuarios');
                     </a>
                 <?php endif; ?>
                 <?php if ($canEstoque): ?>
-                    <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
+                    <a class="nav-link <?= $navPrefix('/stock-movements') ?>" href="<?= htmlspecialchars($url('stock-movements'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-archive"></i> Estoque
-                    </span>
+                    </a>
                 <?php endif; ?>
                 <?php if ($canFinanceiro): ?>
                     <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
