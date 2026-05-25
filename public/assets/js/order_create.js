@@ -22,6 +22,8 @@
             var opt = select.options[select.selectedIndex];
             var price = opt ? parseFloat(opt.getAttribute("data-price") || "0") : 0;
             var stock = opt ? parseInt(opt.getAttribute("data-stock") || "0", 10) : 0;
+            var itemType = opt ? opt.getAttribute("data-type") || "product" : "product";
+            var isService = itemType === "service";
             var qty = qtyInput ? parseInt(qtyInput.value || "0", 10) : 0;
 
             if (select.value) {
@@ -35,9 +37,12 @@
             }
 
             if (help) {
-                if (select.value && qty > stock) {
+                if (select.value && !isService && qty > stock) {
                     help.textContent = "Atenção: quantidade acima do estoque disponível (" + stock + ").";
                     help.className = "small mt-1 text-danger";
+                } else if (select.value && isService) {
+                    help.textContent = "Serviço: sem controle de estoque.";
+                    help.className = "small mt-1 text-muted";
                 } else if (select.value) {
                     help.textContent = "O preço exibido é o do catálogo no momento do envio (histórico na venda).";
                     help.className = "small mt-1 text-muted";
