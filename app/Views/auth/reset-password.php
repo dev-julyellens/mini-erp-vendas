@@ -11,7 +11,7 @@ $errors = $errors ?? [];
 <p class="text-muted small mb-4">Defina uma nova senha para sua conta.</p>
 
 <form method="post" action="<?= htmlspecialchars($url('reset-password'), ENT_QUOTES, 'UTF-8') ?>">
-    <?= \App\Helpers\Csrf::field() ?>
+    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
     <input type="hidden" name="token" value="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8') ?>">
 
     <div class="mb-3">

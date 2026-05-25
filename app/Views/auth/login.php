@@ -16,7 +16,7 @@ $loginError = $errors['login'] ?? null;
 <?php endif; ?>
 
 <form method="post" action="<?= htmlspecialchars($url('login'), ENT_QUOTES, 'UTF-8') ?>" novalidate>
-    <?= \App\Helpers\Csrf::field() ?>
+    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
 
     <div class="mb-3">
         <label class="form-label" for="email">E-mail</label>
@@ -48,6 +48,8 @@ $loginError = $errors['login'] ?? null;
     </div>
 </form>
 
-<p class="text-muted small text-center mt-4 mb-0">
-    Usuário padrão: <code>admin@mini-erp.local</code> / <code>Admin@123</code>
-</p>
+<?php if (\App\Helpers\AppConfig::isDebug()): ?>
+    <p class="text-muted small text-center mt-4 mb-0">
+        Dev: <code>admin@mini-erp.local</code> / <code>Admin@123</code>
+    </p>
+<?php endif; ?>

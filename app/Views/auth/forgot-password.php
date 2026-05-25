@@ -23,7 +23,7 @@ $email = (string) ($old['email'] ?? '');
 <?php endif; ?>
 
 <form method="post" action="<?= htmlspecialchars($url('forgot-password'), ENT_QUOTES, 'UTF-8') ?>">
-    <?= \App\Helpers\Csrf::field() ?>
+    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
 
     <div class="mb-3">
         <label class="form-label" for="email">E-mail</label>
