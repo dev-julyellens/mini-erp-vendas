@@ -38,6 +38,7 @@ $canVendas = \App\Helpers\Permission::canView('vendas');
 $canEstoque = \App\Helpers\Permission::canView('estoque');
 $canFinanceiro = \App\Helpers\Permission::canView('financeiro');
 $canUsuarios = \App\Helpers\Permission::canView('usuarios');
+$canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
 
 ?>
 <!DOCTYPE html>
@@ -94,6 +95,11 @@ $canUsuarios = \App\Helpers\Permission::canView('usuarios');
                 <?php if ($canFinanceiro): ?>
                     <a class="nav-link <?= $navPrefix('/finance') ?>" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-cash-stack"></i> Financeiro
+                    </a>
+                <?php endif; ?>
+                <?php if ($canRelatorios): ?>
+                    <a class="nav-link <?= $navPrefix('/reports') ?>" href="<?= htmlspecialchars($url('reports'), ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="bi bi-bar-chart-line"></i> Relatórios
                     </a>
                 <?php endif; ?>
                 <?php if ($canUsuarios): ?>
