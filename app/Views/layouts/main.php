@@ -168,6 +168,19 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
     <script src="<?= htmlspecialchars($url('assets/js/app.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    <?php if (!empty($pageScripts) && is_array($pageScripts)): ?>
+        <?php foreach ($pageScripts as $scriptSrc): ?>
+            <?php
+            $scriptPath = is_string($scriptSrc) ? $scriptSrc : '';
+            if ($scriptPath === '')
+            {
+                continue;
+            }
+            $scriptUrl = str_starts_with($scriptPath, 'http') ? $scriptPath : $url($scriptPath);
+            ?>
+            <script src="<?= htmlspecialchars($scriptUrl, ENT_QUOTES, 'UTF-8') ?>"></script>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </body>
 
 </html>
