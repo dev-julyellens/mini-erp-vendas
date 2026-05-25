@@ -7,6 +7,7 @@ namespace App\Middleware;
 use App\Helpers\Auth;
 use App\Helpers\Csrf;
 use App\Helpers\PathHelper;
+use App\Helpers\Redirect;
 
 final class AuthMiddleware
 {
@@ -26,11 +27,16 @@ final class AuthMiddleware
         $path = $path ?? PathHelper::requestPath();
         $routeKey = $method . ' ' . $path;
 
+        if ($method === 'POST' && !self::isApiPath($path) && !Csrf::validateRequest())
+        {
+            self::denyInvalidCsrf($path);
+        }
+
         if (in_array($routeKey, self::PUBLIC_ROUTES, true))
         {
             if (Auth::check() && in_array($routeKey, ['GET /login', 'GET /forgot-password'], true))
             {
-                self::redirect('/');
+                Redirect::to('/');
             }
             return;
         }
@@ -40,10 +46,7 @@ final class AuthMiddleware
             self::denyUnauthenticated($path);
         }
 
-        if ($method === 'POST' && !self::isApiPath($path) && !Csrf::validateRequest())
-        {
-            self::denyInvalidCsrf($path);
-        }
+        Auth::user();
     }
 
     private static function isApiPath(string $path): bool
@@ -66,7 +69,7 @@ final class AuthMiddleware
                 ? '?' . $_SERVER['QUERY_STRING']
                 : '');
 
-        self::redirect('/login');
+        Redirect::to('/login');
     }
 
     private static function denyInvalidCsrf(string $path): void
@@ -81,18 +84,6 @@ final class AuthMiddleware
 
         http_response_code(403);
         echo '403 - Token de segurança inválido. Atualize a página e tente novamente.';
-        exit;
-    }
-
-    private static function redirect(string $path): void
-    {
-        $config = require dirname(__DIR__, 2) . '/config/app.php';
-        $base = rtrim((string) $config['base_url'], '/');
-        if ($path !== '' && $path[0] === '/')
-        {
-            $path = substr($path, 1);
-        }
-        header('Location: ' . $base . '/' . $path);
         exit;
     }
 }
