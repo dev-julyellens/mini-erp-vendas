@@ -24,26 +24,4 @@ CREATE INDEX IF NOT EXISTS idx_installments_status ON installments (status);
 CREATE INDEX IF NOT EXISTS idx_installments_due_date ON installments (due_date);
 CREATE INDEX IF NOT EXISTS idx_installments_paid_at ON installments (paid_at DESC);
 
-ALTER TABLE audit_logs DROP CONSTRAINT IF EXISTS audit_logs_action_check;
-
-ALTER TABLE audit_logs ADD CONSTRAINT audit_logs_action_check CHECK (
-    action IN (
-        'criar',
-        'editar',
-        'excluir',
-        'login',
-        'logout',
-        'solicitar_redefinir_senha',
-        'redefinir_senha',
-        'venda',
-        'saida_estoque',
-        'cancelamento_venda',
-        'entrada_estoque',
-        'conta_receber',
-        'recebimento',
-        'cancelamento_conta_receber',
-        'parcelamento',
-        'recebimento_parcela',
-        'cancelamento_parcelas'
-    )
-);
+-- Constraint de audit_logs sincronizada em 005/006 (idempotente)

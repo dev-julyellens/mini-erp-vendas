@@ -432,7 +432,10 @@ CREATE TABLE audit_logs (
             'cancelamento_conta_receber',
             'parcelamento',
             'recebimento_parcela',
-            'cancelamento_parcelas'
+            'cancelamento_parcelas',
+            'consentimento_lgpd',
+            'pix_cobranca',
+            'pix_conciliacao'
         )
     ),
     CONSTRAINT audit_logs_entity_check CHECK (

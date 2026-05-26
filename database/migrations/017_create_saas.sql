@@ -1,26 +1,37 @@
 -- Arquitetura SaaS: planos, assinaturas, cobrança recorrente, limites e onboarding
+-- Idempotente: pode ser executada mais de uma vez com segurança.
 
-ALTER TABLE companies
-    ADD COLUMN slug VARCHAR(80),
-    ADD COLUMN owner_user_id INTEGER REFERENCES users (id) ON DELETE SET NULL,
-    ADD COLUMN onboarding_step VARCHAR(30) NOT NULL DEFAULT 'completed',
-    ADD COLUMN onboarding_completed_at TIMESTAMP;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS slug VARCHAR(80);
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS owner_user_id INTEGER REFERENCES users (id) ON DELETE SET NULL;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS onboarding_step VARCHAR(30) NOT NULL DEFAULT 'completed';
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMP;
 
 UPDATE companies
 SET slug = 'empresa-' || id::text,
-    onboarding_step = 'completed',
+    onboarding_step = COALESCE(onboarding_step, 'completed'),
     onboarding_completed_at = COALESCE(onboarding_completed_at, created_at)
 WHERE slug IS NULL;
 
-ALTER TABLE companies
-    ALTER COLUMN slug SET NOT NULL;
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'companies'
+          AND column_name = 'slug'
+          AND is_nullable = 'YES'
+    ) THEN
+        ALTER TABLE companies ALTER COLUMN slug SET NOT NULL;
+    END IF;
+END $$;
 
 ALTER TABLE companies DROP CONSTRAINT IF EXISTS companies_name_unique;
-CREATE UNIQUE INDEX companies_slug_unique ON companies (LOWER(slug));
-CREATE INDEX idx_companies_onboarding ON companies (onboarding_step)
+CREATE UNIQUE INDEX IF NOT EXISTS companies_slug_unique ON companies (LOWER(slug));
+CREATE INDEX IF NOT EXISTS idx_companies_onboarding ON companies (onboarding_step)
     WHERE onboarding_completed_at IS NULL;
 
-CREATE TABLE plans (
+CREATE TABLE IF NOT EXISTS plans (
     id SERIAL PRIMARY KEY,
     code VARCHAR(50) NOT NULL,
     name VARCHAR(120) NOT NULL,
@@ -38,9 +49,9 @@ CREATE TABLE plans (
     CONSTRAINT plans_trial_days_non_negative CHECK (trial_days >= 0)
 );
 
-CREATE INDEX idx_plans_active ON plans (active, sort_order) WHERE active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_plans_active ON plans (active, sort_order) WHERE active = TRUE;
 
-CREATE TABLE plan_limits (
+CREATE TABLE IF NOT EXISTS plan_limits (
     id SERIAL PRIMARY KEY,
     plan_id INTEGER NOT NULL REFERENCES plans (id) ON DELETE CASCADE,
     limit_key VARCHAR(50) NOT NULL,
@@ -52,9 +63,9 @@ CREATE TABLE plan_limits (
     )
 );
 
-CREATE INDEX idx_plan_limits_plan ON plan_limits (plan_id);
+CREATE INDEX IF NOT EXISTS idx_plan_limits_plan ON plan_limits (plan_id);
 
-CREATE TABLE subscriptions (
+CREATE TABLE IF NOT EXISTS subscriptions (
     id SERIAL PRIMARY KEY,
     company_id INTEGER NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
     plan_id INTEGER NOT NULL REFERENCES plans (id) ON DELETE RESTRICT,
@@ -73,10 +84,10 @@ CREATE TABLE subscriptions (
     )
 );
 
-CREATE INDEX idx_subscriptions_status ON subscriptions (status);
-CREATE INDEX idx_subscriptions_period_end ON subscriptions (current_period_end);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions (status);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_period_end ON subscriptions (current_period_end);
 
-CREATE TABLE subscription_invoices (
+CREATE TABLE IF NOT EXISTS subscription_invoices (
     id SERIAL PRIMARY KEY,
     subscription_id INTEGER NOT NULL REFERENCES subscriptions (id) ON DELETE CASCADE,
     company_id INTEGER NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
@@ -96,17 +107,17 @@ CREATE TABLE subscription_invoices (
     CONSTRAINT subscription_invoices_amount_positive CHECK (amount > 0)
 );
 
-CREATE INDEX idx_subscription_invoices_company ON subscription_invoices (company_id, created_at DESC);
-CREATE INDEX idx_subscription_invoices_subscription ON subscription_invoices (subscription_id, period_end DESC);
-CREATE INDEX idx_subscription_invoices_pending ON subscription_invoices (status, due_at)
+CREATE INDEX IF NOT EXISTS idx_subscription_invoices_company ON subscription_invoices (company_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_subscription_invoices_subscription ON subscription_invoices (subscription_id, period_end DESC);
+CREATE INDEX IF NOT EXISTS idx_subscription_invoices_pending ON subscription_invoices (status, due_at)
     WHERE status = 'pending';
 
--- Planos padrão
 INSERT INTO plans (code, name, description, price_monthly, billing_interval, trial_days, sort_order)
 VALUES
     ('starter', 'Starter', 'Ideal para começar com poucos cadastros.', 49.90, 'monthly', 14, 10),
     ('professional', 'Professional', 'Para operações em crescimento.', 149.90, 'monthly', 14, 20),
-    ('enterprise', 'Enterprise', 'Limites ampliados e operação sem restrições práticas.', 399.90, 'monthly', 0, 30);
+    ('enterprise', 'Enterprise', 'Limites ampliados e operação sem restrições práticas.', 399.90, 'monthly', 0, 30)
+ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO plan_limits (plan_id, limit_key, limit_value)
 SELECT p.id, v.limit_key, v.limit_value
@@ -126,9 +137,9 @@ CROSS JOIN (
         ('enterprise', 'users_max', -1),
         ('enterprise', 'orders_month_max', -1)
 ) AS v(plan_code, limit_key, limit_value)
-WHERE p.code = v.plan_code;
+WHERE p.code = v.plan_code
+ON CONFLICT (plan_id, limit_key) DO NOTHING;
 
--- Assinatura ativa para empresas existentes (plano enterprise)
 INSERT INTO subscriptions (company_id, plan_id, status, current_period_start, current_period_end)
 SELECT c.id, p.id, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '1 year'
 FROM companies c
@@ -136,4 +147,4 @@ CROSS JOIN plans p
 WHERE p.code = 'enterprise'
 ON CONFLICT (company_id) DO NOTHING;
 
-UPDATE companies SET slug = 'empresa-padrao' WHERE id = 1;
+UPDATE companies SET slug = 'empresa-padrao' WHERE id = 1 AND slug <> 'empresa-padrao';
