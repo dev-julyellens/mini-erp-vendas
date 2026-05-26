@@ -7,11 +7,16 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 use App\Core\Router;
 use App\Helpers\ApiRequest;
 use App\Helpers\PathHelper;
+use App\Middleware\AccessLogMiddleware;
 use App\Middleware\ApiErrorHandlerMiddleware;
 use App\Middleware\ApiMiddleware;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\JwtAuthMiddleware;
+use App\Middleware\LgpdMiddleware;
 use App\Middleware\PermissionMiddleware;
+use App\Middleware\SecurityHeadersMiddleware;
+
+SecurityHeadersMiddleware::handle();
 
 $router = new Router();
 
@@ -24,6 +29,9 @@ $router->get('/forgot-password', \App\Controllers\AuthController::class . '@show
 $router->post('/forgot-password', \App\Controllers\AuthController::class . '@forgotPassword');
 $router->get('/reset-password', \App\Controllers\AuthController::class . '@showResetPassword');
 $router->post('/reset-password', \App\Controllers\AuthController::class . '@resetPassword');
+
+$router->get('/lgpd/consent', \App\Controllers\LgpdController::class . '@showConsent');
+$router->post('/lgpd/consent', \App\Controllers\LgpdController::class . '@storeConsent');
 
 $router->get('/', \App\Controllers\DashboardController::class . '@index');
 
@@ -76,6 +84,7 @@ $router->get('/reports/cash-flow', \App\Controllers\ReportController::class . '@
 $router->get('/reports/cash-flow/export', \App\Controllers\ReportController::class . '@exportCashFlow');
 
 $router->get('/audit-logs', \App\Controllers\AuditLogController::class . '@index');
+$router->get('/access-logs', \App\Controllers\AccessLogController::class . '@index');
 
 $router->get('/notifications', \App\Controllers\NotificationController::class . '@index');
 $router->post('/notifications/open', \App\Controllers\NotificationController::class . '@open');
@@ -123,6 +132,8 @@ if (ApiRequest::isApiPath($path))
 
 JwtAuthMiddleware::handle($method, $path);
 AuthMiddleware::handle($method, $path);
+LgpdMiddleware::handle($method, $path);
+AccessLogMiddleware::handle($method, $path);
 PermissionMiddleware::handle($method, $path);
 
 $router->dispatch($method, $path);
