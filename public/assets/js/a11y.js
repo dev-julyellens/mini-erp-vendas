@@ -56,16 +56,40 @@
         });
     }
 
-    function initDataTablesA11y() {
-        document.querySelectorAll("table.js-datatable").forEach(function (table) {
-            if (table.getAttribute("aria-label") || table.querySelector("caption")) {
-                return;
-            }
+    function enhanceDataTable(table) {
+        if (!table || !table.classList.contains("js-datatable")) {
+            return;
+        }
+
+        var label = table.getAttribute("aria-label");
+        if (!label) {
             var heading = document.querySelector(".page-title") || document.querySelector(".auth-card h1");
             if (heading) {
-                table.setAttribute("aria-label", "Tabela: " + heading.textContent.trim());
+                label = "Tabela: " + heading.textContent.trim();
+                table.setAttribute("aria-label", label);
             }
-        });
+        }
+
+        var wrapper = table.closest(".dataTables_wrapper");
+        if (!wrapper) {
+            return;
+        }
+
+        var filterInput = wrapper.querySelector(".dataTables_filter input");
+        if (filterInput) {
+            var searchLabel = label ? "Buscar em " + label.replace(/^Tabela:\s*/, "") : "Buscar na tabela";
+            filterInput.setAttribute("aria-label", searchLabel);
+        }
+
+        var info = wrapper.querySelector(".dataTables_info");
+        if (info) {
+            info.setAttribute("role", "status");
+            info.setAttribute("aria-live", "polite");
+        }
+    }
+
+    function initDataTablesA11y() {
+        document.querySelectorAll("table.js-datatable").forEach(enhanceDataTable);
     }
 
     function initDashboardTabKeyboard() {
@@ -129,5 +153,6 @@
     window.MiniErp.a11y = {
         announce: announce,
         syncDocumentTitle: syncDocumentTitle,
+        enhanceDataTable: enhanceDataTable,
     };
 })();

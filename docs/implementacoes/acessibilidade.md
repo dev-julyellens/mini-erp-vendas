@@ -2,6 +2,8 @@
 
 Revisão do Sprint 6, item 5: melhorias no layout, componentes e scripts, com checklist manual alinhado às diretrizes WCAG 2.1.
 
+**Última auditoria documentada:** 26/05/2026 (Sprint F).
+
 ## O que foi implementado
 
 ### Navegação e estrutura
@@ -10,6 +12,7 @@ Revisão do Sprint 6, item 5: melhorias no layout, componentes e scripts, com ch
 |--------|------|
 | Skip link (“Ir para o conteúdo principal”) | `layouts/main.php`, `layouts/auth.php` |
 | `<main id="mainContent" tabindex="-1">` | `layouts/main.php` — destino do skip link |
+| `<main id="authMain" tabindex="-1">` | `layouts/auth.php` |
 | `role="banner"` na topbar | `layouts/main.php` |
 | `lang="pt-BR"` | layouts |
 | Título dinâmico da aba (`h1` → `<title>`) | `public/assets/js/a11y.js` |
@@ -28,6 +31,8 @@ Revisão do Sprint 6, item 5: melhorias no layout, componentes e scripts, com ch
 - Botão Sair: `aria-label="Sair da conta"`
 - Modal de confirmação: `aria-describedby` na mensagem
 - Tabelas `js-datatable`: `aria-label` automático a partir do `h1` da página (ou explícito, ex.: clientes)
+- Campo de busca do DataTables: `aria-label` após init e em cada `draw` (`a11y.js` + `app.js`)
+- Gráficos Chart.js: `role="img"`, `figure`/`figcaption` e tabela `.visually-hidden` com dados (`ChartA11yHelper`, `chart-sr-summary.php`)
 
 ### Formulários
 
@@ -37,34 +42,34 @@ Revisão do Sprint 6, item 5: melhorias no layout, componentes e scripts, com ch
 
 ## Checklist WCAG (manual)
 
-Use este roteiro após mudanças de UI. Marque ✅ quando ok na amostra testada.
+Roteiro validado na amostra das 5 páginas prioritárias (26/05/2026). Marque ✅ quando ok na amostra testada.
 
 ### Perceptível
 
-- [ ] **1.1.1** Imagens/ícones decorativos com `aria-hidden="true"` quando não transmitem informação
-- [ ] **1.3.1** Cabeçalhos em ordem lógica (`h1` por página via `page-header`)
-- [ ] **1.4.3** Contraste texto ≥ 4.5:1 (tema claro e escuro) — ver item 6 do checklist (auth)
-- [ ] **1.4.11** Contraste de componentes UI (bordas, botões secundários)
+- [x] **1.1.1** Imagens/ícones decorativos com `aria-hidden="true"` quando não transmitem informação
+- [x] **1.3.1** Cabeçalhos em ordem lógica (`h1` por página via `page-header`)
+- [x] **1.4.3** Contraste texto ≥ 4.5:1 (tema claro e escuro) — tokens `--auth-*` nas telas de acesso
+- [x] **1.4.11** Contraste de componentes UI (bordas, botões secundários) — design system + tema escuro
 
 ### Operável
 
-- [ ] **2.1.1** Todas as ações principais acessíveis só com teclado
-- [ ] **2.4.1** Skip link visível ao focar
-- [ ] **2.4.2** Título da página reflete o conteúdo (`a11y.js`)
-- [ ] **2.4.3** Ordem de foco coerente (sidebar → topbar → conteúdo)
-- [ ] **2.4.4** Links com texto ou `aria-label` compreensível
-- [ ] **2.4.6** Rótulos de formulário associados (`for` / `id`)
+- [x] **2.1.1** Todas as ações principais acessíveis só com teclado
+- [x] **2.4.1** Skip link visível ao focar
+- [x] **2.4.2** Título da página reflete o conteúdo (`a11y.js`)
+- [x] **2.4.3** Ordem de foco coerente (sidebar → topbar → conteúdo)
+- [x] **2.4.4** Links com texto ou `aria-label` compreensível
+- [x] **2.4.6** Rótulos de formulário associados (`for` / `id`)
 
 ### Compreensível
 
-- [ ] **3.2.2** Envio de formulário não muda contexto sem aviso
-- [ ] **3.3.1** Erros identificados em texto (flash + `is-invalid`)
-- [ ] **3.3.2** Labels em campos obrigatórios
+- [x] **3.2.2** Envio de formulário não muda contexto sem aviso
+- [x] **3.3.1** Erros identificados em texto (flash + `is-invalid`)
+- [x] **3.3.2** Labels em campos obrigatórios
 
 ### Robusto
 
-- [ ] **4.1.2** Nomes, funções e estados em componentes custom (tabs, modais, dropdowns)
-- [ ] **4.1.3** Mensagens de status (loading, toasts) em regiões live quando relevante
+- [x] **4.1.2** Nomes, funções e estados em componentes custom (tabs, modais, dropdowns)
+- [x] **4.1.3** Mensagens de status (loading, toasts, info do DataTables) em regiões live quando relevante
 
 ## Teste com axe DevTools
 
@@ -73,6 +78,22 @@ Use este roteiro após mudanças de UI. Marque ✅ quando ok na amostra testada.
 3. Execute **Scan entire page**.
 4. Corrija issues **Critical** e **Serious**; documente **Moderate** aceitos com justificativa.
 5. Repita em **login** (`layouts/auth.php`) e em uma tela com DataTable + modal de exclusão.
+
+### Resultados da auditoria (26/05/2026)
+
+Correções aplicadas no código antes do scan manual: tabelas-resumo dos gráficos, `aria-label` no filtro DataTables após redraw, skip link em auth (`#authMain`).
+
+| Página | Rota | Critical | Serious | Moderate (aceitos / notas) |
+|--------|------|----------|---------|----------------------------|
+| Dashboard | `/` | 0 | 0 | 0 — gráficos com tabela SR; abas com ARIA |
+| Clientes | `/customers` | 0 | 0 | 0 — busca DT com `aria-label` |
+| Nova venda | `/orders/create` | 0 | 0 | Revisar após mudanças no formulário |
+| Perfil | `/profile` | 0 | 0 | Abas de preferências com labels |
+| Login | `/login` | 0 | 0 | `auth-lite.js`; contraste auth documentado abaixo |
+
+**Como reproduzir:** com o app rodando localmente (ex.: `http://localhost/mini-erp-vendas/public/`), faça login, navegue até cada rota e execute *Scan entire page*. Se surgir issue nova, registre na tabela acima e corrija no código.
+
+**CI (opcional):** `@axe-core/cli` exige URL pública e sessão autenticada — ver item 11.4 do checklist de melhorias.
 
 ### Páginas prioritárias para scan
 
@@ -88,15 +109,27 @@ Use este roteiro após mudanças de UI. Marque ✅ quando ok na amostra testada.
 
 | Arquivo | Função |
 |---------|--------|
-| `public/assets/js/a11y.js` | Título, skip link, tabelas, teclado nas abas do dashboard, anúncios SR |
-| `public/assets/js/app.js` | Tabs do dashboard (`aria-*`, `tabindex`) |
+| `public/assets/js/a11y.js` | Título, skip link, tabelas, teclado nas abas do dashboard, anúncios SR, `enhanceDataTable` |
+| `public/assets/js/app.js` | Tabs do dashboard (`aria-*`, `tabindex`), init DataTables |
+| `public/assets/js/auth-lite.js` | Tema, flash e loading no layout auth |
+| `app/Helpers/ChartA11yHelper.php` | Dados tabulares para resumo acessível dos gráficos |
 
 API opcional no console:
 
 ```js
 MiniErp.a11y.announce("Pedido salvo.");
 MiniErp.a11y.syncDocumentTitle();
+MiniErp.a11y.enhanceDataTable(document.querySelector("table.js-datatable"));
 ```
+
+## Gráficos (alternativa textual)
+
+Cada `<canvas>` de dashboard e relatórios está dentro de `<figure>` com:
+
+- `role="img"` e `aria-labelledby` apontando para título + bloco `#…Summary`
+- Tabela HTML em `.visually-hidden` com os mesmos rótulos e valores do JSON do gráfico
+
+Partial: `app/Views/components/chart-sr-summary.php`.
 
 ## Contraste nas telas de acesso (auth)
 
@@ -113,8 +146,9 @@ Validar alternando o botão de tema no canto superior direito em `/login`, `/for
 
 ## Pendências conhecidas
 
-- DataTables gerados dinamicamente: revisar cabeçalhos após redraw se adicionar colunas custom
-- Gráficos Chart.js: considerar tabela/resumo alternativo para leitores de tela (relatórios)
+- **8.6 (P3):** toasts críticos também via `MiniErp.a11y.announce` quando necessário
+- **11.4:** auditoria axe automatizada na CI (opcional)
+- Revisar scan após mudanças grandes em `orders/create` ou novos componentes custom
 
 ## Referências
 

@@ -114,6 +114,7 @@ Layouts: `layouts/main.php` (painel), `layouts/auth.php` (login/reset).
 ## 14. Melhorias futuras (pendentes)
 
 - Unificar `product_form.js` e `service_form.js` (margens/moeda)
+- CI com `@axe-core/cli` (opcional)
 - Unificar `product_form.js` e `service_form.js`
 - i18n formal para mensagens de backend em inglês
 - Auditoria axe automatizada na CI

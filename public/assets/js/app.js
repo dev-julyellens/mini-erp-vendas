@@ -288,8 +288,16 @@
                 options.columnDefs = [{ orderable: false, targets: parseInt(actionsCol, 10) }];
             }
 
-            new window.DataTable(table, options);
+            var dt = new window.DataTable(table, options);
             table.dataset.dtInit = "1";
+            window.setTimeout(function () {
+                if (window.MiniErp && window.MiniErp.a11y && typeof window.MiniErp.a11y.enhanceDataTable === "function") {
+                    window.MiniErp.a11y.enhanceDataTable(table);
+                    dt.on("draw", function () {
+                        window.MiniErp.a11y.enhanceDataTable(table);
+                    });
+                }
+            }, 0);
         });
     }
 

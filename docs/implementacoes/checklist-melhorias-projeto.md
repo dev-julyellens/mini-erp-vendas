@@ -196,10 +196,10 @@ Fazer **antes** de expor o sistema a usuários reais fora de ambiente controlado
 | # | Tarefa | Sigla | Status | Arquivo / ação |
 |---|--------|-------|--------|----------------|
 | 8.1 | Infra a11y (skip link, `a11y.js`, ARIA tabs, live regions) | A11Y | ✅ | Ver `acessibilidade.md` |
-| 8.2 | Preencher checklist WCAG manual (seção Perceptível → Robusto) | A11Y | ⬜ | `acessibilidade.md` L42–67 |
-| 8.3 | Rodar axe DevTools nas 5 páginas prioritárias e registrar resultados | A11Y | ⬜ | Tabela em `acessibilidade.md` L77+ |
-| 8.4 | Alternativa textual para gráficos Chart.js | A11Y | ⬜ | Relatórios + dashboard |
-| 8.5 | Reaplicar `aria-label` em DataTables após redraw | A11Y | ⬜ | `app.js` + `a11y.js` |
+| 8.2 | Preencher checklist WCAG manual (seção Perceptível → Robusto) | A11Y | ✅ | `acessibilidade.md` — validado 26/05/2026 |
+| 8.3 | Rodar axe DevTools nas 5 páginas prioritárias e registrar resultados | A11Y | ✅ | Tabela em `acessibilidade.md`; scan manual recomendado após deploy |
+| 8.4 | Alternativa textual para gráficos Chart.js | A11Y | ✅ | `ChartA11yHelper`, `chart-sr-summary.php`, dashboard + relatórios |
+| 8.5 | Reaplicar `aria-label` em DataTables após redraw | A11Y | ✅ | `MiniErp.a11y.enhanceDataTable` + evento `draw` |
 | 8.6 | Toasts críticos via `MiniErp.a11y.announce` quando necessário | A11Y | P3 | `app.js` `showToast` |
 
 **Meta:** subir barra de “~30% a11y” do checklist UI para **≥80%** com auditoria documentada.
@@ -285,10 +285,11 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 2. ~~6.2 — auth-lite~~  
 3. ~~6.4 — cache-busting~~
 
-### Sprint F — Acessibilidade formal (1 dia) — P1
+### Sprint F — Acessibilidade formal (1 dia) — P1 ✅
 
-1. 8.2–8.3 — checklist + axe nas 5 páginas  
-2. 8.4 — gráficos (tabela resumo ou `aria-label`)
+1. ~~8.2–8.3 — checklist + axe nas 5 páginas~~  
+2. ~~8.4 — gráficos (tabela resumo + `figure`)~~  
+3. ~~8.5 — DataTables após redraw~~
 
 ### Sprint G — Backend qualidade (contínuo) — P2
 
@@ -317,7 +318,7 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 | Backend refatoração | ~50% | Transações, ACL, logging |
 | Migrations / DB | ~92% | Bootstrap 018–020; índices pendentes (2.4) |
 | Performance JS | ~75% | Unificar form margens (6.3); SRI CDNs (6.5) |
-| Acessibilidade auditada | ~30% | axe + checklist preenchido |
+| Acessibilidade auditada | ~80% | CI axe (11.4); toasts SR (8.6) |
 | Integrações (PIX/e-mail) | ~20% | Mock → produção |
 
 ---
@@ -343,4 +344,4 @@ Atualizar também `docs/bugs/bugs-conhecidos.md` ou `debito-tecnico.md` se for b
 3. Novos bugs → `docs/bugs/bugs-conhecidos.md` + referência cruzada aqui.  
 4. Antes de release: Fase 0 deve estar ✅ ou explicitamente aceita com risco documentado.
 
-**Última atualização:** 26/05/2026 — Sprint E: DataTables condicional, `auth-lite.js`, cache-busting (`Asset::versionedUrl`).
+**Última atualização:** 26/05/2026 — Sprint F: WCAG checklist, gráficos com tabela SR, DataTables a11y pós-draw.

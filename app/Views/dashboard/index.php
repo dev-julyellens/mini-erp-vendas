@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Helpers\ChartA11yHelper;
 use App\Helpers\DateHelper;
 use App\Helpers\Permission;
 use App\Models\AccountsReceivable;
@@ -219,24 +220,54 @@ require dirname(__DIR__) . '/components/page-header.php';
                         <div class="card-soft p-3 p-md-4 h-100">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <div>
-                                    <div class="fw-semibold">Faturamento diário</div>
+                                    <div class="fw-semibold" id="chartDailyRevenueTitle">Faturamento diário</div>
                                     <div class="text-muted small">Últimos <?= count($dailySeries) ?> dias</div>
                                 </div>
                                 <a class="btn btn-sm btn-ghost" href="<?= htmlspecialchars($url('reports/sales-period'), ENT_QUOTES, 'UTF-8') ?>">Relatório</a>
                             </div>
-                            <div class="dashboard-chart-wrap">
-                                <canvas id="chartDailyRevenue" aria-label="Faturamento diário"></canvas>
-                            </div>
-                            <script type="application/json" id="dashboardDailyData"><?= $chartDailyJson ?></script>
+                            <figure class="mb-0" role="group" aria-labelledby="chartDailyRevenueTitle">
+                                <div class="dashboard-chart-wrap">
+                                    <canvas id="chartDailyRevenue" role="img"
+                                        aria-labelledby="chartDailyRevenueTitle chartDailyRevenueSummary"></canvas>
+                                </div>
+                                <?php
+                                $summaryId = 'chartDailyRevenueSummary';
+                                $caption = 'Faturamento diário';
+                                $headers = ChartA11yHelper::columnHeaders(
+                                    array_column($dailySeries, 'label'),
+                                    [['label' => 'Faturamento (R$)', 'data' => array_map(static fn(array $r): float => (float) $r['amount'], $dailySeries), 'currency' => true]]
+                                );
+                                $rows = ChartA11yHelper::tableRows(
+                                    array_column($dailySeries, 'label'),
+                                    [['label' => 'Faturamento (R$)', 'data' => array_map(static fn(array $r): float => (float) $r['amount'], $dailySeries), 'currency' => true]]
+                                );
+                                require dirname(__DIR__) . '/components/chart-sr-summary.php';
+                                ?>
+                            </figure>
+                            <script type="application/json" id="dashboardDailyData">
+                                <?= $chartDailyJson ?>
+                            </script>
                         </div>
                     </div>
                     <div class="col-lg-5">
                         <div class="card-soft p-3 p-md-4 h-100">
-                            <div class="fw-semibold mb-2">Top produtos (30 dias)</div>
-                            <div class="dashboard-chart-wrap dashboard-chart-wrap--tall">
-                                <canvas id="chartTopProducts" aria-label="Produtos mais vendidos"></canvas>
-                            </div>
-                            <script type="application/json" id="dashboardTopProductsData"><?= $chartTopJson ?></script>
+                            <figure class="mb-0" role="group" aria-labelledby="chartTopProductsTitle">
+                                <figcaption class="fw-semibold mb-2" id="chartTopProductsTitle">Top produtos (30 dias)</figcaption>
+                                <div class="dashboard-chart-wrap dashboard-chart-wrap--tall">
+                                    <canvas id="chartTopProducts" role="img"
+                                        aria-labelledby="chartTopProductsTitle chartTopProductsSummary"></canvas>
+                                </div>
+                                <?php
+                                $summaryId = 'chartTopProductsSummary';
+                                $caption = 'Top produtos (30 dias)';
+                                $headers = ChartA11yHelper::columnHeaders($topLabels, [['label' => 'Quantidade', 'data' => $topQty]]);
+                                $rows = ChartA11yHelper::tableRows($topLabels, [['label' => 'Quantidade', 'data' => $topQty]]);
+                                require dirname(__DIR__) . '/components/chart-sr-summary.php';
+                                ?>
+                            </figure>
+                            <script type="application/json" id="dashboardTopProductsData">
+                                <?= $chartTopJson ?>
+                            </script>
                         </div>
                     </div>
                 </div>
@@ -348,12 +379,30 @@ require dirname(__DIR__) . '/components/page-header.php';
         <section class="dash-panel" data-dash-panel="executivo" role="tabpanel" hidden>
             <?php if ($hasCharts && $monthlySeries !== []): ?>
                 <div class="card-soft p-3 p-md-4 mb-3">
-                    <div class="fw-semibold mb-2">Vendas mensais</div>
-                    <div class="text-muted small mb-3">Últimos <?= count($monthlySeries) ?> meses · pedidos pagos</div>
-                    <div class="dashboard-chart-wrap">
-                        <canvas id="chartMonthlySales" aria-label="Vendas mensais"></canvas>
-                    </div>
-                    <script type="application/json" id="dashboardMonthlyData"><?= $chartMonthlyJson ?></script>
+                    <figure class="mb-0" role="group" aria-labelledby="chartMonthlySalesTitle">
+                        <figcaption class="fw-semibold mb-2" id="chartMonthlySalesTitle">Vendas mensais</figcaption>
+                        <div class="text-muted small mb-3">Últimos <?= count($monthlySeries) ?> meses · pedidos pagos</div>
+                        <div class="dashboard-chart-wrap">
+                            <canvas id="chartMonthlySales" role="img"
+                                aria-labelledby="chartMonthlySalesTitle chartMonthlySalesSummary"></canvas>
+                        </div>
+                        <?php
+                        $summaryId = 'chartMonthlySalesSummary';
+                        $caption = 'Vendas mensais';
+                        $headers = ChartA11yHelper::columnHeaders(
+                            array_column($monthlySeries, 'label'),
+                            [['label' => 'Total (R$)', 'data' => array_map(static fn(array $r): float => (float) $r['amount'], $monthlySeries), 'currency' => true]]
+                        );
+                        $rows = ChartA11yHelper::tableRows(
+                            array_column($monthlySeries, 'label'),
+                            [['label' => 'Total (R$)', 'data' => array_map(static fn(array $r): float => (float) $r['amount'], $monthlySeries), 'currency' => true]]
+                        );
+                        require dirname(__DIR__) . '/components/chart-sr-summary.php';
+                        ?>
+                    </figure>
+                    <script type="application/json" id="dashboardMonthlyData">
+                        <?= $chartMonthlyJson ?>
+                    </script>
                 </div>
             <?php endif; ?>
             <div class="row g-3">
