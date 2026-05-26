@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Helpers\DateHelper;
 use App\Models\CashFlow;
 use App\Models\Payment;
 
@@ -94,7 +95,7 @@ require dirname(__DIR__) . '/reports/_report-header.php';
                 <?php else: ?>
                     <?php foreach ($items as $row): ?>
                         <tr>
-                            <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime((string) $row['occurred_at'])), ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars(DateHelper::toBrDateTime((string) $row['occurred_at']), ENT_QUOTES, 'UTF-8') ?></td>
                             <td>
                                 <span class="badge text-bg-<?= ($row['type'] ?? '') === 'entrada' ? 'success' : 'danger' ?>">
                                     <?= htmlspecialchars(CashFlow::typeLabel((string) ($row['type'] ?? '')), ENT_QUOTES, 'UTF-8') ?>

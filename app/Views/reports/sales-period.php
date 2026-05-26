@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Helpers\DateHelper;
+
 /** @var callable(string):string $url */
 /** @var string $title */
 /** @var string $reportPath */
@@ -72,7 +74,7 @@ require dirname(__DIR__) . '/reports/_report-header.php';
                 <?php else: ?>
                     <?php foreach ($items as $row): ?>
                         <tr>
-                            <td><?= htmlspecialchars(date('d/m/Y', strtotime((string) $row['period_date'])), ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars(DateHelper::toBrDate((string) $row['period_date']), ENT_QUOTES, 'UTF-8') ?></td>
                             <td class="text-end"><?= (int) ($row['order_count'] ?? 0) ?></td>
                             <td class="text-end fw-semibold">R$ <?= htmlspecialchars($fmt((string) ($row['total_amount'] ?? '0')), ENT_QUOTES, 'UTF-8') ?></td>
                         </tr>
