@@ -24,7 +24,7 @@ final class SecurityHeadersMiddleware
             "script-src 'self' https://cdn.jsdelivr.net https://cdn.datatables.net 'unsafe-inline'",
             "style-src 'self' https://cdn.jsdelivr.net https://cdn.datatables.net 'unsafe-inline'",
             "img-src 'self' data:",
-            "font-src 'self' https://cdn.jsdelivr.net",
+            "font-src 'self' https://cdn.jsdelivr.net data:",
             "connect-src 'self'",
             "frame-ancestors 'none'",
             "base-uri 'self'",

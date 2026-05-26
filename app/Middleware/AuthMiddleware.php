@@ -26,6 +26,7 @@ final class AuthMiddleware
         'GET /select-company',
         'POST /select-company',
         'POST /api/auth/login',
+        'POST /webhooks/pix/mock',
     ];
 
     /** @var list<string> */
@@ -43,7 +44,7 @@ final class AuthMiddleware
         $path = $path ?? PathHelper::requestPath();
         $routeKey = $method . ' ' . $path;
 
-        if ($method === 'POST' && !self::isApiPath($path) && !Csrf::validateRequest())
+        if ($method === 'POST' && !self::isApiPath($path) && !self::isWebhookPath($path) && !Csrf::validateRequest())
         {
             self::denyInvalidCsrf($path);
         }
@@ -101,6 +102,11 @@ final class AuthMiddleware
     private static function isApiPath(string $path): bool
     {
         return ApiRequest::isApiPath($path);
+    }
+
+    private static function isWebhookPath(string $path): bool
+    {
+        return str_starts_with($path, '/webhooks/pix/');
     }
 
     private static function denyUnauthenticated(string $path): void
