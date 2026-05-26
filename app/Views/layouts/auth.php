@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Helpers\Asset;
+
 /** @var string $appName */
 /** @var string $baseUrl */
 /** @var string $__viewFile */
@@ -31,8 +33,8 @@ $url = static function (string $path = '') use ($baseUrl): string
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="<?= htmlspecialchars($url('assets/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
-    <link rel="stylesheet" href="<?= htmlspecialchars($url('assets/css/design-system.css'), ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars(Asset::versionedUrl($baseUrl, 'assets/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars(Asset::versionedUrl($baseUrl, 'assets/css/design-system.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body class="auth-page" data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>"
@@ -59,9 +61,8 @@ $url = static function (string $path = '') use ($baseUrl): string
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-    <script src="<?= htmlspecialchars($url('assets/js/input-masks.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
-    <script src="<?= htmlspecialchars($url('assets/js/app.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
-    <script src="<?= htmlspecialchars($url('assets/js/a11y.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    <script src="<?= htmlspecialchars(Asset::versionedUrl($baseUrl, 'assets/js/auth-lite.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    <script src="<?= htmlspecialchars(Asset::versionedUrl($baseUrl, 'assets/js/a11y.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

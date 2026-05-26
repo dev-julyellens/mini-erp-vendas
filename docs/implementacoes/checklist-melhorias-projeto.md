@@ -168,10 +168,10 @@ Fazer **antes** de expor o sistema a usuários reais fora de ambiente controlado
 
 | # | Tarefa | Sigla | Status | Arquivo / ação |
 |---|--------|-------|--------|----------------|
-| 6.1 | Carregar jQuery + DataTables **só** em páginas com tabela datatable | FE | ⬜ | `layouts/main.php`, flag por view |
-| 6.2 | `auth-lite.js` no layout auth (tema + flash + loading, sem sidebar/DataTables) | FE | ⬜ | `layouts/auth.php`, novo JS |
+| 6.1 | Carregar jQuery + DataTables **só** em páginas com tabela datatable | FE | ✅ | `View.php` detecta `js-datatable`; `layouts/main.php` |
+| 6.2 | `auth-lite.js` no layout auth (tema + flash + loading, sem sidebar/DataTables) | FE | ✅ | `layouts/auth.php`, `public/assets/js/auth-lite.js` |
 | 6.3 | Unificar `product_form.js` e `service_form.js` (margens/moeda) | FE | ⬜ | `form-margins.js` ou módulo compartilhado |
-| 6.4 | Cache-busting em assets (`?v=` ou hash de build) | FE | ⬜ | `main.php`, `auth.php` |
+| 6.4 | Cache-busting em assets (`?v=` ou hash de build) | FE | ✅ | `App\Helpers\Asset::versionedUrl()` em `main.php` / `auth.php` |
 | 6.5 | SRI em CDNs DataTables e Chart.js | FE | P2 | `main.php`, controllers de relatório |
 | 6.6 | Dividir `app.js` monolítico (~930 linhas) por domínio | FE | P2 | sidebar, prefs, datatables, toasts |
 | 6.7 | Headers de cache estáticos no Apache | FE | P3 | `public/.htaccess` |
@@ -279,11 +279,11 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 3. ~~5.4 — API auth~~  
 4. ~~CI integração — `.github/workflows/integration.yml` + `composer test:integration`~~
 
-### Sprint E — Performance frontend (1–2 dias) — P1
+### Sprint E — Performance frontend (1–2 dias) — P1 ✅
 
-1. 6.1 — DataTables condicional  
-2. 6.2 — auth-lite  
-3. 6.4 — cache-busting
+1. ~~6.1 — DataTables condicional~~  
+2. ~~6.2 — auth-lite~~  
+3. ~~6.4 — cache-busting~~
 
 ### Sprint F — Acessibilidade formal (1 dia) — P1
 
@@ -316,7 +316,7 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 | API REST | ~85% | DTO, paginação, N+1, datas; rate limit por token pendente |
 | Backend refatoração | ~50% | Transações, ACL, logging |
 | Migrations / DB | ~92% | Bootstrap 018–020; índices pendentes (2.4) |
-| Performance JS | ~50% | DataTables condicional, auth-lite |
+| Performance JS | ~75% | Unificar form margens (6.3); SRI CDNs (6.5) |
 | Acessibilidade auditada | ~30% | axe + checklist preenchido |
 | Integrações (PIX/e-mail) | ~20% | Mock → produção |
 
@@ -343,4 +343,4 @@ Atualizar também `docs/bugs/bugs-conhecidos.md` ou `debito-tecnico.md` se for b
 3. Novos bugs → `docs/bugs/bugs-conhecidos.md` + referência cruzada aqui.  
 4. Antes de release: Fase 0 deve estar ✅ ou explicitamente aceita com risco documentado.
 
-**Última atualização:** 26/05/2026 — Sprint D: testes OrderService, tenant, API auth + workflow CI integração.
+**Última atualização:** 26/05/2026 — Sprint E: DataTables condicional, `auth-lite.js`, cache-busting (`Asset::versionedUrl`).

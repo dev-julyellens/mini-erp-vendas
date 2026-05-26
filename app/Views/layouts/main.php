@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Helpers\Asset;
 use App\Helpers\Auth;
 use App\Helpers\Csrf;
 use App\Services\ProfileService;
@@ -9,6 +10,7 @@ use App\Services\ProfileService;
 /** @var string $appName */
 /** @var string $baseUrl */
 /** @var string $__viewFile */
+/** @var bool $needsDataTables */
 
 $url = static function (string $path = '') use ($baseUrl): string
 {
@@ -63,9 +65,11 @@ if (Auth::check())
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="<?= htmlspecialchars($url('assets/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
-    <link rel="stylesheet" href="<?= htmlspecialchars($url('assets/css/design-system.css'), ENT_QUOTES, 'UTF-8') ?>">
+    <?php if (!empty($needsDataTables)): ?>
+        <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css">
+    <?php endif; ?>
+    <link rel="stylesheet" href="<?= htmlspecialchars(Asset::versionedUrl($baseUrl, 'assets/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars(Asset::versionedUrl($baseUrl, 'assets/css/design-system.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>"
@@ -150,14 +154,16 @@ if (Auth::check())
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
-        integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
-    <script src="<?= htmlspecialchars($url('assets/js/input-masks.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
-    <script src="<?= htmlspecialchars($url('assets/js/app.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
-    <script src="<?= htmlspecialchars($url('assets/js/a11y.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    <?php if (!empty($needsDataTables)): ?>
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
+            integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs"
+            crossorigin="anonymous"></script>
+        <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
+    <?php endif; ?>
+    <script src="<?= htmlspecialchars(Asset::versionedUrl($baseUrl, 'assets/js/input-masks.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    <script src="<?= htmlspecialchars(Asset::versionedUrl($baseUrl, 'assets/js/app.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    <script src="<?= htmlspecialchars(Asset::versionedUrl($baseUrl, 'assets/js/a11y.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
     <?php if (!empty($pageScripts) && is_array($pageScripts)): ?>
         <?php foreach ($pageScripts as $scriptSrc): ?>
             <?php
@@ -166,7 +172,9 @@ if (Auth::check())
             {
                 continue;
             }
-            $scriptUrl = str_starts_with($scriptPath, 'http') ? $scriptPath : $url($scriptPath);
+            $scriptUrl = str_starts_with($scriptPath, 'http')
+                ? $scriptPath
+                : Asset::versionedUrl($baseUrl, $scriptPath);
             ?>
             <script src="<?= htmlspecialchars($scriptUrl, ENT_QUOTES, 'UTF-8') ?>"></script>
         <?php endforeach; ?>

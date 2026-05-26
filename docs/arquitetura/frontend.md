@@ -83,7 +83,8 @@ Documentação de botões: [../implementacoes/botoes-padrao.md](../implementacoe
 
 | Arquivo | Uso |
 |---------|-----|
-| `app.js` | Sidebar, tema, DataTables, toasts, prefs |
+| `app.js` | Sidebar, tema, DataTables, toasts, prefs (layout principal) |
+| `auth-lite.js` | Tema, flash e loading no layout auth (sem sidebar/DataTables) |
 | `a11y.js` | Skip link, título dinâmico, abas, live regions |
 | `input-masks.js` | Máscaras globais (telefone, CEP, moeda) |
 | `order_create.js` / `autosave.js` | Nova venda |
@@ -101,7 +102,7 @@ Layouts: `layouts/main.php` (painel), `layouts/auth.php` (login/reset).
 ## 12. Pontos críticos
 
 - Sem build step (Webpack/Vite) — JS vanilla por arquivo.
-- jQuery + DataTables carregados globalmente no layout principal (melhoria pendente: carregar só onde há tabela).
+- jQuery + DataTables carregados **somente** quando a view contém `table.js-datatable` (`$needsDataTables` em `View.php`).
 - `APP_BASE_URL` em `.env` afeta links (`PathHelper`).
 
 ## 13. Dependências
@@ -112,8 +113,7 @@ Layouts: `layouts/main.php` (painel), `layouts/auth.php` (login/reset).
 
 ## 14. Melhorias futuras (pendentes)
 
-- DataTables/jQuery condicionais; `auth-lite.js` no layout auth
-- Cache-busting em assets (`?v=`)
+- Unificar `product_form.js` e `service_form.js` (margens/moeda)
 - Unificar `product_form.js` e `service_form.js`
 - i18n formal para mensagens de backend em inglês
 - Auditoria axe automatizada na CI

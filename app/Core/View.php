@@ -39,6 +39,7 @@ final class View
         $appName = (string) ($config['app_name'] ?? 'App');
         $baseUrl = rtrim((string) ($config['base_url'] ?? ''), '/');
         $__viewFile = $file;
+        $needsDataTables = str_contains((string) file_get_contents($file), 'js-datatable');
 
         if ($layout === 'layouts/main')
         {

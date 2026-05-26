@@ -3,7 +3,7 @@
 
     function syncDocumentTitle() {
         var appName = document.body && document.body.dataset.appName;
-        var heading = document.querySelector(".page-title");
+        var heading = document.querySelector(".page-title") || document.querySelector(".auth-card h1");
         if (!heading || !appName) {
             return;
         }
@@ -26,7 +26,7 @@
 
     function initSkipLink() {
         var skip = document.querySelector(".skip-link");
-        var target = document.getElementById("mainContent");
+        var target = document.getElementById("mainContent") || document.getElementById("authMain");
         if (!skip || !target) {
             return;
         }
@@ -61,7 +61,7 @@
             if (table.getAttribute("aria-label") || table.querySelector("caption")) {
                 return;
             }
-            var heading = document.querySelector(".page-title");
+            var heading = document.querySelector(".page-title") || document.querySelector(".auth-card h1");
             if (heading) {
                 table.setAttribute("aria-label", "Tabela: " + heading.textContent.trim());
             }
