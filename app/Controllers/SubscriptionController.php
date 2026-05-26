@@ -46,8 +46,15 @@ final class SubscriptionController extends Controller
 
         try
         {
-            (new SubscriptionBillingService())->payInvoice($invoiceId);
+            (new SubscriptionBillingService())->payInvoiceForCompany(
+                $invoiceId,
+                CompanyContext::requireId()
+            );
             Flash::success('Pagamento registrado. Assinatura reativada.');
+        }
+        catch (ValidationException $e)
+        {
+            Flash::error($e->getErrors()['invoice_id'] ?? 'Não foi possível processar o pagamento.');
         }
         catch (\Throwable $e)
         {

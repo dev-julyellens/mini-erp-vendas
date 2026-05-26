@@ -91,6 +91,7 @@ final class OnboardingService
 
         $this->companies->updateProfile($companyId, $name, $taxId, $slug);
         $this->companies->updateOnboardingStep($companyId, self::STEP_PLAN);
+        Auth::setCompany($companyId, $name);
 
         $userId = Auth::id();
         if ($userId !== null)

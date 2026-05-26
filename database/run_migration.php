@@ -99,7 +99,7 @@ function bootstrapAppliedMigrations(PDO $db): void
         '007_create_installments.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'installments'",
         '008_create_categories_and_product_fields.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'categories'",
         '009_add_service_estimated_time.sql' => "SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'products' AND column_name = 'estimated_time_minutes'",
-        '010_report_indexes.sql' => "SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_orders_created_at'",
+        '010_report_indexes.sql' => "SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_orders_status_created_at'",
         '011_create_api_security.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'api_logs'",
         '012_create_backup.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'backup_settings'",
         '013_create_companies.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'companies'",

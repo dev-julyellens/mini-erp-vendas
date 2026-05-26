@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\Database;
+use App\Core\ValidationException;
 use App\Models\Subscription;
 use App\Repositories\PlanRepository;
 use App\Repositories\SubscriptionInvoiceRepository;
@@ -54,28 +55,23 @@ final class SubscriptionBillingService
     /**
      * Simula pagamento de fatura (mock / ambiente de desenvolvimento).
      */
-    public function payInvoice(int $invoiceId): void
+    public function payInvoiceForCompany(int $invoiceId, int $companyId): void
     {
+        $invoice = $this->invoices->findByIdForCompany($invoiceId, $companyId);
+        if ($invoice === null || $invoice->status !== 'pending')
+        {
+            throw new ValidationException(['invoice_id' => 'Fatura inválida ou já processada.']);
+        }
+
         $pdo = Database::getConnection();
         $pdo->beginTransaction();
         try
         {
-            $this->invoices->markPaid($invoiceId);
-
-            $stmt = $pdo->prepare(
-                'SELECT si.company_id, s.id AS subscription_id
-                 FROM subscription_invoices si
-                 INNER JOIN subscriptions s ON s.id = si.subscription_id
-                 WHERE si.id = :id'
-            );
-            $stmt->execute(['id' => $invoiceId]);
-            $row = $stmt->fetch();
-            if ($row === false)
+            if (!$this->invoices->markPaidForCompany($invoiceId, $companyId))
             {
-                throw new \RuntimeException('Fatura não encontrada.');
+                throw new ValidationException(['invoice_id' => 'Fatura inválida ou já processada.']);
             }
 
-            $companyId = (int) $row['company_id'];
             $periodStart = date('Y-m-d H:i:s');
             $periodEnd = date('Y-m-d H:i:s', strtotime('+1 month'));
             $this->subscriptions->renewPeriod($companyId, $periodStart, $periodEnd, 'active');
@@ -111,6 +107,11 @@ final class SubscriptionBillingService
                 'active'
             );
 
+            return false;
+        }
+
+        if ($this->invoices->hasPendingForSubscription($subscription->id))
+        {
             return false;
         }
 

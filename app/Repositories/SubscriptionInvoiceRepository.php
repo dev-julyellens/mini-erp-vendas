@@ -48,16 +48,53 @@ final class SubscriptionInvoiceRepository
         return (int) $stmt->fetchColumn();
     }
 
-    public function markPaid(int $invoiceId): void
+    public function findByIdForCompany(int $invoiceId, int $companyId): ?SubscriptionInvoice
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id, subscription_id, company_id, amount, status,
+                    period_start, period_end, due_at, paid_at
+             FROM subscription_invoices
+             WHERE id = :id AND company_id = :company_id'
+        );
+        $stmt->execute([
+            'id' => $invoiceId,
+            'company_id' => $companyId,
+        ]);
+        $row = $stmt->fetch();
+
+        return $row ? SubscriptionInvoice::fromArray($row) : null;
+    }
+
+    public function hasPendingForSubscription(int $subscriptionId): bool
+    {
+        $stmt = $this->db->prepare(
+            'SELECT 1
+             FROM subscription_invoices
+             WHERE subscription_id = :subscription_id AND status = \'pending\'
+             LIMIT 1'
+        );
+        $stmt->execute(['subscription_id' => $subscriptionId]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function markPaidForCompany(int $invoiceId, int $companyId): bool
     {
         $stmt = $this->db->prepare(
             'UPDATE subscription_invoices
              SET status = \'paid\',
                  paid_at = CURRENT_TIMESTAMP,
                  updated_at = CURRENT_TIMESTAMP
-             WHERE id = :id'
+             WHERE id = :id
+               AND company_id = :company_id
+               AND status = \'pending\''
         );
-        $stmt->execute(['id' => $invoiceId]);
+        $stmt->execute([
+            'id' => $invoiceId,
+            'company_id' => $companyId,
+        ]);
+
+        return $stmt->rowCount() > 0;
     }
 
     public function markFailed(int $invoiceId, string $reason): void

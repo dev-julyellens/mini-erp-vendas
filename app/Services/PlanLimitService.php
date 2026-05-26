@@ -110,9 +110,9 @@ final class PlanLimitService
     private function resolveLimit(int $companyId, string $limitKey): int
     {
         $subscription = $this->subscriptions->findByCompanyId($companyId);
-        if ($subscription === null)
+        if ($subscription === null || !$subscription->isUsable())
         {
-            return -1;
+            return 0;
         }
 
         $limits = $this->plans->limitsForPlan($subscription->plan_id);

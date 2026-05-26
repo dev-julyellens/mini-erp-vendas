@@ -19,6 +19,7 @@ final class SubscriptionMiddleware
     private const SKIP_ROUTES = [
         'GET /subscription',
         'POST /subscription/pay',
+        'POST /subscription/change-plan',
         'GET /onboarding',
         'POST /onboarding/company',
         'GET /onboarding/plan',
