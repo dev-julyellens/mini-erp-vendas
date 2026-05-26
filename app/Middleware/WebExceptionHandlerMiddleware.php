@@ -7,7 +7,6 @@ namespace App\Middleware;
 use App\Core\Logger;
 use App\Core\PlanLimitExceededException;
 use App\Core\ValidationException;
-use App\Helpers\ApiRequest;
 use App\Helpers\AppConfig;
 use App\Helpers\Flash;
 use App\Helpers\Redirect;
@@ -27,12 +26,6 @@ final class WebExceptionHandlerMiddleware
 
         set_exception_handler(static function (\Throwable $e): void
         {
-            $path = $_SERVER['REQUEST_URI'] ?? '/';
-            if (ApiRequest::isApiPath($path))
-            {
-                throw $e;
-            }
-
             if ($e instanceof ValidationException)
             {
                 http_response_code(422);
@@ -47,15 +40,13 @@ final class WebExceptionHandlerMiddleware
                     echo '<h1>Dados inválidos</h1><p>Verifique os campos e tente novamente.</p>';
                 }
 
-                return;
+                exit;
             }
 
             if ($e instanceof PlanLimitExceededException)
             {
                 Flash::error($e->getMessage());
                 Redirect::to('/subscription');
-
-                return;
             }
 
             Logger::exception($e, 'Unhandled web exception');
@@ -80,6 +71,8 @@ final class WebExceptionHandlerMiddleware
             {
                 echo '<h1>Erro interno</h1><p>Ocorreu um erro inesperado. Tente novamente mais tarde.</p>';
             }
+
+            exit;
         });
     }
 }

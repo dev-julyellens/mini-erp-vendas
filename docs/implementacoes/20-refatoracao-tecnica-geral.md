@@ -21,7 +21,7 @@ Estabilizar a base do projeto com ferramentas de qualidade, logging estruturado 
 - **`AppException` / `NotFoundException`** — hierarquia de erros de domínio.
 - **`BaseRepository`** — PDO injetável; `CustomerRepository` já estende (modelo para demais repos).
 - **`App\Helpers\Validator`** — validações DRY; usado em `CustomerService`.
-- **`WebExceptionHandlerMiddleware`** — exceções não tratadas na web (limite de plano, 500, validação em debug).
+- **`WebExceptionHandlerMiddleware`** — registrado só em rotas web (`public/index.php`); exceções não tratadas (limite de plano, 500, validação em debug). Encerra com `exit` após resposta.
 
 ## Configuração
 

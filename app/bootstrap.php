@@ -28,8 +28,6 @@ require $autoload;
 
 \App\Core\Env::load(dirname(__DIR__) . '/config/.env');
 
-\App\Middleware\WebExceptionHandlerMiddleware::register();
-
 $config = require dirname(__DIR__) . '/config/app.php';
 $tz = isset($config['timezone']) ? (string) $config['timezone'] : 'America/Sao_Paulo';
 if (!@date_default_timezone_set($tz))

@@ -17,6 +17,7 @@ use App\Middleware\OnboardingMiddleware;
 use App\Middleware\PermissionMiddleware;
 use App\Middleware\SecurityHeadersMiddleware;
 use App\Middleware\SubscriptionMiddleware;
+use App\Middleware\WebExceptionHandlerMiddleware;
 
 SecurityHeadersMiddleware::handle();
 
@@ -148,6 +149,10 @@ if (ApiRequest::isApiPath($path))
 {
     ApiErrorHandlerMiddleware::register();
     ApiMiddleware::handle($method, $path);
+}
+else
+{
+    WebExceptionHandlerMiddleware::register();
 }
 
 JwtAuthMiddleware::handle($method, $path);
