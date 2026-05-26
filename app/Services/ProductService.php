@@ -183,6 +183,8 @@ final class ProductService
      */
     public function create(array $input): int
     {
+        (new PlanLimitService())->assertCanCreateAsValidation('products_max');
+
         $v = $this->validate($input);
         if ($v['errors'] !== [])
         {

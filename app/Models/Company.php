@@ -9,6 +9,10 @@ final class Company
     public int $id;
     public string $name;
     public ?string $tax_id;
+    public string $slug;
+    public ?int $owner_user_id;
+    public string $onboarding_step;
+    public ?string $onboarding_completed_at;
     public bool $active;
     public string $created_at;
     public string $updated_at;
@@ -23,6 +27,14 @@ final class Company
         $m->name = (string) $row['name'];
         $m->tax_id = isset($row['tax_id']) && $row['tax_id'] !== null && $row['tax_id'] !== ''
             ? (string) $row['tax_id']
+            : null;
+        $m->slug = (string) ($row['slug'] ?? 'empresa-' . $m->id);
+        $m->owner_user_id = isset($row['owner_user_id']) && $row['owner_user_id'] !== null
+            ? (int) $row['owner_user_id']
+            : null;
+        $m->onboarding_step = (string) ($row['onboarding_step'] ?? 'completed');
+        $m->onboarding_completed_at = isset($row['onboarding_completed_at']) && $row['onboarding_completed_at'] !== null
+            ? (string) $row['onboarding_completed_at']
             : null;
         $m->active = self::parseBool($row['active'] ?? true);
         $m->created_at = (string) ($row['created_at'] ?? '');
@@ -46,6 +58,12 @@ final class Company
         $normalized = strtolower(trim((string) $value));
 
         return in_array($normalized, ['1', 'true', 't', 'yes', 'on'], true);
+    }
+
+    public function hasCompletedOnboarding(): bool
+    {
+        return $this->onboarding_completed_at !== null
+            || $this->onboarding_step === 'completed';
     }
 
     /**

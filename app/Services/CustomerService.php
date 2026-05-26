@@ -53,6 +53,8 @@ final class CustomerService
 
     public function create(string $name, string $email, ?string $phone): int
     {
+        (new PlanLimitService())->assertCanCreateAsValidation('customers_max');
+
         $v = $this->validate($name, $email, $phone, null);
         if ($v['errors'] !== [])
         {

@@ -128,6 +128,9 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
                     <a class="nav-link <?= $navPrefix('/backups') ?>" href="<?= htmlspecialchars($url('backups'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-hdd-stack"></i> Backup
                     </a>
+                    <a class="nav-link <?= $navActive('/subscription') ?>" href="<?= htmlspecialchars($url('subscription'), ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="bi bi-credit-card"></i> Assinatura
+                    </a>
                     <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
                         <i class="bi bi-person-gear"></i> Usuários
                     </span>

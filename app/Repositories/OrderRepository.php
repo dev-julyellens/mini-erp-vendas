@@ -169,4 +169,17 @@ final class OrderRepository
 
         return (int) $stmt->fetchColumn();
     }
+
+    public function countCurrentMonth(): int
+    {
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*)
+             FROM orders
+             WHERE company_id = :company_id
+               AND created_at >= date_trunc(\'month\', CURRENT_TIMESTAMP)'
+        );
+        $stmt->execute($this->companyParams());
+
+        return (int) $stmt->fetchColumn();
+    }
 }

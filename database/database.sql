@@ -20,6 +20,10 @@ DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS products CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS customers CASCADE;
+DROP TABLE IF EXISTS subscription_invoices CASCADE;
+DROP TABLE IF EXISTS subscriptions CASCADE;
+DROP TABLE IF EXISTS plan_limits CASCADE;
+DROP TABLE IF EXISTS plans CASCADE;
 DROP TABLE IF EXISTS user_companies CASCADE;
 DROP TABLE IF EXISTS companies CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -28,15 +32,21 @@ CREATE TABLE companies (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     tax_id VARCHAR(20),
+    slug VARCHAR(80) NOT NULL,
+    onboarding_step VARCHAR(30) NOT NULL DEFAULT 'completed',
+    onboarding_completed_at TIMESTAMP,
     active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT companies_name_unique UNIQUE (name)
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE UNIQUE INDEX companies_slug_unique ON companies (LOWER(slug));
 CREATE INDEX idx_companies_active ON companies (active) WHERE active = TRUE;
+CREATE INDEX idx_companies_onboarding ON companies (onboarding_step)
+    WHERE onboarding_completed_at IS NULL;
 
-INSERT INTO companies (id, name, active) VALUES (1, 'Empresa Padrão', TRUE);
+INSERT INTO companies (id, name, slug, onboarding_step, onboarding_completed_at, active)
+VALUES (1, 'Empresa Padrão', 'empresa-padrao', 'completed', CURRENT_TIMESTAMP, TRUE);
 SELECT setval(pg_get_serial_sequence('companies', 'id'), 1);
 
 CREATE TABLE users (
@@ -54,6 +64,90 @@ CREATE TABLE users (
 
 CREATE INDEX idx_users_email_lower ON users (LOWER(email));
 CREATE INDEX idx_users_active ON users (active) WHERE active = TRUE;
+
+ALTER TABLE companies
+    ADD COLUMN owner_user_id INTEGER REFERENCES users (id) ON DELETE SET NULL;
+
+CREATE TABLE plans (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    description TEXT,
+    price_monthly NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    billing_interval VARCHAR(20) NOT NULL DEFAULT 'monthly',
+    trial_days INTEGER NOT NULL DEFAULT 0,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT plans_code_unique UNIQUE (code),
+    CONSTRAINT plans_billing_interval_check CHECK (billing_interval IN ('monthly', 'yearly')),
+    CONSTRAINT plans_price_non_negative CHECK (price_monthly >= 0),
+    CONSTRAINT plans_trial_days_non_negative CHECK (trial_days >= 0)
+);
+
+CREATE INDEX idx_plans_active ON plans (active, sort_order) WHERE active = TRUE;
+
+CREATE TABLE plan_limits (
+    id SERIAL PRIMARY KEY,
+    plan_id INTEGER NOT NULL REFERENCES plans (id) ON DELETE CASCADE,
+    limit_key VARCHAR(50) NOT NULL,
+    limit_value INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT plan_limits_plan_key_unique UNIQUE (plan_id, limit_key),
+    CONSTRAINT plan_limits_key_check CHECK (
+        limit_key IN ('customers_max', 'products_max', 'users_max', 'orders_month_max')
+    )
+);
+
+CREATE INDEX idx_plan_limits_plan ON plan_limits (plan_id);
+
+CREATE TABLE subscriptions (
+    id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
+    plan_id INTEGER NOT NULL REFERENCES plans (id) ON DELETE RESTRICT,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    current_period_start TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    current_period_end TIMESTAMP NOT NULL,
+    trial_ends_at TIMESTAMP,
+    canceled_at TIMESTAMP,
+    cancel_at_period_end BOOLEAN NOT NULL DEFAULT FALSE,
+    external_subscription_id VARCHAR(100),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT subscriptions_company_unique UNIQUE (company_id),
+    CONSTRAINT subscriptions_status_check CHECK (
+        status IN ('trialing', 'active', 'past_due', 'canceled', 'expired')
+    )
+);
+
+CREATE INDEX idx_subscriptions_status ON subscriptions (status);
+CREATE INDEX idx_subscriptions_period_end ON subscriptions (current_period_end);
+
+CREATE TABLE subscription_invoices (
+    id SERIAL PRIMARY KEY,
+    subscription_id INTEGER NOT NULL REFERENCES subscriptions (id) ON DELETE CASCADE,
+    company_id INTEGER NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
+    amount NUMERIC(12, 2) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    period_start TIMESTAMP NOT NULL,
+    period_end TIMESTAMP NOT NULL,
+    due_at TIMESTAMP NOT NULL,
+    paid_at TIMESTAMP,
+    external_invoice_id VARCHAR(100),
+    failure_reason TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT subscription_invoices_status_check CHECK (
+        status IN ('pending', 'paid', 'failed', 'void')
+    ),
+    CONSTRAINT subscription_invoices_amount_positive CHECK (amount > 0)
+);
+
+CREATE INDEX idx_subscription_invoices_company ON subscription_invoices (company_id, created_at DESC);
+CREATE INDEX idx_subscription_invoices_subscription ON subscription_invoices (subscription_id, period_end DESC);
+CREATE INDEX idx_subscription_invoices_pending ON subscription_invoices (status, due_at)
+    WHERE status = 'pending';
 
 CREATE TABLE password_reset_tokens (
     id SERIAL PRIMARY KEY,
@@ -623,3 +717,35 @@ CREATE INDEX IF NOT EXISTS idx_pix_charges_installment_id ON pix_charges (instal
 CREATE INDEX IF NOT EXISTS idx_pix_charges_status ON pix_charges (status);
 CREATE INDEX IF NOT EXISTS idx_pix_charges_pending_company ON pix_charges (company_id, status)
     WHERE status = 'pending';
+
+-- SaaS: planos, limites e assinatura padrão (migration 017)
+INSERT INTO plans (code, name, description, price_monthly, billing_interval, trial_days, sort_order)
+VALUES
+    ('starter', 'Starter', 'Ideal para começar com poucos cadastros.', 49.90, 'monthly', 14, 10),
+    ('professional', 'Professional', 'Para operações em crescimento.', 149.90, 'monthly', 14, 20),
+    ('enterprise', 'Enterprise', 'Limites ampliados e operação sem restrições práticas.', 399.90, 'monthly', 0, 30);
+
+INSERT INTO plan_limits (plan_id, limit_key, limit_value)
+SELECT p.id, v.limit_key, v.limit_value
+FROM plans p
+CROSS JOIN (
+    VALUES
+        ('starter', 'customers_max', 50),
+        ('starter', 'products_max', 100),
+        ('starter', 'users_max', 3),
+        ('starter', 'orders_month_max', 200),
+        ('professional', 'customers_max', 500),
+        ('professional', 'products_max', 1000),
+        ('professional', 'users_max', 10),
+        ('professional', 'orders_month_max', 2000),
+        ('enterprise', 'customers_max', -1),
+        ('enterprise', 'products_max', -1),
+        ('enterprise', 'users_max', -1),
+        ('enterprise', 'orders_month_max', -1)
+) AS v(plan_code, limit_key, limit_value)
+WHERE p.code = v.plan_code;
+
+INSERT INTO subscriptions (company_id, plan_id, status, current_period_start, current_period_end)
+SELECT 1, p.id, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '1 year'
+FROM plans p
+WHERE p.code = 'enterprise';

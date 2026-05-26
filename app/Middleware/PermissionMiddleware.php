@@ -28,6 +28,15 @@ final class PermissionMiddleware
         'POST /notifications/read-all',
         'GET /lgpd/consent',
         'POST /lgpd/consent',
+        'GET /select-company',
+        'POST /select-company',
+        'GET /onboarding',
+        'POST /onboarding/company',
+        'GET /onboarding/plan',
+        'POST /onboarding/plan',
+        'GET /subscription',
+        'POST /subscription/pay',
+        'POST /subscription/change-plan',
     ];
 
     public static function handle(?string $method = null, ?string $path = null): void

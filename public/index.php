@@ -13,8 +13,10 @@ use App\Middleware\ApiMiddleware;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\JwtAuthMiddleware;
 use App\Middleware\LgpdMiddleware;
+use App\Middleware\OnboardingMiddleware;
 use App\Middleware\PermissionMiddleware;
 use App\Middleware\SecurityHeadersMiddleware;
+use App\Middleware\SubscriptionMiddleware;
 
 SecurityHeadersMiddleware::handle();
 
@@ -32,6 +34,15 @@ $router->post('/reset-password', \App\Controllers\AuthController::class . '@rese
 
 $router->get('/lgpd/consent', \App\Controllers\LgpdController::class . '@showConsent');
 $router->post('/lgpd/consent', \App\Controllers\LgpdController::class . '@storeConsent');
+
+$router->get('/onboarding', \App\Controllers\OnboardingController::class . '@showCompany');
+$router->post('/onboarding/company', \App\Controllers\OnboardingController::class . '@storeCompany');
+$router->get('/onboarding/plan', \App\Controllers\OnboardingController::class . '@showPlan');
+$router->post('/onboarding/plan', \App\Controllers\OnboardingController::class . '@storePlan');
+
+$router->get('/subscription', \App\Controllers\SubscriptionController::class . '@show');
+$router->post('/subscription/pay', \App\Controllers\SubscriptionController::class . '@pay');
+$router->post('/subscription/change-plan', \App\Controllers\SubscriptionController::class . '@changePlan');
 
 $router->get('/', \App\Controllers\DashboardController::class . '@index');
 
@@ -142,6 +153,8 @@ if (ApiRequest::isApiPath($path))
 JwtAuthMiddleware::handle($method, $path);
 AuthMiddleware::handle($method, $path);
 LgpdMiddleware::handle($method, $path);
+OnboardingMiddleware::handle($method, $path);
+SubscriptionMiddleware::handle($method, $path);
 AccessLogMiddleware::handle($method, $path);
 PermissionMiddleware::handle($method, $path);
 
