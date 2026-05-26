@@ -10,6 +10,9 @@ $errors = $errors ?? [];
 
 ?>
 <p class="text-muted small mb-4">Defina uma nova senha para sua conta.</p>
+<?php if (!empty($passwordHint)): ?>
+    <p class="text-muted small mb-4"><?= htmlspecialchars((string) $passwordHint, ENT_QUOTES, 'UTF-8') ?></p>
+<?php endif; ?>
 
 <form method="post" action="<?= htmlspecialchars($url('reset-password'), ENT_QUOTES, 'UTF-8') ?>">
     <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
