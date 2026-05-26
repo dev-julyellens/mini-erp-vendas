@@ -7,16 +7,17 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 use App\Core\Router;
 use App\Helpers\ApiRequest;
 use App\Helpers\PathHelper;
-use App\Middleware\AccessLogMiddleware;
-use App\Middleware\ApiErrorHandlerMiddleware;
 use App\Middleware\ApiMiddleware;
 use App\Middleware\AuthMiddleware;
-use App\Middleware\JwtAuthMiddleware;
 use App\Middleware\LgpdMiddleware;
+use App\Middleware\JwtAuthMiddleware;
+use App\Middleware\AccessLogMiddleware;
 use App\Middleware\OnboardingMiddleware;
 use App\Middleware\PermissionMiddleware;
-use App\Middleware\SecurityHeadersMiddleware;
 use App\Middleware\SubscriptionMiddleware;
+use App\Middleware\TenantContextMiddleware;
+use App\Middleware\ApiErrorHandlerMiddleware;
+use App\Middleware\SecurityHeadersMiddleware;
 use App\Middleware\WebExceptionHandlerMiddleware;
 
 SecurityHeadersMiddleware::handle();
@@ -95,6 +96,37 @@ $router->get('/reports/low-stock/export', \App\Controllers\ReportController::cla
 $router->get('/reports/cash-flow', \App\Controllers\ReportController::class . '@cashFlow');
 $router->get('/reports/cash-flow/export', \App\Controllers\ReportController::class . '@exportCashFlow');
 
+$router->get('/admin/companies', \App\Controllers\CompanyController::class . '@index');
+$router->get('/admin/companies/create', \App\Controllers\CompanyController::class . '@create');
+$router->post('/admin/companies/store', \App\Controllers\CompanyController::class . '@store');
+$router->get('/admin/companies/edit', \App\Controllers\CompanyController::class . '@edit');
+$router->post('/admin/companies/update', \App\Controllers\CompanyController::class . '@update');
+$router->post('/admin/companies/toggle-active', \App\Controllers\CompanyController::class . '@toggleActive');
+
+$router->get('/admin/users', \App\Controllers\UserController::class . '@index');
+$router->get('/admin/users/create', \App\Controllers\UserController::class . '@create');
+$router->post('/admin/users/store', \App\Controllers\UserController::class . '@store');
+$router->get('/admin/users/edit', \App\Controllers\UserController::class . '@edit');
+$router->post('/admin/users/update', \App\Controllers\UserController::class . '@update');
+$router->post('/admin/users/toggle-active', \App\Controllers\UserController::class . '@toggleActive');
+$router->get('/admin/users/reset-password', \App\Controllers\UserController::class . '@resetPassword');
+$router->post('/admin/users/reset-password', \App\Controllers\UserController::class . '@storeResetPassword');
+
+$router->get('/user-companies', \App\Controllers\UserCompanyController::class . '@index');
+$router->post('/user-companies/attach', \App\Controllers\UserCompanyController::class . '@attach');
+$router->post('/user-companies/update-role', \App\Controllers\UserCompanyController::class . '@updateRole');
+$router->post('/user-companies/toggle-active', \App\Controllers\UserCompanyController::class . '@toggleActive');
+$router->post('/user-companies/detach', \App\Controllers\UserCompanyController::class . '@detach');
+
+$router->get('/profile', \App\Controllers\ProfileController::class . '@show');
+$router->post('/profile/update', \App\Controllers\ProfileController::class . '@update');
+$router->get('/profile/password', \App\Controllers\ProfileController::class . '@password');
+$router->post('/profile/password', \App\Controllers\ProfileController::class . '@updatePassword');
+
+$router->get('/admin/saas', \App\Controllers\SaasAdminController::class . '@index');
+$router->get('/admin/saas/subscriptions', \App\Controllers\SaasAdminController::class . '@subscriptions');
+$router->post('/admin/saas/assign-plan', \App\Controllers\SaasAdminController::class . '@assignPlan');
+
 $router->get('/audit-logs', \App\Controllers\AuditLogController::class . '@index');
 $router->get('/access-logs', \App\Controllers\AccessLogController::class . '@index');
 
@@ -161,6 +193,7 @@ LgpdMiddleware::handle($method, $path);
 OnboardingMiddleware::handle($method, $path);
 SubscriptionMiddleware::handle($method, $path);
 AccessLogMiddleware::handle($method, $path);
+TenantContextMiddleware::handle($method, $path);
 PermissionMiddleware::handle($method, $path);
 
 $router->dispatch($method, $path);

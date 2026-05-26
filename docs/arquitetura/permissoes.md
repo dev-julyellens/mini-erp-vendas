@@ -4,6 +4,8 @@
 
 Controle de acesso baseado em **papéis** (`users.role`) e matriz **módulo × ação** persistida em `permissions` / `role_permissions`. Rotas HTTP mapeadas em `RoutePermissionMap`; verificação em `PermissionMiddleware` via `PermissionService`.
 
+**Multiempresa:** com empresa selecionada, o papel efetivo para ACL é calculado por `TenantContextService` a partir de `user_companies.role` (`CompanyRoleService::effectiveAclRole`). O papel global `admin` continua com bypass total.
+
 ## 2. Fluxo funcional
 
 1. Usuário autenticado com `role` na sessão.
@@ -29,6 +31,9 @@ Ações: `visualizar`, `criar`, `editar`, `excluir`.
 | Service | Função |
 |---------|--------|
 | `PermissionService` | `can()`, `authorizeRoute()`, cache em request |
+| `TenantContextService` | Papel efetivo na empresa ativa |
+| `CompanyRoleService` | Papéis `owner`/`admin`/`manager`/`employee` e mapeamento ACL |
+| `PlatformAdminService` | Gestão global (empresas, usuários, SaaS) |
 | `RoutePermissionMap` | Mapa estático rota → [módulo, ação] |
 
 ## 5. Repositories envolvidos

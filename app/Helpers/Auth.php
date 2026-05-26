@@ -68,7 +68,8 @@ final class Auth
 
         $companyId = isset($current['company_id']) ? (int) $current['company_id'] : null;
         $companyName = isset($current['company_name']) ? (string) $current['company_name'] : null;
-        $fresh = $user->toSessionArray($companyId, $companyName);
+        $companyRole = isset($current['company_role']) ? (string) $current['company_role'] : null;
+        $fresh = $user->toSessionArray($companyId, $companyName, $companyRole);
 
         if (
             $current['role'] !== $fresh['role']
@@ -80,17 +81,22 @@ final class Auth
         }
     }
 
-    public static function login(User $user, ?int $companyId = null, ?string $companyName = null): void
+    public static function login(
+        User $user,
+        ?int $companyId = null,
+        ?string $companyName = null,
+        ?string $companyRole = null
+    ): void
     {
         self::$jwtUser = null;
         CompanyContext::clearJwt();
         session_regenerate_id(true);
-        $_SESSION[self::SESSION_KEY] = $user->toSessionArray($companyId, $companyName);
+        $_SESSION[self::SESSION_KEY] = $user->toSessionArray($companyId, $companyName, $companyRole);
         unset($_SESSION[self::PENDING_USER_KEY]);
         Csrf::regenerate();
     }
 
-    public static function setCompany(int $companyId, string $companyName): void
+    public static function setCompany(int $companyId, string $companyName, ?string $companyRole = null): void
     {
         $data = $_SESSION[self::SESSION_KEY] ?? null;
         if (!is_array($data) || !isset($data['id']))
@@ -100,6 +106,33 @@ final class Auth
 
         $data['company_id'] = $companyId;
         $data['company_name'] = trim($companyName);
+        if ($companyRole !== null && $companyRole !== '')
+        {
+            $data['company_role'] = $companyRole;
+        }
+        else
+        {
+            unset($data['company_role']);
+        }
+        $_SESSION[self::SESSION_KEY] = $data;
+    }
+
+    public static function setCompanyRole(?string $companyRole): void
+    {
+        $data = $_SESSION[self::SESSION_KEY] ?? null;
+        if (!is_array($data))
+        {
+            return;
+        }
+
+        if ($companyRole !== null && $companyRole !== '')
+        {
+            $data['company_role'] = $companyRole;
+        }
+        else
+        {
+            unset($data['company_role']);
+        }
         $_SESSION[self::SESSION_KEY] = $data;
     }
 

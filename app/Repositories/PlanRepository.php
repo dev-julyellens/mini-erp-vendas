@@ -48,6 +48,26 @@ final class PlanRepository
     /**
      * @return list<Plan>
      */
+    public function listAll(): array
+    {
+        $stmt = $this->db->query(
+            'SELECT id, code, name, description, price_monthly, billing_interval,
+                    trial_days, active, sort_order
+             FROM plans
+             ORDER BY sort_order ASC, name ASC'
+        );
+        $list = [];
+        foreach ($stmt->fetchAll() as $row)
+        {
+            $list[] = Plan::fromArray($row);
+        }
+
+        return $list;
+    }
+
+    /**
+     * @return list<Plan>
+     */
     public function listActive(): array
     {
         $stmt = $this->db->query(

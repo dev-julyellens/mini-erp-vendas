@@ -10,14 +10,20 @@ use App\Helpers\CompanyContext;
 use App\Models\Company;
 use App\Models\User;
 use App\Repositories\CompanyRepository;
+use App\Repositories\UserCompanyRepository;
 
 final class CompanyAuthService
 {
     private CompanyRepository $companies;
+    private UserCompanyRepository $userCompanies;
 
-    public function __construct(?CompanyRepository $companies = null)
+    public function __construct(
+        ?CompanyRepository $companies = null,
+        ?UserCompanyRepository $userCompanies = null
+    )
     {
         $this->companies = $companies ?? new CompanyRepository();
+        $this->userCompanies = $userCompanies ?? new UserCompanyRepository();
     }
 
     /**
@@ -41,7 +47,8 @@ final class CompanyAuthService
             throw new ValidationException(['company_id' => 'Empresa inválida ou inativa.']);
         }
 
-        Auth::login($user, $company->id, $company->name);
+        $companyRole = $this->userCompanies->getRoleForUserInCompany($user->id, $company->id);
+        Auth::login($user, $company->id, $company->name, $companyRole);
         (new SessionService())->initializeOnLogin();
     }
 
@@ -77,7 +84,8 @@ final class CompanyAuthService
             throw new ValidationException(['company_id' => 'Empresa inválida ou inativa.']);
         }
 
-        Auth::setCompany($company->id, $company->name);
+        $companyRole = $this->userCompanies->getRoleForUserInCompany($userId, $company->id);
+        Auth::setCompany($company->id, $company->name, $companyRole);
     }
 
     public function requireSelectedCompany(): void

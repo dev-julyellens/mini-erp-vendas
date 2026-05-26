@@ -9,6 +9,7 @@ use App\Helpers\ApiResponse;
 use App\Helpers\Auth;
 use App\Helpers\PathHelper;
 use App\Services\PermissionService;
+use App\Services\TenantContextService;
 
 final class PermissionMiddleware
 {
@@ -37,6 +38,10 @@ final class PermissionMiddleware
         'GET /subscription',
         'POST /subscription/pay',
         'POST /subscription/change-plan',
+        'GET /profile',
+        'POST /profile/update',
+        'GET /profile/password',
+        'POST /profile/password',
     ];
 
     public static function handle(?string $method = null, ?string $path = null): void
@@ -61,8 +66,9 @@ final class PermissionMiddleware
             return;
         }
 
+        $effectiveRole = (new TenantContextService())->resolveEffectiveAclRole();
         $service = new PermissionService();
-        if ($service->authorizeRoute($user->role, $method, $path))
+        if ($service->authorizeRoute($effectiveRole, $method, $path))
         {
             return;
         }

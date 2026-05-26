@@ -25,6 +25,9 @@ docs/
 | [api.md](arquitetura/api.md) | REST e rate limit |
 | [frontend.md](arquitetura/frontend.md) | Views e assets |
 | [permissoes.md](arquitetura/permissoes.md) | ACL por papel |
+| [multiempresa.md](arquitetura/multiempresa.md) | Tenant, troca de empresa, vínculos |
+| [usuarios.md](arquitetura/usuarios.md) | Gestão de usuários e perfil |
+| [saas.md](arquitetura/saas.md) | Administração SaaS da plataforma |
 
 Cada documento segue: visão geral, fluxo, banco, services, repositories, controllers, regras, fluxo de dados, pontos críticos, dependências, melhorias.
 

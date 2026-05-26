@@ -116,6 +116,59 @@ final class SubscriptionRepository
     /**
      * @return list<Subscription>
      */
+    /**
+     * @return array{items: list<array<string, mixed>>, total: int}
+     */
+    public function paginateAdmin(int $page, int $perPage, ?string $search = null): array
+    {
+        $page = max(1, $page);
+        $offset = ($page - 1) * $perPage;
+        $where = ['1=1'];
+        $params = [];
+
+        if ($search !== null && trim($search) !== '')
+        {
+            $where[] = '(c.name ILIKE :search OR p.name ILIKE :search OR p.code ILIKE :search)';
+            $params['search'] = '%' . trim($search) . '%';
+        }
+
+        $whereSql = implode(' AND ', $where);
+
+        $countStmt = $this->db->prepare(
+            "SELECT COUNT(*)
+             FROM subscriptions s
+             INNER JOIN companies c ON c.id = s.company_id
+             INNER JOIN plans p ON p.id = s.plan_id
+             WHERE {$whereSql}"
+        );
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+
+        $stmt = $this->db->prepare(
+            "SELECT s.id, s.company_id, s.plan_id, s.status,
+                    s.current_period_start, s.current_period_end,
+                    s.trial_ends_at, c.name AS company_name, p.name AS plan_name, p.code AS plan_code
+             FROM subscriptions s
+             INNER JOIN companies c ON c.id = s.company_id
+             INNER JOIN plans p ON p.id = s.plan_id
+             WHERE {$whereSql}
+             ORDER BY c.name ASC
+             LIMIT :limit OFFSET :offset"
+        );
+        foreach ($params as $key => $value)
+        {
+            $stmt->bindValue(':' . $key, $value);
+        }
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return ['items' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    /**
+     * @return list<Subscription>
+     */
     public function listDueForRenewal(string $before): array
     {
         $stmt = $this->db->prepare(

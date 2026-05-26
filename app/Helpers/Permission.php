@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Helpers;
 
 use App\Services\PermissionService;
+use App\Services\TenantContextService;
 
 final class Permission
 {
@@ -12,13 +13,14 @@ final class Permission
 
     public static function can(string $module, string $action): bool
     {
-        $snapshot = Auth::sessionSnapshot();
-        if ($snapshot === null || !isset($snapshot['role']))
+        if (!Auth::check())
         {
             return false;
         }
 
-        return self::service()->can((string) $snapshot['role'], $module, $action);
+        $role = self::effectiveRole();
+
+        return $role !== '' && self::service()->can($role, $module, $action);
     }
 
     public static function canView(string $module): bool
@@ -34,5 +36,10 @@ final class Permission
         }
 
         return self::$service;
+    }
+
+    private static function effectiveRole(): string
+    {
+        return (new TenantContextService())->resolveEffectiveAclRole();
     }
 }

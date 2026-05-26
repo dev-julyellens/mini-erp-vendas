@@ -65,6 +65,32 @@ final class RoutePermissionMap
         'GET /reports/cash-flow' => ['financeiro', 'visualizar'],
         'GET /reports/cash-flow/export' => ['financeiro', 'visualizar'],
 
+        'GET /admin/companies' => ['usuarios', 'visualizar'],
+        'GET /admin/companies/create' => ['usuarios', 'criar'],
+        'POST /admin/companies/store' => ['usuarios', 'criar'],
+        'GET /admin/companies/edit' => ['usuarios', 'editar'],
+        'POST /admin/companies/update' => ['usuarios', 'editar'],
+        'POST /admin/companies/toggle-active' => ['usuarios', 'editar'],
+
+        'GET /admin/users' => ['usuarios', 'visualizar'],
+        'GET /admin/users/create' => ['usuarios', 'criar'],
+        'POST /admin/users/store' => ['usuarios', 'criar'],
+        'GET /admin/users/edit' => ['usuarios', 'editar'],
+        'POST /admin/users/update' => ['usuarios', 'editar'],
+        'POST /admin/users/toggle-active' => ['usuarios', 'editar'],
+        'GET /admin/users/reset-password' => ['usuarios', 'editar'],
+        'POST /admin/users/reset-password' => ['usuarios', 'editar'],
+
+        'GET /user-companies' => ['usuarios', 'visualizar'],
+        'POST /user-companies/attach' => ['usuarios', 'criar'],
+        'POST /user-companies/update-role' => ['usuarios', 'editar'],
+        'POST /user-companies/toggle-active' => ['usuarios', 'editar'],
+        'POST /user-companies/detach' => ['usuarios', 'excluir'],
+
+        'GET /admin/saas' => ['usuarios', 'visualizar'],
+        'GET /admin/saas/subscriptions' => ['usuarios', 'visualizar'],
+        'POST /admin/saas/assign-plan' => ['usuarios', 'editar'],
+
         'GET /audit-logs' => ['usuarios', 'visualizar'],
         'GET /access-logs' => ['usuarios', 'visualizar'],
 

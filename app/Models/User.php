@@ -59,7 +59,11 @@ final class User
      *   company_name?: string
      * }
      */
-    public function toSessionArray(?int $companyId = null, ?string $companyName = null): array
+    public function toSessionArray(
+        ?int $companyId = null,
+        ?string $companyName = null,
+        ?string $companyRole = null
+    ): array
     {
         $data = [
             'id' => $this->id,
@@ -72,6 +76,10 @@ final class User
         {
             $data['company_id'] = $companyId;
             $data['company_name'] = trim((string) $companyName);
+            if ($companyRole !== null && $companyRole !== '')
+            {
+                $data['company_role'] = $companyRole;
+            }
         }
 
         return $data;

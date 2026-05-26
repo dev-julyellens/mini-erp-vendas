@@ -39,6 +39,8 @@ $canEstoque = \App\Helpers\Permission::canView('estoque');
 $canFinanceiro = \App\Helpers\Permission::canView('financeiro');
 $canUsuarios = \App\Helpers\Permission::canView('usuarios');
 $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
+$isPlatformAdmin = (new \App\Services\PlatformAdminService())->isPlatformAdmin();
+$canManageLinks = $isPlatformAdmin || \App\Helpers\Permission::can('usuarios', 'editar');
 
 ?>
 <!DOCTYPE html>
@@ -131,9 +133,22 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
                     <a class="nav-link <?= $navActive('/subscription') ?>" href="<?= htmlspecialchars($url('subscription'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-credit-card"></i> Assinatura
                     </a>
-                    <span class="nav-link disabled text-secondary" title="Módulo em desenvolvimento">
-                        <i class="bi bi-person-gear"></i> Usuários
-                    </span>
+                    <?php if ($isPlatformAdmin): ?>
+                        <a class="nav-link <?= $navPrefix('/admin/users') ?>" href="<?= htmlspecialchars($url('admin/users'), ENT_QUOTES, 'UTF-8') ?>">
+                            <i class="bi bi-person-gear"></i> Usuários
+                        </a>
+                        <a class="nav-link <?= $navPrefix('/admin/companies') ?>" href="<?= htmlspecialchars($url('admin/companies'), ENT_QUOTES, 'UTF-8') ?>">
+                            <i class="bi bi-buildings"></i> Empresas
+                        </a>
+                        <a class="nav-link <?= $navPrefix('/admin/saas') ?>" href="<?= htmlspecialchars($url('admin/saas'), ENT_QUOTES, 'UTF-8') ?>">
+                            <i class="bi bi-cloud"></i> SaaS
+                        </a>
+                    <?php endif; ?>
+                    <?php if ($canManageLinks): ?>
+                        <a class="nav-link <?= $navPrefix('/user-companies') ?>" href="<?= htmlspecialchars($url('user-companies'), ENT_QUOTES, 'UTF-8') ?>">
+                            <i class="bi bi-link-45deg"></i> Vínculos
+                        </a>
+                    <?php endif; ?>
                 <?php endif; ?>
                 <?php if ($canProdutos || $canVendas): ?>
                     <hr class="border-secondary-subtle">
@@ -177,14 +192,17 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
                                 </span>
                             </a>
                         <?php endif; ?>
-                        <div class="text-end">
+                        <a class="text-end text-decoration-none" href="<?= htmlspecialchars($url('profile'), ENT_QUOTES, 'UTF-8') ?>" title="Meu perfil">
                             <div class="small fw-semibold text-dark text-truncate" style="max-width: 10rem;">
                                 <?= htmlspecialchars($authUser['name'], ENT_QUOTES, 'UTF-8') ?>
                             </div>
                             <div class="text-muted d-none d-md-block" style="font-size: 0.75rem;">
                                 <?= htmlspecialchars($authUser['role'], ENT_QUOTES, 'UTF-8') ?>
+                                <?php if (!empty($authUser['company_role'])): ?>
+                                    · <?= htmlspecialchars((string) $authUser['company_role'], ENT_QUOTES, 'UTF-8') ?>
+                                <?php endif; ?>
                             </div>
-                        </div>
+                        </a>
                         <form method="post" action="<?= htmlspecialchars($url('logout'), ENT_QUOTES, 'UTF-8') ?>" class="m-0" data-global-loading="false">
                             <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                             <button type="submit" class="btn btn-sm btn-outline-secondary text-nowrap">
