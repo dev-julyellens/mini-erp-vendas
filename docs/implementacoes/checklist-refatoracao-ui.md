@@ -33,12 +33,12 @@ Fazer **antes** ou **em paralelo** às ondas 1–3 para evitar copiar HTML em de
 |---|--------|------------------|------------|
 | 0.1 | Partial de painel de filtros reutilizável | `app/Views/components/filter-panel.php` | ✅ Feito |
 | 0.2 | Documentar template mínimo de listagem (PH + tabela + AB-R) | `docs/implementacoes/botoes-padrao.md` | ✅ Feito |
-| 0.3 | Preferências no servidor (`user_preferences`) | migration + `ProfileService` | Baixa (pós-MVP) |
-| 0.4 | Upload de avatar | migration `users.avatar_path` + controller | Baixa |
-| 0.5 | Indicador de força de senha | `profile/password.php` + JS | Baixa |
-| 0.6 | Skeleton em carregamentos AJAX | views + `app.js` | Baixa |
-| 0.7 | Sidebar pin (fixar/desfixar) | `sidebar.php` + `design-system.css` + `app.js` | Baixa |
-| 0.8 | Gráficos embutidos em PDF | `ReportExportService` + lib gráficos | Baixa |
+| 0.3 | Preferências no servidor (`user_preferences`) | migration + `ProfileService` | ✅ Feito |
+| 0.4 | Upload de avatar | migration `users.avatar_path` + controller | ✅ Feito |
+| 0.5 | Indicador de força de senha | `profile/password.php` + JS | ✅ Feito |
+| 0.6 | Skeleton em carregamentos AJAX | views + `app.js` | ✅ Feito |
+| 0.7 | Sidebar pin (fixar/desfixar) | `sidebar.php` + `design-system.css` + `app.js` | ✅ Feito |
+| 0.8 | Gráficos embutidos em PDF | `ReportExportService` + `ReportChartImageService` (GD) | ✅ Feito |
 
 ---
 
@@ -149,12 +149,12 @@ Export PDF/Excel já tem KPIs (`ReportExportService`). Foco: **experiência na t
 
 | Arquivo | Status | Tarefas pendentes |
 |---------|--------|-------------------|
-| `profile/show.php` | ✅ | Avatar upload (Fase 0.4); prefs no servidor (0.3) |
-| `profile/password.php` | ✅ | PH + AB-F + LD | força de senha (0.5) backlog |
+| `profile/show.php` | ✅ | Avatar upload + prefs servidor sincronizadas |
+| `profile/password.php` | ✅ | PH + AB-F + LD + indicador de força de senha |
 | `notifications/index.php` | ✅ | PH; filter-panel; ação no header |
 | `layouts/main.php` | ✅ | — |
 | `layouts/auth.php` | 🟡 | `design-system.css` + toggle de tema OK; revisar contraste claro/escuro (backlog 0.x) |
-| `components/sidebar.php` | ✅ | Pin sidebar (0.7) |
+| `components/sidebar.php` | ✅ | Recolher/expandir (`data-sidebar-collapse`); fixar só no perfil |
 | `components/page-header.php` | ✅ | — |
 | `components/action-buttons.php` | ✅ | — |
 | `components/kpi-card.php` | ✅ | — |
@@ -235,7 +235,7 @@ Itens do documento ainda **não refletidos** em `NavigationMenu.php`:
 ### Sprint 6 — Formulários CRUD + infra avançada (backlog)
 
 1. ~~**Formulários:** migrar os 7 arquivos para `page-header` + `saveLoadingText`~~ ✅
-2. Avatar, prefs servidor, skeleton, pin sidebar, PDF com gráficos (Fase 0.3–0.8)
+2. ~~Avatar, prefs servidor, skeleton, pin sidebar, PDF com gráficos (Fase 0.3–0.8)~~ ✅
 3. Autosave em `orders/create`, `products/form`
 4. Máscaras globais (documento, CEP, moeda) — começar por `companies/form` (`tax_id`)
 5. Revisão acessibilidade (audit com axe ou checklist WCAG)
@@ -302,8 +302,8 @@ require dirname(__DIR__) . '/components/action-buttons.php';
 | Design system + layout | ~92% | `design-system.css` no layout principal e auth |
 | Menu / sidebar | ~75% | Itens do prompt ainda não refletidos (ver seção Menu) |
 | Dashboard | ~90% | PH + KPIs + abas |
-| Perfil | ~75% | PH em show/password; avatar/prefs servidor em backlog |
-| Export relatórios | ~85% | PDF/Excel com KPIs; gráficos no PDF em backlog |
+| Perfil | ~95% | Avatar, prefs servidor, força de senha |
+| Export relatórios | ~95% | PDF com KPIs + gráfico (GD) |
 | **Listagens (index)** | **~98%** | PH + AB-R + filter-panel onde há filtros |
 | **Formulários CRUD** | **~95%** | PH + AB-F + LD em todos; máscara moeda em produto/serviço em backlog |
 | Componentização (partials) | ~90% | `filter-panel`, `action-buttons`, `page-header` maduros |
@@ -311,4 +311,4 @@ require dirname(__DIR__) . '/components/action-buttons.php';
 | Relatórios na tela (BI) | ~95% | KPIs + Chart.js nos 5 relatórios principais |
 | Acessibilidade / performance visual | ~30% | Sem auditoria automatizada ainda |
 
-**Última atualização:** 26/05/2026 — migração dos 7 formulários CRUD para `page-header` + loading nos submits.
+**Última atualização:** 26/05/2026 — Sprint 6 item 2: avatar, `user_preferences`, skeleton AJAX, pin sidebar, força de senha, gráficos no PDF.

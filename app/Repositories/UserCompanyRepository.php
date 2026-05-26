@@ -172,11 +172,10 @@ final class UserCompanyRepository
              SET active = :active, updated_at = CURRENT_TIMESTAMP
              WHERE user_id = :user_id AND company_id = :company_id'
         );
-        $stmt->execute([
-            'user_id' => $userId,
-            'company_id' => $companyId,
-            'active' => $active,
-        ]);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':company_id', $companyId, PDO::PARAM_INT);
+        Database::bindBool($stmt, ':active', $active);
+        $stmt->execute();
     }
 
     public function detach(int $userId, int $companyId): void

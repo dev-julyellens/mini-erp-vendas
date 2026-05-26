@@ -3,7 +3,8 @@
 
 # IDEs
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 
 # Logs
 *.log
@@ -13,8 +14,10 @@
 # Environment variables
 .env
 
-# Cursor
-.cursor/
+# Cursor (regras versionadas; resto local)
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 .cursorignore
 .cursorrules
 .gitmessage

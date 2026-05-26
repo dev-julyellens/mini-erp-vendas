@@ -11,6 +11,7 @@ use App\Helpers\Flash;
 use App\Repositories\UserCompanyRepository;
 use App\Services\PasswordPolicyService;
 use App\Services\PermissionService;
+use App\Services\ProfileService;
 use App\Services\TenantContextService;
 use App\Services\UserService;
 
@@ -28,9 +29,12 @@ final class ProfileController extends Controller
         $snapshot = Auth::sessionSnapshot();
         $effectiveRole = (new TenantContextService())->resolveEffectiveAclRole();
         $permissionKeys = (new PermissionService())->permissionKeysForRole($effectiveRole);
+        $profileService = new ProfileService();
 
         $this->view('profile/show', [
             'user' => $user,
+            'userPrefs' => $profileService->preferencesForUser($userId),
+            'hasAvatar' => $profileService->avatarAbsolutePath($user) !== null,
             'companyName' => $snapshot['company_name'] ?? null,
             'companyRole' => $snapshot['company_role'] ?? null,
             'companyBindings' => (new UserCompanyRepository())->listBindingsForUser($userId),
@@ -60,21 +64,107 @@ final class ProfileController extends Controller
         }
         catch (ValidationException $e)
         {
-            $user = Auth::user();
-            $snapshot = Auth::sessionSnapshot();
-            $effectiveRole = (new TenantContextService())->resolveEffectiveAclRole();
-            $this->view('profile/show', [
-                'user' => $user,
-                'companyName' => $snapshot['company_name'] ?? null,
-                'companyRole' => $snapshot['company_role'] ?? null,
-                'companyBindings' => (new UserCompanyRepository())->listBindingsForUser($userId),
-                'effectiveRole' => $effectiveRole,
-                'permissionKeys' => (new PermissionService())->permissionKeysForRole($effectiveRole),
-                'errors' => $e->getErrors(),
-                'old' => $_POST,
-                'flash' => Flash::pull(),
-            ]);
+            $this->renderShowWithErrors($userId, $e->getErrors(), $_POST);
         }
+    }
+
+    public function updatePreferences(): void
+    {
+        $userId = Auth::id();
+        if ($userId === null)
+        {
+            $this->json(['success' => false, 'message' => 'Não autenticado.'], 401);
+
+            return;
+        }
+
+        $input = $_POST;
+        if (str_contains((string) ($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json'))
+        {
+            $raw = file_get_contents('php://input');
+            $decoded = is_string($raw) ? json_decode($raw, true) : null;
+            if (is_array($decoded))
+            {
+                $input = $decoded;
+            }
+        }
+
+        try
+        {
+            $prefs = (new ProfileService())->savePreferences($userId, $input);
+            $this->json(['success' => true, 'data' => $prefs]);
+        }
+        catch (ValidationException $e)
+        {
+            $this->json(['success' => false, 'errors' => $e->getErrors()], 422);
+        }
+    }
+
+    public function uploadAvatar(): void
+    {
+        $userId = Auth::id();
+        if ($userId === null)
+        {
+            $this->redirect('/login');
+        }
+
+        try
+        {
+            (new ProfileService())->uploadAvatar($userId);
+            Flash::success('Foto de perfil atualizada.');
+        }
+        catch (ValidationException $e)
+        {
+            foreach ($e->getErrors() as $message)
+            {
+                Flash::error((string) $message);
+                break;
+            }
+        }
+
+        $this->redirect('/profile');
+    }
+
+    public function removeAvatar(): void
+    {
+        $userId = Auth::id();
+        if ($userId === null)
+        {
+            $this->redirect('/login');
+        }
+
+        (new ProfileService())->removeAvatar($userId);
+        Flash::success('Foto de perfil removida.');
+        $this->redirect('/profile');
+    }
+
+    public function avatar(): void
+    {
+        $user = Auth::user();
+        if ($user === null)
+        {
+            http_response_code(404);
+            exit;
+        }
+
+        $path = (new ProfileService())->avatarAbsolutePath($user);
+        if ($path === null)
+        {
+            http_response_code(404);
+            exit;
+        }
+
+        $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION)))
+        {
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            default => 'image/jpeg',
+        };
+
+        header('Content-Type: ' . $mime);
+        header('Cache-Control: private, max-age=3600');
+        readfile($path);
+        exit;
     }
 
     public function password(): void
@@ -113,5 +203,31 @@ final class ProfileController extends Controller
                 'flash' => Flash::pull(),
             ]);
         }
+    }
+
+    /**
+     * @param array<string, string> $errors
+     * @param array<string, mixed> $old
+     */
+    private function renderShowWithErrors(int $userId, array $errors, array $old): void
+    {
+        $user = Auth::user();
+        $snapshot = Auth::sessionSnapshot();
+        $effectiveRole = (new TenantContextService())->resolveEffectiveAclRole();
+        $profileService = new ProfileService();
+
+        $this->view('profile/show', [
+            'user' => $user,
+            'userPrefs' => $profileService->preferencesForUser($userId),
+            'hasAvatar' => $user !== null && $profileService->avatarAbsolutePath($user) !== null,
+            'companyName' => $snapshot['company_name'] ?? null,
+            'companyRole' => $snapshot['company_role'] ?? null,
+            'companyBindings' => (new UserCompanyRepository())->listBindingsForUser($userId),
+            'effectiveRole' => $effectiveRole,
+            'permissionKeys' => (new PermissionService())->permissionKeysForRole($effectiveRole),
+            'errors' => $errors,
+            'old' => $old,
+            'flash' => Flash::pull(),
+        ]);
     }
 }

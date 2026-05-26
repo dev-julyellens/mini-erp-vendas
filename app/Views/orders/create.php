@@ -28,7 +28,7 @@ $breadcrumbs = [
 require dirname(__DIR__) . '/components/page-header.php';
 
 ?>
-<div class="card-soft p-3 p-md-4">
+<div class="card-soft p-3 p-md-4" id="orderFormCard" data-ajax-skeleton data-ajax-skeleton-rows="4">
     <form id="orderForm" class="needs-validation" novalidate data-no-loading>
         <div class="row g-3">
             <div class="col-md-4">

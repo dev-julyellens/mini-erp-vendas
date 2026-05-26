@@ -12,6 +12,7 @@ final class User
     public string $password_hash;
     public string $role;
     public bool $active;
+    public ?string $avatar_path = null;
     public string $created_at;
     public string $updated_at;
 
@@ -27,6 +28,9 @@ final class User
         $m->password_hash = (string) $row['password_hash'];
         $m->role = (string) $row['role'];
         $m->active = self::parseBool($row['active'] ?? true);
+        $m->avatar_path = isset($row['avatar_path']) && $row['avatar_path'] !== ''
+            ? (string) $row['avatar_path']
+            : null;
         $m->created_at = (string) $row['created_at'];
         $m->updated_at = (string) $row['updated_at'];
         return $m;

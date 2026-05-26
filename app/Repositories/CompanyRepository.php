@@ -285,7 +285,9 @@ final class CompanyRepository
         $stmt = $this->db->prepare(
             'UPDATE companies SET active = :active, updated_at = CURRENT_TIMESTAMP WHERE id = :id'
         );
-        $stmt->execute(['id' => $id, 'active' => $active]);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        Database::bindBool($stmt, ':active', $active);
+        $stmt->execute();
     }
 
     /**

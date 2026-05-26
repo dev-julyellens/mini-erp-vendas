@@ -120,6 +120,10 @@ $router->post('/user-companies/detach', \App\Controllers\UserCompanyController::
 
 $router->get('/profile', \App\Controllers\ProfileController::class . '@show');
 $router->post('/profile/update', \App\Controllers\ProfileController::class . '@update');
+$router->post('/profile/preferences', \App\Controllers\ProfileController::class . '@updatePreferences');
+$router->post('/profile/avatar', \App\Controllers\ProfileController::class . '@uploadAvatar');
+$router->post('/profile/avatar/remove', \App\Controllers\ProfileController::class . '@removeAvatar');
+$router->get('/profile/avatar', \App\Controllers\ProfileController::class . '@avatar');
 $router->get('/profile/password', \App\Controllers\ProfileController::class . '@password');
 $router->post('/profile/password', \App\Controllers\ProfileController::class . '@updatePassword');
 

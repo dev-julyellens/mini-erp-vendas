@@ -6,6 +6,8 @@ use App\Services\CompanyRoleService;
 
 /** @var callable(string):string $url */
 /** @var \App\Models\User $user */
+/** @var array{theme: string, sidebar_collapsed: bool, sidebar_pinned: bool, dashboard_tab: string} $userPrefs */
+/** @var bool $hasAvatar */
 /** @var string|null $companyName */
 /** @var string|null $companyRole */
 /** @var list<array{company_id: int, company_name: string, role: string, active: bool}> $companyBindings */
@@ -15,6 +17,13 @@ use App\Services\CompanyRoleService;
 /** @var array<string, mixed>|null $old */
 
 $old = $old ?? [];
+$userPrefs = $userPrefs ?? [
+    'theme' => 'light',
+    'sidebar_collapsed' => false,
+    'sidebar_pinned' => false,
+    'dashboard_tab' => 'overview',
+];
+$hasAvatar = $hasAvatar ?? false;
 $companyBindings = $companyBindings ?? [];
 $permissionKeys = $permissionKeys ?? [];
 $roleLabel = $companyRole !== null ? (new CompanyRoleService())->label($companyRole) : null;
@@ -45,12 +54,31 @@ require dirname(__DIR__) . '/components/page-header.php';
 <div class="row g-3">
     <div class="col-lg-8">
         <div class="card-soft p-3 p-md-4 mb-3">
-            <div class="d-flex align-items-center gap-3 mb-4">
-                <div class="profile-avatar" aria-hidden="true"><?= htmlspecialchars($initials, ENT_QUOTES, 'UTF-8') ?></div>
-                <div>
+            <div class="d-flex align-items-start gap-3 mb-4 flex-wrap">
+                <div class="profile-avatar-wrap">
+                    <?php if ($hasAvatar): ?>
+                        <img class="profile-avatar profile-avatar-img" src="<?= htmlspecialchars($url('profile/avatar'), ENT_QUOTES, 'UTF-8') ?>"
+                            alt="Foto de <?= htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8') ?>">
+                    <?php else: ?>
+                        <div class="profile-avatar" aria-hidden="true"><?= htmlspecialchars($initials, ENT_QUOTES, 'UTF-8') ?></div>
+                    <?php endif; ?>
+                </div>
+                <div class="flex-grow-1">
                     <div class="fw-semibold"><?= htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8') ?></div>
                     <div class="text-muted small"><?= htmlspecialchars($user->email, ENT_QUOTES, 'UTF-8') ?></div>
-                    <div class="text-muted small mt-1">Avatar por iniciais (upload em versão futura)</div>
+                    <form method="post" action="<?= htmlspecialchars($url('profile/avatar'), ENT_QUOTES, 'UTF-8') ?>"
+                        enctype="multipart/form-data" class="mt-2 d-flex flex-wrap gap-2 align-items-center">
+                        <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
+                        <input type="file" class="form-control form-control-sm" name="avatar" accept="image/jpeg,image/png,image/webp" required>
+                        <button type="submit" class="btn btn-sm btn-secondary" data-loading-text="Enviando...">Enviar foto</button>
+                    </form>
+                    <?php if ($hasAvatar): ?>
+                        <form method="post" action="<?= htmlspecialchars($url('profile/avatar/remove'), ENT_QUOTES, 'UTF-8') ?>" class="mt-1">
+                            <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
+                            <button type="submit" class="btn btn-sm btn-link text-danger px-0">Remover foto</button>
+                        </form>
+                    <?php endif; ?>
+                    <div class="text-muted small">JPG, PNG ou WebP — até 2 MB</div>
                 </div>
             </div>
             <form method="post" action="<?= htmlspecialchars($url('profile/update'), ENT_QUOTES, 'UTF-8') ?>" class="needs-validation" novalidate>
@@ -83,30 +111,39 @@ require dirname(__DIR__) . '/components/page-header.php';
             </form>
         </div>
 
-        <div class="card-soft p-3 p-md-4 prefs-card">
+        <div class="card-soft p-3 p-md-4 prefs-card" id="profilePrefsCard"
+            data-prefs-url="<?= htmlspecialchars($url('profile/preferences'), ENT_QUOTES, 'UTF-8') ?>">
             <div class="form-section-title">Preferências de interface</div>
-            <p class="text-muted small">Salvas neste navegador (localStorage).</p>
+            <p class="text-muted small">Sincronizadas com sua conta em todos os dispositivos.</p>
             <div class="mb-3">
                 <label class="form-label" for="prefTheme">Tema</label>
                 <select class="form-select" id="prefTheme" data-pref-theme>
-                    <option value="light">Claro</option>
-                    <option value="dark">Escuro</option>
+                    <option value="light" <?= $userPrefs['theme'] === 'light' ? 'selected' : '' ?>>Claro</option>
+                    <option value="dark" <?= $userPrefs['theme'] === 'dark' ? 'selected' : '' ?>>Escuro</option>
                 </select>
             </div>
             <div class="form-check form-switch mb-3">
-                <input class="form-check-input" type="checkbox" id="prefSidebarCollapsed" data-pref-sidebar>
+                <input class="form-check-input" type="checkbox" id="prefSidebarPinned" data-pref-sidebar-pinned
+                    <?= $userPrefs['sidebar_pinned'] ? 'checked' : '' ?>>
+                <label class="form-check-label" for="prefSidebarPinned">Fixar menu lateral expandido</label>
+            </div>
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="prefSidebarCollapsed" data-pref-sidebar
+                    <?= $userPrefs['sidebar_collapsed'] ? 'checked' : '' ?>
+                    <?= $userPrefs['sidebar_pinned'] ? 'disabled' : '' ?>>
                 <label class="form-check-label" for="prefSidebarCollapsed">Menu lateral recolhido por padrão</label>
             </div>
             <div class="mb-0">
                 <label class="form-label" for="prefDashboardTab">Aba favorita do dashboard</label>
                 <select class="form-select" id="prefDashboardTab" data-pref-dashboard-tab>
-                    <option value="overview">Visão geral</option>
-                    <option value="comercial">Comercial</option>
-                    <option value="financeiro">Financeiro</option>
-                    <option value="operacional">Operacional</option>
-                    <option value="executivo">Executivo</option>
+                    <option value="overview" <?= $userPrefs['dashboard_tab'] === 'overview' ? 'selected' : '' ?>>Visão geral</option>
+                    <option value="comercial" <?= $userPrefs['dashboard_tab'] === 'comercial' ? 'selected' : '' ?>>Comercial</option>
+                    <option value="financeiro" <?= $userPrefs['dashboard_tab'] === 'financeiro' ? 'selected' : '' ?>>Financeiro</option>
+                    <option value="operacional" <?= $userPrefs['dashboard_tab'] === 'operacional' ? 'selected' : '' ?>>Operacional</option>
+                    <option value="executivo" <?= $userPrefs['dashboard_tab'] === 'executivo' ? 'selected' : '' ?>>Executivo</option>
                 </select>
             </div>
+            <div class="small text-muted mt-2" id="prefSaveStatus" aria-live="polite"></div>
         </div>
     </div>
 
@@ -151,7 +188,7 @@ require dirname(__DIR__) . '/components/page-header.php';
             </div>
         <?php endif; ?>
 
-        <div class="card-soft p-3 p-md-4">
+        <div class="card-soft p-3 p-md-4" id="permissoes">
             <h2 class="h6 text-muted text-uppercase mb-3">Permissões</h2>
             <?php if ($effectiveRole === 'admin'): ?>
                 <p class="small text-muted mb-2">Administrador com acesso total ao sistema.</p>
@@ -167,46 +204,3 @@ require dirname(__DIR__) . '/components/page-header.php';
         </div>
     </div>
 </div>
-
-<script>
-(function () {
-    "use strict";
-    var themeEl = document.querySelector("[data-pref-theme]");
-    var sidebarEl = document.querySelector("[data-pref-sidebar]");
-    var dashTabEl = document.querySelector("[data-pref-dashboard-tab]");
-    if (window.MiniErp && themeEl) {
-        themeEl.value = window.MiniErp.theme.get();
-        themeEl.addEventListener("change", function () {
-            window.MiniErp.theme.set(themeEl.value);
-        });
-    }
-    if (sidebarEl) {
-        try {
-            sidebarEl.checked = localStorage.getItem("mini-erp-sidebar-collapsed") === "1";
-        } catch (e) {}
-        sidebarEl.addEventListener("change", function () {
-            try {
-                localStorage.setItem("mini-erp-sidebar-collapsed", sidebarEl.checked ? "1" : "0");
-                if (sidebarEl.checked) {
-                    document.body.classList.add("sidebar-collapsed");
-                } else {
-                    document.body.classList.remove("sidebar-collapsed");
-                }
-            } catch (e) {}
-        });
-    }
-    if (dashTabEl) {
-        try {
-            var saved = localStorage.getItem("mini-erp-dashboard-tab");
-            if (saved) {
-                dashTabEl.value = saved;
-            }
-        } catch (e) {}
-        dashTabEl.addEventListener("change", function () {
-            try {
-                localStorage.setItem("mini-erp-dashboard-tab", dashTabEl.value);
-            } catch (e) {}
-        });
-    }
-})();
-</script>

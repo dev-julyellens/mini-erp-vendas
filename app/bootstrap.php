@@ -26,6 +26,13 @@ if (!is_file($autoload))
 
 require $autoload;
 
+ini_set('default_charset', 'UTF-8');
+if (function_exists('mb_internal_encoding'))
+{
+    mb_internal_encoding('UTF-8');
+    mb_http_output('UTF-8');
+}
+
 \App\Core\Env::load(dirname(__DIR__) . '/config/.env');
 
 $config = require dirname(__DIR__) . '/config/app.php';

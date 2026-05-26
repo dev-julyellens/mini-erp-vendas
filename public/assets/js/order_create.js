@@ -130,11 +130,15 @@
 
             var btn = document.getElementById("btnSubmit");
             var spinner = document.getElementById("btnSpinner");
+            var formCard = document.getElementById("orderFormCard");
             if (btn) {
                 btn.disabled = true;
             }
             if (spinner) {
                 spinner.classList.remove("d-none");
+            }
+            if (window.MiniErp && window.MiniErp.skeleton && formCard) {
+                window.MiniErp.skeleton.start(formCard);
             }
 
             fetch(window.__ORDER_STORE_URL__, {
@@ -201,6 +205,9 @@
                     }
                 })
                 .finally(function () {
+                    if (window.MiniErp && window.MiniErp.skeleton && formCard) {
+                        window.MiniErp.skeleton.stop(formCard);
+                    }
                     if (btn) {
                         btn.disabled = false;
                     }

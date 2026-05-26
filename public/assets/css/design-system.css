@@ -642,7 +642,21 @@ body.sidebar-collapsed .sidebar .nav-link i {
     margin-bottom: 0.75rem;
 }
 
+/* Sidebar fixada expandida (preferência no perfil) */
+body.sidebar-pinned .btn-sidebar-collapse {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+body.sidebar-pinned .sidebar {
+    width: var(--sidebar-width, 260px);
+}
+
 /* Perfil */
+.profile-avatar-wrap {
+    flex-shrink: 0;
+}
+
 .profile-avatar {
     width: 72px;
     height: 72px;
@@ -655,6 +669,48 @@ body.sidebar-collapsed .sidebar .nav-link i {
     place-items: center;
     flex-shrink: 0;
     box-shadow: 0 8px 24px rgba(56, 189, 248, 0.25);
+}
+
+.profile-avatar-img {
+    object-fit: cover;
+    display: block;
+    background: var(--card);
+}
+
+.password-strength-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--border);
+    overflow: hidden;
+}
+
+.password-strength-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background: #94a3b8;
+    transition: width 0.2s ease, background 0.2s ease;
+}
+
+.password-strength.is-weak .password-strength-fill {
+    background: #ef4444;
+}
+
+.password-strength.is-fair .password-strength-fill {
+    background: #f59e0b;
+}
+
+.password-strength.is-good .password-strength-fill {
+    background: #0ea5e9;
+}
+
+.password-strength.is-strong .password-strength-fill {
+    background: #22c55e;
+}
+
+.skeleton-panel {
+    padding: 0.5rem 0;
 }
 
 .prefs-card .form-check-input:checked {

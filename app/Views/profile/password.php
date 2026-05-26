@@ -29,7 +29,13 @@ require dirname(__DIR__) . '/components/page-header.php';
         <div class="mb-3">
             <label class="form-label" for="password">Nova senha</label>
             <input type="password" class="form-control <?= isset($errors['password']) ? 'is-invalid' : '' ?>"
-                id="password" name="password" required autocomplete="new-password">
+                id="password" name="password" required autocomplete="new-password" data-password-strength>
+            <div class="password-strength mt-2" data-password-strength-meter hidden>
+                <div class="password-strength-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <span class="password-strength-fill"></span>
+                </div>
+                <div class="password-strength-label small text-muted" data-password-strength-label></div>
+            </div>
             <?php if (isset($errors['password'])): ?>
                 <div class="invalid-feedback"><?= htmlspecialchars($errors['password'], ENT_QUOTES, 'UTF-8') ?></div>
             <?php endif; ?>

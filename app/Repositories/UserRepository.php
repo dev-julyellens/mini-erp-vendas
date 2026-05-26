@@ -10,6 +10,8 @@ use PDO;
 
 final class UserRepository
 {
+    private const USER_COLUMNS = 'id, name, email, password_hash, role, active, avatar_path, created_at, updated_at';
+
     private PDO $db;
 
     public function __construct(?PDO $db = null)
@@ -20,8 +22,7 @@ final class UserRepository
     public function findById(int $id): ?User
     {
         $stmt = $this->db->prepare(
-            'SELECT id, name, email, password_hash, role, active, created_at, updated_at
-             FROM users WHERE id = :id'
+            'SELECT ' . self::USER_COLUMNS . ' FROM users WHERE id = :id'
         );
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
@@ -31,8 +32,7 @@ final class UserRepository
     public function findByEmail(string $email): ?User
     {
         $stmt = $this->db->prepare(
-            'SELECT id, name, email, password_hash, role, active, created_at, updated_at
-             FROM users WHERE LOWER(email) = LOWER(:email)'
+            'SELECT ' . self::USER_COLUMNS . ' FROM users WHERE LOWER(email) = LOWER(:email)'
         );
         $stmt->execute(['email' => trim($email)]);
         $row = $stmt->fetch();
@@ -119,7 +119,7 @@ final class UserRepository
         $total = (int) $countStmt->fetchColumn();
 
         $stmt = $this->db->prepare(
-            "SELECT id, name, email, password_hash, role, active, created_at, updated_at
+            'SELECT ' . self::USER_COLUMNS . "
              FROM users
              WHERE {$whereSql}
              ORDER BY name ASC
@@ -189,7 +189,20 @@ final class UserRepository
         $stmt = $this->db->prepare(
             'UPDATE users SET active = :active, updated_at = CURRENT_TIMESTAMP WHERE id = :id'
         );
-        $stmt->execute(['id' => $id, 'active' => $active]);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        Database::bindBool($stmt, ':active', $active);
+        $stmt->execute();
+    }
+
+    public function updateAvatarPath(int $id, ?string $avatarPath): void
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE users SET avatar_path = :avatar_path, updated_at = CURRENT_TIMESTAMP WHERE id = :id'
+        );
+        $stmt->execute([
+            'id' => $id,
+            'avatar_path' => $avatarPath,
+        ]);
     }
 
     /**
@@ -197,8 +210,7 @@ final class UserRepository
      */
     public function listActiveForSelect(?string $search = null, int $limit = 50): array
     {
-        $sql = 'SELECT id, name, email, password_hash, role, active, created_at, updated_at
-                FROM users WHERE active = TRUE';
+        $sql = 'SELECT ' . self::USER_COLUMNS . ' FROM users WHERE active = TRUE';
         $params = [];
         if ($search !== null && trim($search) !== '')
         {

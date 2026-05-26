@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Helpers\Auth;
+use App\Helpers\Csrf;
+use App\Services\ProfileService;
+
 /** @var string $appName */
 /** @var string $baseUrl */
 /** @var string $__viewFile */
@@ -10,6 +14,20 @@ $url = static function (string $path = '') use ($baseUrl): string
 {
     return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
 };
+
+$userPrefsJson = '';
+if (Auth::check())
+{
+    $uid = Auth::id();
+    if ($uid !== null)
+    {
+        $encoded = json_encode(
+            (new ProfileService())->preferencesForUser($uid),
+            JSON_UNESCAPED_UNICODE
+        );
+        $userPrefsJson = is_string($encoded) ? $encoded : '';
+    }
+}
 
 ?>
 <!DOCTYPE html>
@@ -27,6 +45,9 @@ $url = static function (string $path = '') use ($baseUrl): string
                 if (localStorage.getItem("mini-erp-sidebar-collapsed") === "1") {
                     document.documentElement.classList.add("sidebar-collapsed-pending");
                 }
+                if (localStorage.getItem("mini-erp-sidebar-pinned") === "1") {
+                    document.documentElement.classList.add("sidebar-pinned-pending");
+                }
             } catch (e) {}
         })();
     </script>
@@ -39,7 +60,12 @@ $url = static function (string $path = '') use ($baseUrl): string
     <link rel="stylesheet" href="<?= htmlspecialchars($url('assets/css/design-system.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
-<body data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>">
+<body data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>"
+    <?php if ($userPrefsJson !== ''): ?>
+    data-user-prefs="<?= htmlspecialchars($userPrefsJson, ENT_QUOTES, 'UTF-8') ?>"
+    data-csrf-token="<?= htmlspecialchars(Csrf::token(), ENT_QUOTES, 'UTF-8') ?>"
+    data-prefs-url="<?= htmlspecialchars($url('profile/preferences'), ENT_QUOTES, 'UTF-8') ?>"
+    <?php endif; ?>>
     <div class="sidebar-backdrop" aria-hidden="true"></div>
     <div class="app-shell">
         <?php require dirname(__DIR__) . '/components/sidebar.php'; ?>

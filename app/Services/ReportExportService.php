@@ -236,6 +236,7 @@ final class ReportExportService
         $period = $this->formatPeriodLabel($filter);
         $generated = DateHelper::nowBr();
         $kpis = $this->buildKpis($type, $rows);
+        $chartBase64 = (new ReportChartImageService())->renderBase64ForReport($type, $filter);
 
         ob_start();
 ?>
@@ -336,6 +337,12 @@ final class ReportExportService
                     border-top: 1px solid #e2e8f0;
                     padding-top: 8px;
                 }
+
+                .chart-image {
+                    width: 100%;
+                    max-height: 220px;
+                    margin-bottom: 14px;
+                }
             </style>
         </head>
 
@@ -356,6 +363,9 @@ final class ReportExportService
                     </div>
                 <?php endforeach; ?>
             </div>
+            <?php if ($chartBase64 !== null): ?>
+                <img class="chart-image" src="data:image/png;base64,<?= $chartBase64 ?>" alt="Gráfico do relatório">
+            <?php endif; ?>
             <table>
                 <thead>
                     <tr>

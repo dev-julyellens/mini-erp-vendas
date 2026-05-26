@@ -81,4 +81,12 @@ final class Database
     {
         self::$instance = null;
     }
+
+    /**
+     * PDO com PostgreSQL envia false como "" se não usar PARAM_BOOL — quebra colunas BOOLEAN.
+     */
+    public static function bindBool(\PDOStatement $stmt, string $param, bool $value): void
+    {
+        $stmt->bindValue($param, $value, PDO::PARAM_BOOL);
+    }
 }

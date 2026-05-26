@@ -29,6 +29,11 @@ final class View
             exit;
         }
 
+        if (!headers_sent())
+        {
+            header('Content-Type: text/html; charset=UTF-8');
+        }
+
         extract($data, EXTR_SKIP);
         $config = require dirname(__DIR__, 2) . '/config/app.php';
         $appName = (string) ($config['app_name'] ?? 'App');

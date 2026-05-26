@@ -31,9 +31,11 @@
         "test": "phpunit",
         "analyse": "phpstan analyse --memory-limit=512M",
         "check": [
+            "@encoding",
             "@analyse",
             "@test"
-        ]
+        ],
+        "encoding": "php bin/check-encoding.php"
     },
     "config": {
         "sort-packages": true
