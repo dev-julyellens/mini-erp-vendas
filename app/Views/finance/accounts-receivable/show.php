@@ -66,7 +66,7 @@ $canPayInstallments = Permission::can('financeiro', 'criar')
             </div>
             <hr>
             <div class="text-muted small">Vencimento</div>
-            <div><?= htmlspecialchars(date('d/m/Y', strtotime($account->due_date)), ENT_QUOTES, 'UTF-8') ?></div>
+            <div><?= htmlspecialchars(DateHelper::toBrDate($account->due_date), ENT_QUOTES, 'UTF-8') ?></div>
             <div class="text-muted small mt-2">Criada em <?= htmlspecialchars(DateHelper::toBrDateTime($account->created_at), ENT_QUOTES, 'UTF-8') ?></div>
         </div>
     </div>

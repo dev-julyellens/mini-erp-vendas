@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Helpers\DateHelper;
 use App\Models\CashFlow;
 use App\Models\Payment;
 
@@ -79,7 +80,7 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
                 <?php else: ?>
                     <?php foreach ($movements as $m): ?>
                         <tr>
-                            <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($m->occurred_at)), ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars(DateHelper::toBrDateTime($m->occurred_at), ENT_QUOTES, 'UTF-8') ?></td>
                             <td>
                                 <span class="badge text-bg-<?= $m->type === 'entrada' ? 'success' : 'danger' ?>">
                                     <?= htmlspecialchars(CashFlow::typeLabel($m->type), ENT_QUOTES, 'UTF-8') ?>

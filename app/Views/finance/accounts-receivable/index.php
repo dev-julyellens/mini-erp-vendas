@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Helpers\DateHelper;
 use App\Helpers\Permission;
 use App\Models\AccountsReceivable;
 
@@ -118,7 +119,7 @@ $displayStatus = in_array($filters['status'], $statuses, true) ? $filters['statu
                                 <div class="d-md-none text-muted small">Rest.: R$ <?= htmlspecialchars($fmt($remaining), ENT_QUOTES, 'UTF-8') ?></div>
                             </td>
                             <td class="d-none d-md-table-cell">R$ <?= htmlspecialchars($fmt($remaining), ENT_QUOTES, 'UTF-8') ?></td>
-                            <td class="d-none d-lg-table-cell"><?= htmlspecialchars(date('d/m/Y', strtotime($ar->due_date)), ENT_QUOTES, 'UTF-8') ?></td>
+                            <td class="d-none d-lg-table-cell"><?= htmlspecialchars(DateHelper::toBrDate($ar->due_date), ENT_QUOTES, 'UTF-8') ?></td>
                             <td>
                                 <span class="badge text-bg-<?= htmlspecialchars($badge, ENT_QUOTES, 'UTF-8') ?>">
                                     <?= htmlspecialchars(AccountsReceivable::statusLabel($ar->status), ENT_QUOTES, 'UTF-8') ?>
