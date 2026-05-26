@@ -16,16 +16,24 @@ $url = static function (string $path = '') use ($baseUrl): string
 };
 
 $userPrefsJson = '';
+$bodyUserId = '';
+$bodyCompanyId = '';
 if (Auth::check())
 {
     $uid = Auth::id();
     if ($uid !== null)
     {
+        $bodyUserId = (string) $uid;
         $encoded = json_encode(
             (new ProfileService())->preferencesForUser($uid),
             JSON_UNESCAPED_UNICODE
         );
         $userPrefsJson = is_string($encoded) ? $encoded : '';
+    }
+    $snapshot = Auth::sessionSnapshot();
+    if (!empty($snapshot['company_id']))
+    {
+        $bodyCompanyId = (string) $snapshot['company_id'];
     }
 }
 
@@ -61,16 +69,21 @@ if (Auth::check())
 </head>
 
 <body data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>"
+    data-app-name="<?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?>"
+    <?php if ($bodyUserId !== ''): ?> data-user-id="<?= htmlspecialchars($bodyUserId, ENT_QUOTES, 'UTF-8') ?>" <?php endif; ?>
+    <?php if ($bodyCompanyId !== ''): ?> data-company-id="<?= htmlspecialchars($bodyCompanyId, ENT_QUOTES, 'UTF-8') ?>" <?php endif; ?>
     <?php if ($userPrefsJson !== ''): ?>
     data-user-prefs="<?= htmlspecialchars($userPrefsJson, ENT_QUOTES, 'UTF-8') ?>"
     data-csrf-token="<?= htmlspecialchars(Csrf::token(), ENT_QUOTES, 'UTF-8') ?>"
     data-prefs-url="<?= htmlspecialchars($url('profile/preferences'), ENT_QUOTES, 'UTF-8') ?>"
     <?php endif; ?>>
+    <a class="skip-link" href="#mainContent">Ir para o conteúdo principal</a>
+    <div id="srAnnounce" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
     <div class="sidebar-backdrop" aria-hidden="true"></div>
     <div class="app-shell">
         <?php require dirname(__DIR__) . '/components/sidebar.php'; ?>
         <div class="content">
-            <header class="topbar">
+            <header class="topbar" role="banner">
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-sm btn-secondary d-lg-none" data-sidebar-toggle aria-label="Abrir menu">
                         <i class="bi bi-list"></i>
@@ -106,8 +119,8 @@ if (Auth::check())
                         </a>
                         <form method="post" action="<?= htmlspecialchars($url('logout'), ENT_QUOTES, 'UTF-8') ?>" class="m-0" data-global-loading="false">
                             <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                            <button type="submit" class="btn btn-sm btn-secondary text-nowrap">
-                                <i class="bi bi-box-arrow-right"></i><span class="d-none d-sm-inline"> Sair</span>
+                            <button type="submit" class="btn btn-sm btn-secondary text-nowrap" aria-label="Sair da conta">
+                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i><span class="d-none d-sm-inline"> Sair</span>
                             </button>
                         </form>
                     <?php endif; ?>
@@ -116,7 +129,7 @@ if (Auth::check())
                     </div>
                 </div>
             </header>
-            <main class="page" id="mainContent">
+            <main class="page" id="mainContent" tabindex="-1">
                 <?php require dirname(__DIR__) . '/partials/flash.php'; ?>
                 <?php require $__viewFile; ?>
             </main>
@@ -125,9 +138,9 @@ if (Auth::check())
 
     <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
-    <div id="globalLoading" class="global-loading" aria-hidden="true" aria-busy="false">
+    <div id="globalLoading" class="global-loading" role="status" aria-live="polite" aria-hidden="true" aria-busy="false">
         <div class="spinner-wrap">
-            <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+            <div class="spinner-border text-primary" aria-hidden="true"></div>
             <span class="text-muted">Processando...</span>
         </div>
     </div>
@@ -142,7 +155,9 @@ if (Auth::check())
         crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="<?= htmlspecialchars($url('assets/js/input-masks.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
     <script src="<?= htmlspecialchars($url('assets/js/app.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    <script src="<?= htmlspecialchars($url('assets/js/a11y.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
     <?php if (!empty($pageScripts) && is_array($pageScripts)): ?>
         <?php foreach ($pageScripts as $scriptSrc): ?>
             <?php

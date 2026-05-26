@@ -35,28 +35,33 @@ $url = static function (string $path = '') use ($baseUrl): string
     <link rel="stylesheet" href="<?= htmlspecialchars($url('assets/css/design-system.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
-<body class="auth-page" data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>">
+<body class="auth-page" data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>"
+    data-app-name="<?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?>">
+    <a class="skip-link" href="#authMain">Ir para o formulário de acesso</a>
+    <div id="srAnnounce" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
     <div class="auth-toolbar">
         <button type="button" class="btn btn-sm btn-secondary theme-toggle-btn" data-theme-toggle aria-label="Modo escuro" title="Modo escuro">
             <i class="bi bi-moon-stars"></i>
         </button>
     </div>
     <div class="auth-shell">
-        <div class="auth-card card-soft p-4 p-md-5">
+        <main class="auth-card card-soft p-4 p-md-5" id="authMain" tabindex="-1">
             <div class="text-center mb-4">
-                <div class="auth-brand-mark mx-auto mb-3">M</div>
+                <div class="auth-brand-mark mx-auto mb-3" aria-hidden="true">M</div>
                 <h1 class="h4 mb-1"><?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?></h1>
                 <p class="text-muted small mb-0">Acesso seguro ao painel</p>
             </div>
             <?php require dirname(__DIR__) . '/partials/flash.php'; ?>
             <?php require $__viewFile; ?>
-        </div>
+        </main>
     </div>
     <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+    <script src="<?= htmlspecialchars($url('assets/js/input-masks.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
     <script src="<?= htmlspecialchars($url('assets/js/app.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    <script src="<?= htmlspecialchars($url('assets/js/a11y.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

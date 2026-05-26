@@ -9,16 +9,20 @@ declare(strict_types=1);
 
 use App\Services\NotificationService;
 
+$bellAriaLabel = $notificationUnreadCount > 0
+    ? 'Notificações, ' . (int) $notificationUnreadCount . ' não lida(s)'
+    : 'Notificações';
+
 ?>
 <div class="dropdown notification-dropdown">
     <button type="button"
         class="btn btn-sm btn-secondary position-relative notification-bell-btn"
         data-bs-toggle="dropdown"
         aria-expanded="false"
-        aria-label="Notificações">
-        <i class="bi bi-bell"></i>
+        aria-label="<?= htmlspecialchars($bellAriaLabel, ENT_QUOTES, 'UTF-8') ?>">
+        <i class="bi bi-bell" aria-hidden="true"></i>
         <?php if ($notificationUnreadCount > 0): ?>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger notification-badge">
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger notification-badge" aria-hidden="true">
                 <?= $notificationUnreadCount > 99 ? '99+' : (int) $notificationUnreadCount ?>
             </span>
         <?php endif; ?>

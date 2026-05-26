@@ -44,7 +44,7 @@ require dirname(__DIR__, 2) . '/components/page-header.php';
                     <input type="hidden" name="accounts_receivable_id" value="<?= (int) $account->id ?>">
                     <div class="mb-3">
                         <label class="form-label" for="pix_amount">Valor da cobrança (R$)</label>
-                        <input type="text" class="form-control" id="pix_amount" name="amount" inputmode="decimal"
+                        <input type="text" class="form-control" id="pix_amount" name="amount" data-mask-money inputmode="decimal"
                             value="<?= htmlspecialchars($old['amount'], ENT_QUOTES, 'UTF-8') ?>" required>
                     </div>
                     <button type="submit" class="btn btn-success w-100">Gerar QR Code PIX</button>
@@ -61,7 +61,7 @@ require dirname(__DIR__, 2) . '/components/page-header.php';
                 <div class="mb-3">
                     <label class="form-label" for="amount">Valor recebido (R$)</label>
                     <input type="text" class="form-control <?= isset($errors['amount']) ? 'is-invalid' : '' ?>"
-                        id="amount" name="amount" inputmode="decimal"
+                        id="amount" name="amount" data-mask-money inputmode="decimal"
                         value="<?= htmlspecialchars($old['amount'], ENT_QUOTES, 'UTF-8') ?>" required>
                     <?php if (isset($errors['amount'])): ?>
                         <div class="invalid-feedback"><?= htmlspecialchars($errors['amount'], ENT_QUOTES, 'UTF-8') ?></div>

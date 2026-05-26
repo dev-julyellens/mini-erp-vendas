@@ -29,7 +29,7 @@ require dirname(__DIR__) . '/components/page-header.php';
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 js-datatable" data-dt-actions-col="4">
+        <table class="table table-hover align-middle mb-0 js-datatable" data-dt-actions-col="4" aria-label="Lista de clientes">
             <thead>
                 <tr>
                     <th>Nome</th>

@@ -28,6 +28,7 @@ $breadcrumbs = [
 require dirname(__DIR__) . '/components/page-header.php';
 
 ?>
+<div id="orderAutosaveStatus" class="alert alert-light border py-2 px-3 mb-3 small d-none" role="status" aria-live="polite"></div>
 <div class="card-soft p-3 p-md-4" id="orderFormCard" data-ajax-skeleton data-ajax-skeleton-rows="4">
     <form id="orderForm" class="needs-validation" novalidate data-no-loading>
         <div class="row g-3">
@@ -127,4 +128,5 @@ require dirname(__DIR__) . '/components/page-header.php';
     window.__PRODUCTS__ = <?= json_encode($productPayload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?>;
     window.__ORDER_STORE_URL__ = <?= json_encode($url('api/orders'), JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?>;
 </script>
+<script src="<?= htmlspecialchars($url('assets/js/autosave.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 <script src="<?= htmlspecialchars($url('assets/js/order_create.js'), ENT_QUOTES, 'UTF-8') ?>"></script>

@@ -130,14 +130,15 @@ require dirname(__DIR__) . '/components/page-header.php';
             </div>
             <div class="col-md-4">
                 <label class="form-label">Custo (R$)</label>
-                <input class="form-control" name="cost_price" id="serviceCostPrice"
+                <input class="form-control" name="cost_price" id="serviceCostPrice" data-mask-money inputmode="decimal"
                     value="<?= htmlspecialchars($costPrice, ENT_QUOTES, 'UTF-8') ?>" placeholder="0,00">
             </div>
             <div class="col-md-4">
                 <label class="form-label">Valor padrão (R$) <span class="text-danger">*</span></label>
                 <input class="form-control <?= isset($errors['price']) ? 'is-invalid' : '' ?>"
-                    name="price" id="serviceSalePrice" value="<?= htmlspecialchars($price, ENT_QUOTES, 'UTF-8') ?>"
-                    placeholder="ex: 150,00" required>
+                    name="price" id="serviceSalePrice" data-mask-money inputmode="decimal"
+                    value="<?= htmlspecialchars($price, ENT_QUOTES, 'UTF-8') ?>"
+                    placeholder="0,00" required>
                 <div class="form-text">Usado como preço unitário ao incluir o serviço na venda.</div>
             </div>
             <div class="col-md-2">

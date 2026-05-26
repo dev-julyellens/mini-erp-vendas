@@ -71,6 +71,7 @@ $breadcrumbs = [
 require dirname(__DIR__) . '/components/page-header.php';
 
 ?>
+<div id="productAutosaveStatus" class="alert alert-light border py-2 px-3 mb-3 small d-none" role="status" aria-live="polite"></div>
 <div class="card-soft p-3 p-md-4">
     <?php if ($errors !== []): ?>
         <div class="alert alert-danger">
@@ -90,20 +91,20 @@ require dirname(__DIR__) . '/components/page-header.php';
             <input type="hidden" name="id" value="<?= (int) $product->id ?>">
         <?php endif; ?>
 
-        <ul class="nav nav-pills mb-4 gap-2" role="tablist">
+        <ul class="nav nav-pills mb-4 gap-2" role="tablist" aria-label="Seções do cadastro de produto">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" type="button" data-bs-toggle="pill" data-bs-target="#tab-ident">Identificação</button>
+                <button class="nav-link active" type="button" role="tab" id="product-tab-ident" aria-selected="true" aria-controls="tab-ident" data-bs-toggle="pill" data-bs-target="#tab-ident">Identificação</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#tab-price">Preços</button>
+                <button class="nav-link" type="button" role="tab" id="product-tab-price" aria-selected="false" aria-controls="tab-price" data-bs-toggle="pill" data-bs-target="#tab-price">Preços</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#tab-stock">Estoque</button>
+                <button class="nav-link" type="button" role="tab" id="product-tab-stock" aria-selected="false" aria-controls="tab-stock" data-bs-toggle="pill" data-bs-target="#tab-stock">Estoque</button>
             </li>
         </ul>
 
         <div class="tab-content">
-            <div class="tab-pane fade show active" id="tab-ident" role="tabpanel">
+            <div class="tab-pane fade show active" id="tab-ident" role="tabpanel" aria-labelledby="product-tab-ident">
                 <div class="row g-3">
                     <div class="col-md-8">
                         <label class="form-label">Nome <span class="text-danger">*</span></label>
@@ -167,18 +168,19 @@ require dirname(__DIR__) . '/components/page-header.php';
                 </div>
             </div>
 
-            <div class="tab-pane fade" id="tab-price" role="tabpanel">
+            <div class="tab-pane fade" id="tab-price" role="tabpanel" aria-labelledby="product-tab-price">
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Preço de custo (R$)</label>
-                        <input class="form-control" name="cost_price" id="costPrice"
+                        <input class="form-control" name="cost_price" id="costPrice" data-mask-money inputmode="decimal"
                             value="<?= htmlspecialchars($costPrice, ENT_QUOTES, 'UTF-8') ?>" placeholder="0,00">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label" id="salePriceLabel">Preço de venda (R$) <span class="text-danger">*</span></label>
                         <input class="form-control <?= isset($errors['price']) ? 'is-invalid' : '' ?>"
-                            name="price" id="salePrice" value="<?= htmlspecialchars($price, ENT_QUOTES, 'UTF-8') ?>"
-                            placeholder="ex: 19,90" required>
+                            name="price" id="salePrice" data-mask-money inputmode="decimal"
+                            value="<?= htmlspecialchars($price, ENT_QUOTES, 'UTF-8') ?>"
+                            placeholder="0,00" required>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Margem %</label>
@@ -198,7 +200,7 @@ require dirname(__DIR__) . '/components/page-header.php';
                 </div>
             </div>
 
-            <div class="tab-pane fade" id="tab-stock" role="tabpanel">
+            <div class="tab-pane fade" id="tab-stock" role="tabpanel" aria-labelledby="product-tab-stock">
                 <div class="row g-3" id="stockFields">
                     <div class="col-md-4">
                         <label class="form-label">Estoque atual</label>
@@ -229,4 +231,12 @@ require dirname(__DIR__) . '/components/page-header.php';
     </form>
 </div>
 
+<script>
+    window.__PRODUCT_AUTOSAVE_KEY__ = <?= json_encode(
+                                            $isEdit ? 'product-edit-' . (int) $product->id : 'product-create',
+                                            JSON_UNESCAPED_UNICODE
+                                        ) ?>;
+    window.__SKIP_AUTOSAVE_RESTORE__ = <?= ($old !== null && $errors !== []) ? 'true' : 'false' ?>;
+</script>
+<script src="<?= htmlspecialchars($url('assets/js/autosave.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 <script src="<?= htmlspecialchars($url('assets/js/product_form.js'), ENT_QUOTES, 'UTF-8') ?>"></script>

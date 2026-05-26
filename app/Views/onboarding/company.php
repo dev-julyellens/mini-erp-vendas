@@ -36,7 +36,8 @@ require dirname(__DIR__) . '/components/auth-form-header.php';
 
     <div class="mb-3">
         <label class="form-label" for="tax_id">CNPJ / CPF (opcional)</label>
-        <input type="text" class="form-control" id="tax_id" name="tax_id" maxlength="20"
+        <input type="text" class="form-control" id="tax_id" name="tax_id" data-mask-document autocomplete="off"
+            placeholder="00.000.000/0000-00" maxlength="20"
             value="<?= htmlspecialchars($taxId, ENT_QUOTES, 'UTF-8') ?>">
     </div>
 
