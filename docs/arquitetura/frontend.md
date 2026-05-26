@@ -1,0 +1,87 @@
+# Frontend (Views e assets)
+
+## 1. Visão geral do módulo
+
+Interface **server-side rendering** com PHP puro (sem framework JS). Views em `app/Views/`, assets estáticos em `public/assets/`. Layout responsivo com CSS customizado e JavaScript por tela para formulários dinâmicos.
+
+## 2. Fluxo funcional
+
+1. Controller chama `$this->view('caminho/arquivo', $data)`.
+2. `App\Core\View` renderiza PHP com extract de variáveis.
+3. Layout `main.php` ou `auth.php` envolve o conteúdo.
+4. Partials incluem flash, CSRF, paginação, modal de confirmação, sino de notificações.
+5. Assets CSS/JS servidos de `public/assets/`.
+
+## 3. Estrutura de banco relacionada
+
+O frontend não acessa o banco diretamente. Dados vêm de controllers que consultam services/repositories.
+
+## 4. Services envolvidos
+
+Indiretamente todos os services dos módulos exibidos. Helpers de apresentação:
+
+- `App\Helpers\Flash` — mensagens de sessão
+- `App\Helpers\Csrf` — token em formulários
+- `App\Helpers\Permission` — exibição condicional de ações
+- `App\Helpers\DataMask` — mascaramento LGPD em listagens
+
+## 5. Repositories envolvidos
+
+Nenhum acesso direto nas views (padrão MVC respeitado).
+
+## 6. Controllers envolvidos
+
+Todos os controllers web renderizam views. Principais pastas de view:
+
+| Pasta | Módulo |
+|-------|--------|
+| `dashboard/` | Painel `/` |
+| `auth/` | Login, seleção de empresa, reset |
+| `customers/`, `products/`, `services/`, `categories/` | Cadastros |
+| `orders/` | Vendas |
+| `stock/` | Movimentações |
+| `finance/` | AR, parcelas, PIX, fluxo |
+| `reports/` | Relatórios e export |
+| `notifications/` | Central de alertas |
+| `backups/` | Backup/restore |
+| `audit/`, `access-logs/` | Logs |
+| `lgpd/`, `onboarding/`, `subscription/` | Compliance e SaaS |
+
+## 7. Regras de negócio
+
+- Formulários POST incluem `@include` de `partials/csrf.php`.
+- Ações destrutivas usam `confirm-modal.php`.
+- Permissões na UI espelham ACL (`Permission::can()`), mas **autorização real** é no `PermissionMiddleware`.
+- Export de relatórios: links GET para rotas `/export` (Excel/PDF via `ReportExportService`).
+- Idioma da interface: **português**; mensagens de erro de services podem vir em inglês.
+
+## 8. Fluxo de dados
+
+```
+Browser → public/index.php → Controller@action
+       → View (HTML) + Flash
+       → assets/css/app.css, assets/js/*.js
+```
+
+`APP_BASE_URL` em `.env` afeta links absolutos (`PathHelper`).
+
+## 9. Pontos críticos
+
+- Sem build step (Webpack/Vite) — JS vanilla por arquivo.
+- `order_create.js` — lógica de itens e totais na venda.
+- `dashboard.js` — gráficos/métricas do painel.
+- Layout `main.php` concentra menu de navegação filtrado por permissões.
+
+## 10. Dependências
+
+- `public/.htaccess` — rewrite para `index.php`
+- Middleware `SecurityHeadersMiddleware` (CSP, etc.)
+- Bibliotecas server-side para PDF/Excel (Dompdf, PhpSpreadsheet) — export não é frontend
+
+## 11. Possíveis melhorias futuras
+
+- Componentização parcial (HTMX/Alpine) sem SPA completa.
+- Design system unificado (tokens CSS).
+- i18n formal para mensagens de backend.
+- Bundle e minificação de assets.
+- Acessibilidade (ARIA) em modais e tabelas.
