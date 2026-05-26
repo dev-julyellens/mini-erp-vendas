@@ -17,7 +17,14 @@ Documentação da refatoração visual e de experiência do Mini ERP de Vendas.
 
 ### Padronização visual
 - Design system em `public/assets/css/design-system.css` (tokens, botões, badges, KPIs, formulários, dashboard tabs, skeleton, acessibilidade)
-- Componentes PHP reutilizáveis em `app/Views/components/`
+- Componentes PHP reutilizáveis em `app/Views/components/` (incl. `filter-panel.php` — Sprint 1)
+- **Vendas (pedidos):** `orders/index`, `orders/create`, `orders/show` migrados (page-header, filter-panel, action-buttons)
+- **Cadastros/admin (Sprint 2):** `products`, `services`, `categories`, `companies`, `users` (index) — page-header, filter-panel e action-buttons
+- **Financeiro (Sprint 3):** painel, fluxo de caixa, contas a receber, parcelamentos — page-header, filter-panel, kpi-card, action-buttons
+- **Operacional/admin (Sprint 4):** estoque, notificações, auditoria, access-logs, backups, vínculos, SaaS — page-header e filter-panel
+- **Relatórios (Sprint 5):** central e relatórios com filtros — `_report-header` (page-header + export), `filter-panel`, `kpi-card` nos resumos
+- **Gráficos nos relatórios:** `ReportChartService` + partial `report-charts.php` + `reports-charts.js` (vendas por período/cliente/produto, fluxo de caixa, estoque mínimo)
+- **Telas secundárias (Fase 5):** auth, onboarding, LGPD, alterar senha, PIX e assinatura — `auth-form-header.php` ou `page-header`, loading nos submits, `design-system.css` no layout auth
 - **Botões de ação:** variantes `primary`, `secondary`, `outline`, `destructive`, `warning`, `ghost` + tamanhos `sm`/`md`/`lg` — ver [botoes-padrao.md](./botoes-padrao.md)
 - Partial `action-buttons.php` e helper `ActionButton.php`
 - Dark/light: ajustes de contraste no topbar e componentes
@@ -60,6 +67,7 @@ Documentação da refatoração visual e de experiência do Mini ERP de Vendas.
 | Cabeçalho de página | `app/Views/components/page-header.php` |
 | Card KPI | `app/Views/components/kpi-card.php` |
 | Botões de ação | `app/Views/components/action-buttons.php` |
+| Cabeçalho auth/onboarding | `app/Views/components/auth-form-header.php` |
 | Menu (helper) | `app/Helpers/NavigationMenu.php` |
 | Classes de botão | `app/Helpers/ActionButton.php` |
 
@@ -103,9 +111,14 @@ Documentação da refatoração visual e de experiência do Mini ERP de Vendas.
 6. **Clientes:** criar/editar com máscara de telefone.
 7. **Relatórios:** exportar PDF/Excel e verificar KPIs no cabeçalho.
 
+## Checklist priorizada (arquivo a arquivo)
+
+Ver **[checklist-refatoracao-ui.md](./checklist-refatoracao-ui.md)** — sprints, status por view, templates de migração e itens de menu pendentes.
+
 ## Pendências sugeridas (próximas iterações)
 
-- Aplicar `page-header` nas listagens que ainda usam `<h1>` manual
+- Gráficos nos PDFs de relatório (biblioteca adicional)
+- Aplicar `page-header` em `customers/index.php` (modelo de listagem, ainda sem PH)
 - Adotar partial `filter` em todos os painéis de filtro
 - Upload de avatar (requer coluna/migration em `users`)
 - Skeleton loading em carregamentos AJAX

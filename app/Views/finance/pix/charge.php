@@ -12,23 +12,27 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 $statusUrl = $url('finance/pix/status?id=' . $charge->id);
 $receiptUrl = $url('finance/pix/receipt?id=' . $charge->id);
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Pagamento PIX</h1>
-        <div class="text-muted">
-            Cobrança #<?= (int) $charge->id ?>
-            <?php if ($charge->order_id !== null): ?>
-                · Venda #<?= (int) $charge->order_id ?>
-            <?php endif; ?>
-            <?php if ($charge->installment_number !== null): ?>
-                · Parcela <?= (int) $charge->installment_number ?>
-            <?php endif; ?>
-        </div>
-    </div>
-    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
-</div>
+$subtitleParts = ['Cobrança #' . (int) $charge->id];
+if ($charge->order_id !== null)
+{
+    $subtitleParts[] = 'Venda #' . (int) $charge->order_id;
+}
+if ($charge->installment_number !== null)
+{
+    $subtitleParts[] = 'Parcela ' . (int) $charge->installment_number;
+}
 
+$title = 'Pagamento PIX';
+$subtitle = implode(' · ', $subtitleParts);
+$breadcrumbs = [
+    ['label' => 'Financeiro', 'href' => $url('finance')],
+    ['label' => 'Pagamento PIX'],
+];
+$actionsHtml = '<a class="btn btn-secondary" href="' . htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-arrow-left"></i> Voltar</a>';
+require dirname(__DIR__, 2) . '/components/page-header.php';
+
+?>
 <div class="row g-3 justify-content-center">
     <div class="col-lg-8 col-xl-7">
         <div class="card-soft p-3 p-md-4 text-center">

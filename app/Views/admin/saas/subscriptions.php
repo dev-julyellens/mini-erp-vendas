@@ -8,26 +8,35 @@ declare(strict_types=1);
 /** @var list<\App\Models\Plan> $plans */
 /** @var string $search */
 
-?>
-<div class="mb-3">
-    <h1 class="h3 mb-1">Assinaturas</h1>
-    <a class="small text-muted" href="<?= htmlspecialchars($url('admin/saas'), ENT_QUOTES, 'UTF-8') ?>">&larr; Dashboard SaaS</a>
-</div>
+$title = 'Assinaturas';
+$subtitle = 'Planos vinculados por empresa';
+$breadcrumbs = [
+    ['label' => 'SaaS', 'href' => $url('admin/saas')],
+    ['label' => 'Assinaturas'],
+];
+require dirname(__DIR__, 2) . '/components/page-header.php';
 
-<form class="row g-2 mb-3" method="get">
-    <div class="col-md-6">
-        <input type="search" name="q" class="form-control" placeholder="Empresa ou plano" value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
-    </div>
-    <div class="col-auto"><button class="btn btn-secondary" type="submit">Buscar</button></div>
-</form>
+ob_start();
+?>
+<div class="col-12 col-md-6">
+    <label class="form-label" for="filter_q">Buscar</label>
+    <input type="search" class="form-control" id="filter_q" name="q" placeholder="Empresa ou plano"
+        value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url('admin/saas/subscriptions');
+$filterClearHref = $url('admin/saas/subscriptions');
+require dirname(__DIR__, 2) . '/components/filter-panel.php';
+?>
 
 <div class="card-soft p-3 p-md-4 mb-4">
     <h2 class="h6 mb-3">Vincular / alterar plano da empresa</h2>
     <form class="row g-2 align-items-end" method="post" action="<?= htmlspecialchars($url('admin/saas/assign-plan'), ENT_QUOTES, 'UTF-8') ?>">
         <?php require dirname(__DIR__, 2) . '/partials/csrf.php'; ?>
         <div class="col-md-5">
-            <label class="form-label">Empresa</label>
-            <select name="company_id" class="form-select" required>
+            <label class="form-label" for="assign_company_id">Empresa</label>
+            <select name="company_id" id="assign_company_id" class="form-select" required>
                 <option value="">Selecione</option>
                 <?php foreach ($companies as $c): ?>
                     <option value="<?= (int) $c->id ?>"><?= htmlspecialchars($c->name, ENT_QUOTES, 'UTF-8') ?></option>
@@ -35,15 +44,15 @@ declare(strict_types=1);
             </select>
         </div>
         <div class="col-md-4">
-            <label class="form-label">Plano</label>
-            <select name="plan_code" class="form-select" required>
+            <label class="form-label" for="assign_plan_code">Plano</label>
+            <select name="plan_code" id="assign_plan_code" class="form-select" required>
                 <?php foreach ($plans as $p): ?>
                     <option value="<?= htmlspecialchars($p->code, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($p->name, ENT_QUOTES, 'UTF-8') ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
         <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Aplicar plano</button>
+            <button type="submit" class="btn btn-primary" data-loading-text="Aplicando...">Aplicar plano</button>
         </div>
     </form>
 </div>
@@ -71,7 +80,9 @@ declare(strict_types=1);
             </tbody>
         </table>
     </div>
-    <?php $path = 'admin/saas/subscriptions';
+    <?php
+    $path = 'admin/saas/subscriptions';
     $query = array_filter(['q' => $search]);
-    require dirname(__DIR__, 2) . '/partials/pagination.php'; ?>
+    require dirname(__DIR__, 2) . '/partials/pagination.php';
+    ?>
 </div>

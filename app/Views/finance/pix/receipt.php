@@ -10,24 +10,23 @@ use App\Models\PixCharge;
 
 $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Comprovante PIX</h1>
-        <div class="text-muted">Cobrança #<?= (int) $charge->id ?></div>
-    </div>
-    <div class="d-flex gap-2">
-        <?php if ($charge->payment_id !== null): ?>
-            <a class="btn btn-ghost" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $charge->accounts_receivable_id), ENT_QUOTES, 'UTF-8') ?>">
-                Ver conta a receber
-            </a>
-        <?php endif; ?>
-        <button type="button" class="btn btn-secondary" onclick="window.print()">
-            <i class="bi bi-printer"></i> Imprimir
-        </button>
-    </div>
-</div>
+$title = 'Comprovante PIX';
+$subtitle = 'Cobrança #' . (int) $charge->id;
+$breadcrumbs = [
+    ['label' => 'Financeiro', 'href' => $url('finance')],
+    ['label' => 'Comprovante PIX'],
+];
+$actionsHtml = '';
+if ($charge->payment_id !== null && $charge->accounts_receivable_id !== null)
+{
+    $actionsHtml .= '<a class="btn btn-ghost" href="' . htmlspecialchars($url('finance/accounts-receivable/show?id=' . $charge->accounts_receivable_id), ENT_QUOTES, 'UTF-8') . '">'
+        . 'Ver conta a receber</a>';
+}
+$actionsHtml .= '<button type="button" class="btn btn-secondary" onclick="window.print()">'
+    . '<i class="bi bi-printer"></i> Imprimir</button>';
+require dirname(__DIR__, 2) . '/components/page-header.php';
 
+?>
 <div class="row justify-content-center">
     <div class="col-lg-6">
         <div class="card-soft p-4" id="pix-receipt">

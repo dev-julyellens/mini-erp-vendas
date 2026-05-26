@@ -62,12 +62,15 @@ $margins = ProductPricing::computeMargins($costPrice, $price !== '' ? $price : '
 $marginDisplay = $margins['margin'] ?? '—';
 $markupDisplay = $margins['markup'] ?? '—';
 
-?>
-<div class="mb-3">
-    <h1 class="h3 mb-1"><?= $isEdit ? 'Editar produto' : 'Novo produto' ?></h1>
-    <div class="text-muted">SKU único, precificação com margem/markup e controle de estoque por tipo.</div>
-</div>
+$title = $isEdit ? 'Editar produto' : 'Novo produto';
+$subtitle = 'SKU único, precificação com margem/markup e controle de estoque por tipo.';
+$breadcrumbs = [
+    ['label' => 'Produtos', 'href' => $url('products')],
+    ['label' => $title],
+];
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <div class="card-soft p-3 p-md-4">
     <?php if ($errors !== []): ?>
         <div class="alert alert-danger">
@@ -220,6 +223,7 @@ $markupDisplay = $margins['markup'] ?? '—';
         <?php
         $mode = 'form-footer';
         $cancelHref = $url('products');
+        $saveLoadingText = 'Salvando...';
         require dirname(__DIR__) . '/components/action-buttons.php';
         ?>
     </form>

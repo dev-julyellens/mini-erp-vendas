@@ -23,57 +23,61 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 $displayType = in_array($filters['type'] ?? '', $types, true) ? $filters['type'] : '';
 
 require dirname(__DIR__) . '/reports/_report-header.php';
+
+ob_start();
 ?>
-<div class="card-soft p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url($reportPath), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end">
-        <div class="col-6 col-md-3">
-            <label class="form-label" for="type">Tipo</label>
-            <select class="form-select" id="type" name="type">
-                <option value="">Todos</option>
-                <?php foreach ($types as $t): ?>
-                    <option value="<?= htmlspecialchars($t, ENT_QUOTES, 'UTF-8') ?>" <?= $displayType === $t ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($typeLabels[$t] ?? $t, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-6 col-md-3">
-            <label class="form-label" for="date_from">De</label>
-            <input type="date" class="form-control" id="date_from" name="date_from"
-                value="<?= htmlspecialchars((string) ($filters['date_from'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-6 col-md-3">
-            <label class="form-label" for="date_to">Até</label>
-            <input type="date" class="form-control" id="date_to" name="date_to"
-                value="<?= htmlspecialchars((string) ($filters['date_to'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-12 col-md-3 d-flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
-            <a class="btn btn-secondary" href="<?= htmlspecialchars($url($reportPath), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
-        </div>
-    </form>
+<div class="col-6 col-md-3">
+    <label class="form-label" for="filter_type">Tipo</label>
+    <select class="form-select" id="filter_type" name="type">
+        <option value="">Todos</option>
+        <?php foreach ($types as $t): ?>
+            <option value="<?= htmlspecialchars($t, ENT_QUOTES, 'UTF-8') ?>" <?= $displayType === $t ? 'selected' : '' ?>>
+                <?= htmlspecialchars($typeLabels[$t] ?? $t, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+<div class="col-6 col-md-3">
+    <label class="form-label" for="filter_date_from">De</label>
+    <input type="date" class="form-control" id="filter_date_from" name="date_from"
+        value="<?= htmlspecialchars((string) ($filters['date_from'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<div class="col-6 col-md-3">
+    <label class="form-label" for="filter_date_to">Até</label>
+    <input type="date" class="form-control" id="filter_date_to" name="date_to"
+        value="<?= htmlspecialchars((string) ($filters['date_to'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url($reportPath);
+$filterClearHref = $url($reportPath);
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
+
+<div class="kpi-grid mb-3">
+    <?php
+    $label = 'Entradas';
+    $value = 'R$ ' . htmlspecialchars($fmt((string) $summary['entrada']), ENT_QUOTES, 'UTF-8');
+    $hint = 'Total de entradas no período';
+    $variant = 'stat-finance-cash';
+    $href = null;
+    require dirname(__DIR__) . '/components/kpi-card.php';
+
+    $label = 'Saídas';
+    $value = 'R$ ' . htmlspecialchars($fmt((string) $summary['saida']), ENT_QUOTES, 'UTF-8');
+    $hint = 'Total de saídas no período';
+    $variant = 'stat-finance-open';
+    require dirname(__DIR__) . '/components/kpi-card.php';
+
+    $label = 'Saldo do período';
+    $value = 'R$ ' . htmlspecialchars($fmt((string) $summary['saldo']), ENT_QUOTES, 'UTF-8');
+    $hint = 'Entradas − saídas';
+    $variant = 'stat-finance-month';
+    require dirname(__DIR__) . '/components/kpi-card.php';
+    ?>
 </div>
 
-<div class="row g-3 mb-3">
-    <div class="col-md-4">
-        <div class="card-soft p-3">
-            <div class="text-muted small">Entradas</div>
-            <div class="fs-5 fw-semibold text-success">R$ <?= htmlspecialchars($fmt((string) $summary['entrada']), ENT_QUOTES, 'UTF-8') ?></div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card-soft p-3">
-            <div class="text-muted small">Saídas</div>
-            <div class="fs-5 fw-semibold text-danger">R$ <?= htmlspecialchars($fmt((string) $summary['saida']), ENT_QUOTES, 'UTF-8') ?></div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card-soft p-3">
-            <div class="text-muted small">Saldo do período</div>
-            <div class="fs-5 fw-semibold">R$ <?= htmlspecialchars($fmt((string) $summary['saldo']), ENT_QUOTES, 'UTF-8') ?></div>
-        </div>
-    </div>
-</div>
+<?php require __DIR__ . '/partials/report-charts.php'; ?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
@@ -114,6 +118,8 @@ require dirname(__DIR__) . '/reports/_report-header.php';
             </tbody>
         </table>
     </div>
-    <?php $path = $reportPath;
-    require dirname(__DIR__) . '/partials/pagination.php'; ?>
+    <?php
+    $path = $reportPath;
+    require dirname(__DIR__) . '/partials/pagination.php';
+    ?>
 </div>

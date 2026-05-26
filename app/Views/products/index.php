@@ -18,71 +18,66 @@ $filterQuery = array_filter([
     'low_stock' => $filters['low_stock'] ? '1' : null,
 ], static fn($v) => $v !== null && $v !== '');
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Produtos</h1>
-        <div class="text-muted">Catálogo avançado com SKU, categorias, custos e estoque mínimo</div>
-    </div>
-    <div class="d-flex flex-wrap gap-2">
-        <?php if (\App\Helpers\Permission::can('produtos', 'visualizar')): ?>
-            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>">
-                <i class="bi bi-tools"></i> Serviços
-            </a>
-            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('categories'), ENT_QUOTES, 'UTF-8') ?>">
-                <i class="bi bi-tags"></i> Categorias
-            </a>
-        <?php endif; ?>
-        <?php if (\App\Helpers\Permission::can('produtos', 'criar')): ?>
-            <a class="btn btn-primary" href="<?= htmlspecialchars($url('products/create'), ENT_QUOTES, 'UTF-8') ?>">
-                <i class="bi bi-plus-lg"></i> Novo produto
-            </a>
-        <?php endif; ?>
-    </div>
-</div>
+$title = 'Produtos';
+$subtitle = 'Catálogo avançado com SKU, categorias, custos e estoque mínimo';
+$actionsHtml = '';
+if (\App\Helpers\Permission::can('produtos', 'visualizar'))
+{
+    $actionsHtml .= '<a class="btn btn-secondary" href="' . htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') . '">'
+        . '<i class="bi bi-tools"></i> Serviços</a>';
+    $actionsHtml .= '<a class="btn btn-secondary" href="' . htmlspecialchars($url('categories'), ENT_QUOTES, 'UTF-8') . '">'
+        . '<i class="bi bi-tags"></i> Categorias</a>';
+}
+if (\App\Helpers\Permission::can('produtos', 'criar'))
+{
+    $actionsHtml .= '<a class="btn btn-primary" href="' . htmlspecialchars($url('products/create'), ENT_QUOTES, 'UTF-8') . '">'
+        . '<i class="bi bi-plus-lg"></i> Novo produto</a>';
+}
+require dirname(__DIR__) . '/components/page-header.php';
 
-<div class="card-soft filter-panel p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>" class="row g-2 align-items-end filter-form">
-        <div class="col-12 col-md-4">
-            <label class="form-label small text-muted mb-1">Buscar</label>
-            <input class="form-control" name="q" placeholder="Nome, SKU ou código de barras"
-                value="<?= htmlspecialchars($filters['q'], ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-12 col-md-3">
-            <label class="form-label small text-muted mb-1">Categoria</label>
-            <select class="form-select" name="category_id">
-                <option value="">Todas</option>
-                <?php foreach ($categories as $cat): ?>
-                    <option value="<?= (int) $cat->id ?>" <?= $filters['category_id'] === $cat->id ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($cat->name, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-12 col-sm-6 col-md-2">
-            <label class="form-label small text-muted mb-1">Tipo</label>
-            <select class="form-select" name="type">
-                <option value="">Todos</option>
-                <?php foreach ($typeOptions as $value => $label): ?>
-                    <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $filters['type'] === $value ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-12 col-md-3 d-flex flex-wrap gap-2 align-items-center">
-            <div class="form-check mb-0 flex-grow-1">
-                <input class="form-check-input" type="checkbox" name="low_stock" value="1" id="lowStockFilter"
-                    <?= $filters['low_stock'] ? 'checked' : '' ?>>
-                <label class="form-check-label" for="lowStockFilter">Só estoque baixo</label>
-            </div>
-            <button class="btn btn-primary flex-grow-1 flex-sm-grow-0" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
-            <?php if ($filterQuery !== []): ?>
-                <a class="btn btn-secondary flex-grow-1 flex-sm-grow-0" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
-            <?php endif; ?>
-        </div>
-    </form>
+ob_start();
+?>
+<div class="col-12 col-md-4">
+    <label class="form-label" for="filter_q">Buscar</label>
+    <input class="form-control" id="filter_q" name="q" placeholder="Nome, SKU ou código de barras"
+        value="<?= htmlspecialchars($filters['q'], ENT_QUOTES, 'UTF-8') ?>">
 </div>
+<div class="col-12 col-md-3">
+    <label class="form-label" for="filter_category_id">Categoria</label>
+    <select class="form-select" id="filter_category_id" name="category_id">
+        <option value="">Todas</option>
+        <?php foreach ($categories as $cat): ?>
+            <option value="<?= (int) $cat->id ?>" <?= $filters['category_id'] === $cat->id ? 'selected' : '' ?>>
+                <?= htmlspecialchars($cat->name, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+<div class="col-12 col-sm-6 col-md-2">
+    <label class="form-label" for="filter_type">Tipo</label>
+    <select class="form-select" id="filter_type" name="type">
+        <option value="">Todos</option>
+        <?php foreach ($typeOptions as $value => $label): ?>
+            <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $filters['type'] === $value ? 'selected' : '' ?>>
+                <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+<div class="col-12 col-sm-6 col-md-3 d-flex align-items-end">
+    <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="low_stock" value="1" id="lowStockFilter"
+            <?= $filters['low_stock'] ? 'checked' : '' ?>>
+        <label class="form-check-label" for="lowStockFilter">Só estoque baixo</label>
+    </div>
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url('products');
+$filterClearHref = $url('products');
+$filterActionsColClass = 'col-12 col-md-auto';
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">

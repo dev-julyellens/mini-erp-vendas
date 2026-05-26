@@ -8,12 +8,15 @@ declare(strict_types=1);
 
 $errors = $errors ?? [];
 
-?>
-<p class="text-muted small mb-4">Defina uma nova senha para sua conta.</p>
-<?php if (!empty($passwordHint)): ?>
-    <p class="text-muted small mb-4"><?= htmlspecialchars((string) $passwordHint, ENT_QUOTES, 'UTF-8') ?></p>
-<?php endif; ?>
+$title = 'Nova senha';
+$subtitle = 'Defina uma nova senha para sua conta.';
+if (!empty($passwordHint ?? ''))
+{
+    $subtitle .= ' ' . (string) $passwordHint;
+}
+require dirname(__DIR__) . '/components/auth-form-header.php';
 
+?>
 <form method="post" action="<?= htmlspecialchars($url('reset-password'), ENT_QUOTES, 'UTF-8') ?>">
     <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
     <input type="hidden" name="token" value="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8') ?>">
@@ -40,7 +43,7 @@ $errors = $errors ?? [];
         <div class="alert alert-danger"><?= htmlspecialchars($errors['token'], ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
 
-    <button type="submit" class="btn btn-primary w-100 mb-3">Redefinir senha</button>
+    <button type="submit" class="btn btn-primary w-100 mb-3" data-loading-text="Salvando...">Redefinir senha</button>
 
     <div class="text-center">
         <a class="small text-decoration-none" href="<?= htmlspecialchars($url('login'), ENT_QUOTES, 'UTF-8') ?>">

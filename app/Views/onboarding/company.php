@@ -13,10 +13,11 @@ $name = (string) ($old['name'] ?? $company?->name ?? '');
 $taxId = (string) ($old['tax_id'] ?? $company?->tax_id ?? '');
 $slug = (string) ($old['slug'] ?? $company?->slug ?? '');
 
-?>
-<h1 class="h4 mb-2">Configurar empresa</h1>
-<p class="text-muted small mb-4">Passo 1 de 2 — dados do seu tenant no sistema.</p>
+$title = 'Configurar empresa';
+$subtitle = 'Passo 1 de 2 — dados do seu tenant no sistema.';
+require dirname(__DIR__) . '/components/auth-form-header.php';
 
+?>
 <?php if (isset($errors['name'])): ?>
     <div class="alert alert-danger"><?= htmlspecialchars($errors['name'], ENT_QUOTES, 'UTF-8') ?></div>
 <?php endif; ?>
@@ -47,5 +48,5 @@ $slug = (string) ($old['slug'] ?? $company?->slug ?? '');
         <div class="form-text">Letras minúsculas, números e hífens. Ex.: minha-loja</div>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100">Continuar</button>
+    <button type="submit" class="btn btn-primary w-100" data-loading-text="Continuando...">Continuar</button>
 </form>

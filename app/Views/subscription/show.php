@@ -19,16 +19,17 @@ $statusLabels = [
     'expired' => 'Expirada',
 ];
 
+$title = 'Assinatura';
+$subtitle = 'Plano, limites e cobrança recorrente da plataforma.';
+$breadcrumbs = [
+    ['label' => 'Dashboard', 'href' => $url('')],
+    ['label' => 'Assinatura'],
+];
+$actionsHtml = '<a class="btn btn-secondary" href="' . htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-arrow-left"></i> Voltar</a>';
+require dirname(__DIR__) . '/components/page-header.php';
+
 ?>
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-    <div>
-        <h1 class="h3 mb-1">Assinatura</h1>
-        <p class="text-muted mb-0">Plano, limites e cobrança recorrente da plataforma.</p>
-    </div>
-    <a href="<?= htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-secondary btn-sm">
-        <i class="bi bi-arrow-left"></i> Voltar
-    </a>
-</div>
 
 <?php if ($subscription === null): ?>
     <div class="alert alert-warning">Nenhuma assinatura vinculada a esta empresa.</div>
@@ -66,7 +67,7 @@ $statusLabels = [
         <form method="post" action="<?= htmlspecialchars($url('subscription/pay'), ENT_QUOTES, 'UTF-8') ?>" class="m-0">
             <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
             <input type="hidden" name="invoice_id" value="<?= (int) $pendingInvoice->id ?>">
-            <button type="submit" class="btn btn-sm btn-primary">Simular pagamento</button>
+            <button type="submit" class="btn btn-primary btn-sm" data-loading-text="Processando...">Simular pagamento</button>
         </form>
     </div>
 <?php endif; ?>
@@ -115,7 +116,7 @@ $statusLabels = [
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-sm">Atualizar plano</button>
+                    <button type="submit" class="btn btn-primary btn-sm" data-loading-text="Atualizando...">Atualizar plano</button>
                 </form>
             </div>
         </div>

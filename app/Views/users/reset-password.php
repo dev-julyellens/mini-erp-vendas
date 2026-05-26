@@ -10,12 +10,15 @@ use App\Services\PasswordPolicyService;
 
 $hint = (new PasswordPolicyService())->requirementsHint();
 
-?>
-<div class="mb-3">
-    <h1 class="h3 mb-1">Redefinir senha</h1>
-    <p class="text-muted mb-0"><?= htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8') ?> &middot; <?= htmlspecialchars($user->email, ENT_QUOTES, 'UTF-8') ?></p>
-</div>
+$title = 'Redefinir senha';
+$subtitle = $user->name . ' · ' . $user->email;
+$breadcrumbs = [
+    ['label' => 'Usuários', 'href' => $url('admin/users')],
+    ['label' => $title],
+];
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <div class="card-soft p-3 p-md-4 col-lg-6">
     <p class="small text-muted"><?= htmlspecialchars($hint, ENT_QUOTES, 'UTF-8') ?></p>
     <form method="post" action="<?= htmlspecialchars($url('admin/users/reset-password'), ENT_QUOTES, 'UTF-8') ?>">
@@ -34,6 +37,7 @@ $hint = (new PasswordPolicyService())->requirementsHint();
         $mode = 'form-footer';
         $cancelHref = $url('admin/users');
         $saveLabel = 'Redefinir';
+        $saveLoadingText = 'Redefinindo...';
         require dirname(__DIR__) . '/components/action-buttons.php';
         ?>
     </form>

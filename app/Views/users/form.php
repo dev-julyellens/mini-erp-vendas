@@ -11,12 +11,15 @@ declare(strict_types=1);
 $isEdit = $user !== null;
 $old = $old ?? [];
 
-?>
-<div class="mb-3">
-    <h1 class="h3 mb-1"><?= $isEdit ? 'Editar usuário' : 'Novo usuário' ?></h1>
-    <a class="small text-muted" href="<?= htmlspecialchars($url('admin/users'), ENT_QUOTES, 'UTF-8') ?>">&larr; Voltar</a>
-</div>
+$title = $isEdit ? 'Editar usuário' : 'Novo usuário';
+$subtitle = $isEdit ? 'Atualize nome, e-mail e papel global.' : 'Cadastre um usuário com papel global e senha inicial.';
+$breadcrumbs = [
+    ['label' => 'Usuários', 'href' => $url('admin/users')],
+    ['label' => $title],
+];
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <div class="card-soft p-3 p-md-4 col-lg-8">
     <form method="post" action="<?= htmlspecialchars($url($isEdit ? 'admin/users/update' : 'admin/users/store'), ENT_QUOTES, 'UTF-8') ?>">
         <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
@@ -56,6 +59,7 @@ $old = $old ?? [];
         <?php
         $mode = 'form-footer';
         $cancelHref = $url('admin/users');
+        $saveLoadingText = 'Salvando...';
         require dirname(__DIR__) . '/components/action-buttons.php';
         ?>
     </form>

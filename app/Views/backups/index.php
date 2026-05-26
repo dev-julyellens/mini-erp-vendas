@@ -7,7 +7,6 @@ use App\Helpers\DateHelper;
 /** @var callable(string):string $url */
 /** @var list<\App\Models\BackupLog> $logs */
 /** @var int $total */
-/** @var int $page */
 /** @var int $perPage */
 /** @var list<array{filename: string, size: int, created_at: string}> $files */
 /** @var \App\Models\BackupSettings $settings */
@@ -21,22 +20,25 @@ use App\Helpers\DateHelper;
 
 $totalPages = max(1, (int) ceil($total / $perPage));
 
+$title = 'Backup PostgreSQL';
+$subtitle = 'Exportação manual, agendamento automático e restauração do banco';
+$actionsHtml = '';
+if ($isAdmin)
+{
+    ob_start();
 ?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Backup PostgreSQL</h1>
-        <div class="text-muted">Exportação manual, agendamento automático e restauração do banco</div>
-    </div>
-    <?php if ($isAdmin): ?>
-        <form method="post" action="<?= htmlspecialchars($url('backups/create'), ENT_QUOTES, 'UTF-8') ?>" class="m-0">
-            <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-cloud-arrow-up"></i> Criar backup agora
-            </button>
-        </form>
-    <?php endif; ?>
-</div>
+    <form method="post" action="<?= htmlspecialchars($url('backups/create'), ENT_QUOTES, 'UTF-8') ?>" class="m-0">
+        <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-cloud-arrow-up"></i> Criar backup agora
+        </button>
+    </form>
+<?php
+    $actionsHtml = ob_get_clean();
+}
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <?php if (!$isAdmin): ?>
     <div class="alert alert-warning">
         Apenas administradores podem criar, restaurar ou configurar backups. Você pode visualizar os registros abaixo.
@@ -67,7 +69,7 @@ $totalPages = max(1, (int) ceil($total / $perPage));
                             value="<?= (int) $settings->run_minute ?>" required>
                     </div>
                     <div class="col-12">
-                        <button type="submit" class="btn btn-primary btn-sm">Salvar agendamento</button>
+                        <button type="submit" class="btn btn-primary btn-sm" data-loading-text="Salvando...">Salvar agendamento</button>
                     </div>
                 </form>
             <?php else: ?>

@@ -17,46 +17,47 @@ use App\Services\NotificationService;
 
 $displayType = in_array($filters['type'], $types, true) ? $filters['type'] : '';
 
+$title = 'Notificações';
+$subtitle = 'Alertas operacionais persistidos por empresa';
+ob_start();
 ?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Notificações</h1>
-        <div class="text-muted">Alertas operacionais persistidos por empresa</div>
-    </div>
-    <form method="post" action="<?= htmlspecialchars($url('notifications/read-all'), ENT_QUOTES, 'UTF-8') ?>" class="m-0">
-        <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-        <button type="submit" class="btn btn-secondary btn-sm">
-            <i class="bi bi-check2-all"></i> Marcar todas como lidas
-        </button>
-    </form>
-</div>
+<form method="post" action="<?= htmlspecialchars($url('notifications/read-all'), ENT_QUOTES, 'UTF-8') ?>" class="m-0">
+    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
+    <button type="submit" class="btn btn-secondary btn-sm">
+        <i class="bi bi-check2-all"></i> Marcar todas como lidas
+    </button>
+</form>
+<?php
+$actionsHtml = ob_get_clean();
+require dirname(__DIR__) . '/components/page-header.php';
 
-<div class="card-soft filter-panel p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url('notifications'), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end filter-form">
-        <div class="col-12 col-md-4">
-            <label class="form-label" for="type">Tipo</label>
-            <select class="form-select" id="type" name="type">
-                <option value="">Todos</option>
-                <?php foreach ($types as $typeKey): ?>
-                    <option value="<?= htmlspecialchars($typeKey, ENT_QUOTES, 'UTF-8') ?>" <?= $displayType === $typeKey ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($typeLabels[$typeKey] ?? $typeKey, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-12 col-md-3">
-            <div class="form-check mt-4">
-                <input class="form-check-input" type="checkbox" id="unread" name="unread" value="1"
-                    <?= $filters['unread'] === '1' ? 'checked' : '' ?>>
-                <label class="form-check-label" for="unread">Somente não lidas</label>
-            </div>
-        </div>
-        <div class="col-12 col-md-5 d-flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
-            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('notifications'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
-        </div>
-    </form>
+ob_start();
+?>
+<div class="col-12 col-md-4">
+    <label class="form-label" for="filter_type">Tipo</label>
+    <select class="form-select" id="filter_type" name="type">
+        <option value="">Todos</option>
+        <?php foreach ($types as $typeKey): ?>
+            <option value="<?= htmlspecialchars($typeKey, ENT_QUOTES, 'UTF-8') ?>" <?= $displayType === $typeKey ? 'selected' : '' ?>>
+                <?= htmlspecialchars($typeLabels[$typeKey] ?? $typeKey, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
 </div>
+<div class="col-12 col-md-4 d-flex align-items-end">
+    <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="filter_unread" name="unread" value="1"
+            <?= $filters['unread'] === '1' ? 'checked' : '' ?>>
+        <label class="form-check-label" for="filter_unread">Somente não lidas</label>
+    </div>
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url('notifications');
+$filterClearHref = $url('notifications');
+$filterActionsColClass = 'col-12 col-md-auto';
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
 
 <div class="card-soft p-3 p-md-4">
     <?php if ($notifications === []): ?>

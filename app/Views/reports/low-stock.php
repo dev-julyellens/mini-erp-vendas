@@ -16,26 +16,39 @@ declare(strict_types=1);
 $categoryId = $filters['category_id'] ?? null;
 
 require dirname(__DIR__) . '/reports/_report-header.php';
+
+ob_start();
 ?>
-<div class="card-soft p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url($reportPath), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end">
-        <div class="col-6 col-md-4">
-            <label class="form-label" for="category_id">Categoria</label>
-            <select class="form-select" id="category_id" name="category_id">
-                <option value="">Todas</option>
-                <?php foreach ($categories as $cat): ?>
-                    <option value="<?= (int) $cat->id ?>" <?= $categoryId === $cat->id ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($cat->name, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-12 col-md-4 d-flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
-            <a class="btn btn-secondary" href="<?= htmlspecialchars($url($reportPath), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
-        </div>
-    </form>
+<div class="col-12 col-md-5">
+    <label class="form-label" for="filter_category_id">Categoria</label>
+    <select class="form-select" id="filter_category_id" name="category_id">
+        <option value="">Todas</option>
+        <?php foreach ($categories as $cat): ?>
+            <option value="<?= (int) $cat->id ?>" <?= $categoryId === $cat->id ? 'selected' : '' ?>>
+                <?= htmlspecialchars($cat->name, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
 </div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url($reportPath);
+$filterClearHref = $url($reportPath);
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
+
+<div class="kpi-grid mb-3" style="max-width: 20rem;">
+    <?php
+    $label = 'Produtos em alerta';
+    $value = (string) (int) $total;
+    $hint = 'Abaixo do estoque mínimo';
+    $variant = 'stat-finance-open';
+    $href = null;
+    require dirname(__DIR__) . '/components/kpi-card.php';
+    ?>
+</div>
+
+<?php require __DIR__ . '/partials/report-charts.php'; ?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
@@ -77,6 +90,8 @@ require dirname(__DIR__) . '/reports/_report-header.php';
             </tbody>
         </table>
     </div>
-    <?php $path = $reportPath;
-    require dirname(__DIR__) . '/partials/pagination.php'; ?>
+    <?php
+    $path = $reportPath;
+    require dirname(__DIR__) . '/partials/pagination.php';
+    ?>
 </div>

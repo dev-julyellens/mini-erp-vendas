@@ -14,17 +14,19 @@ use App\Models\Installment;
 
 $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Baixa de parcela</h1>
-        <div class="text-muted">
-            Venda #<?= (int) $installment->order_id ?> — parcela <?= (int) $installment->installment_number ?>
-        </div>
-    </div>
-    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
-</div>
+/** @var \App\Models\PixCharge|null $pendingPix */
+$pendingPix = $pendingPix ?? null;
 
+$title = 'Baixa de parcela';
+$subtitle = 'Venda #' . (int) $installment->order_id . ' — parcela ' . (int) $installment->installment_number;
+$breadcrumbs = [
+    ['label' => 'Financeiro', 'href' => $url('finance')],
+    ['label' => 'Parcelas abertas', 'href' => $url('finance/installments/open')],
+    ['label' => 'Baixa de parcela'],
+];
+require dirname(__DIR__, 2) . '/components/page-header.php';
+
+?>
 <div class="row g-3">
     <div class="col-lg-4">
         <div class="card-soft p-3 p-md-4">
@@ -42,10 +44,6 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
         </div>
     </div>
     <div class="col-lg-8">
-        <?php
-        /** @var \App\Models\PixCharge|null $pendingPix */
-        $pendingPix = $pendingPix ?? null;
-        ?>
         <?php if ($pendingPix !== null): ?>
             <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
                 <span>Cobrança PIX pendente para esta parcela.</span>
@@ -105,10 +103,13 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
                     </div>
                 <?php endif; ?>
 
-                <div class="d-flex gap-2">
-                    <button class="btn btn-primary" type="submit">Confirmar baixa</button>
-                    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
-                </div>
+                <?php
+                $mode = 'form-footer';
+                $cancelHref = $url('finance/installments/open');
+                $saveLabel = 'Confirmar baixa';
+                $saveLoadingText = 'Registrando...';
+                require dirname(__DIR__, 2) . '/components/action-buttons.php';
+                ?>
             </form>
         </div>
     </div>

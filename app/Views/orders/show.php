@@ -15,22 +15,23 @@ use App\Models\Order;
 $statusLabel = Order::statusLabel($order->status);
 $statusBadge = Order::statusBadge($order->status);
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Venda #<?= (int) $order->id ?></h1>
-        <div class="text-muted">Itens e valores registrados no momento da venda</div>
-    </div>
-    <div class="d-flex flex-wrap gap-2">
-        <?php if ($order->canCancel() && \App\Helpers\Permission::can('vendas', 'excluir')): ?>
-            <button type="button" class="btn btn-destructive" data-bs-toggle="modal" data-bs-target="#cancel-order-modal">
-                <i class="bi bi-x-circle"></i> Cancelar venda
-            </button>
-        <?php endif; ?>
-        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
-    </div>
-</div>
+$title = 'Venda #' . (int) $order->id;
+$subtitle = 'Itens e valores registrados no momento da venda';
+$breadcrumbs = [
+    ['label' => 'Vendas', 'href' => $url('orders')],
+    ['label' => 'Venda #' . (int) $order->id],
+];
+$actionsHtml = '';
+if ($order->canCancel() && Permission::can('vendas', 'excluir'))
+{
+    $actionsHtml .= '<button type="button" class="btn btn-destructive" data-bs-toggle="modal" data-bs-target="#cancel-order-modal">'
+        . '<i class="bi bi-x-circle"></i> Cancelar venda</button>';
+}
+$actionsHtml .= '<a class="btn btn-secondary" href="' . htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-arrow-left"></i> Voltar</a>';
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <div class="row g-3">
     <div class="col-lg-4">
         <div class="card-soft p-3 p-md-4 h-100">
@@ -140,7 +141,7 @@ $statusBadge = Order::statusBadge($order->status);
     </div>
 <?php endif; ?>
 
-<?php if ($order->canCancel() && \App\Helpers\Permission::can('vendas', 'excluir')): ?>
+<?php if ($order->canCancel() && Permission::can('vendas', 'excluir')): ?>
     <div class="modal fade" id="cancel-order-modal" tabindex="-1" aria-labelledby="cancel-order-modal-label" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

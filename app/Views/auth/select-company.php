@@ -10,16 +10,14 @@ declare(strict_types=1);
 $errors = $errors ?? [];
 $companies = $companies ?? [];
 $canSwitch = $canSwitch ?? false;
+
 $title = $canSwitch ? 'Trocar empresa' : 'Selecionar empresa';
+$subtitle = $canSwitch
+    ? 'Escolha a empresa com a qual deseja trabalhar nesta sessão.'
+    : 'Você tem acesso a mais de uma empresa. Selecione qual deseja utilizar.';
+require dirname(__DIR__) . '/components/auth-form-header.php';
 
 ?>
-<h1 class="h4 mb-3"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></h1>
-<p class="text-muted small mb-4">
-    <?= $canSwitch
-        ? 'Escolha a empresa com a qual deseja trabalhar nesta sessão.'
-        : 'Você tem acesso a mais de uma empresa. Selecione qual deseja utilizar.' ?>
-</p>
-
 <?php if (isset($errors['company_id'])): ?>
     <div class="alert alert-danger"><?= htmlspecialchars($errors['company_id'], ENT_QUOTES, 'UTF-8') ?></div>
 <?php endif; ?>
@@ -43,13 +41,12 @@ $title = $canSwitch ? 'Trocar empresa' : 'Selecionar empresa';
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100 mb-2" data-loading-text="Confirmando...">
-        <i class="bi bi-building me-1"></i> Continuar
-    </button>
-
-    <?php if ($canSwitch): ?>
-        <a class="btn btn-secondary w-100" href="<?= htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') ?>">
-            Cancelar
-        </a>
-    <?php endif; ?>
+    <div class="form-actions flex-column">
+        <button type="submit" class="btn btn-primary w-100" data-loading-text="Confirmando...">
+            <i class="bi bi-building me-1"></i> Continuar
+        </button>
+        <?php if ($canSwitch): ?>
+            <a class="btn btn-secondary w-100" href="<?= htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
+        <?php endif; ?>
+    </div>
 </form>

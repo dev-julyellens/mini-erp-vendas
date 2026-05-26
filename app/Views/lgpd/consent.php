@@ -10,13 +10,11 @@ use App\Helpers\DateHelper;
 
 $errors = $errors ?? [];
 
+$title = 'Privacidade e proteção de dados (LGPD)';
+$subtitle = 'Versão da política: ' . DateHelper::toBrDate($policyVersion);
+require dirname(__DIR__) . '/components/auth-form-header.php';
+
 ?>
-<h1 class="h4 mb-3">Privacidade e proteção de dados (LGPD)</h1>
-
-<p class="text-muted small mb-3">
-    Versão da política: <strong><?= htmlspecialchars(DateHelper::toBrDate($policyVersion), ENT_QUOTES, 'UTF-8') ?></strong>
-</p>
-
 <div class="border rounded p-3 mb-3 small" style="max-height: 14rem; overflow-y: auto;">
     <p class="mb-2">
         Este sistema trata dados pessoais de clientes e usuários para operação do ERP (cadastros, vendas,
@@ -45,5 +43,5 @@ $errors = $errors ?? [];
         </label>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100">Continuar</button>
+    <button type="submit" class="btn btn-primary w-100" data-loading-text="Registrando...">Continuar</button>
 </form>

@@ -27,45 +27,45 @@ if ($filters['date_to'] !== '')
     $query['date_to'] = $filters['date_to'];
 }
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Vendas</h1>
-        <div class="text-muted">Listagem, filtros e detalhes</div>
-    </div>
-    <?php if (\App\Helpers\Permission::can('vendas', 'criar')): ?>
-        <a class="btn btn-primary" href="<?= htmlspecialchars($url('orders/create'), ENT_QUOTES, 'UTF-8') ?>">
-            <i class="bi bi-plus-lg"></i> Nova venda
-        </a>
-    <?php endif; ?>
-</div>
+$title = 'Vendas';
+$subtitle = 'Listagem, filtros e detalhes';
+$actionsHtml = '';
+if (\App\Helpers\Permission::can('vendas', 'criar'))
+{
+    $actionsHtml = '<a class="btn btn-primary" href="' . htmlspecialchars($url('orders/create'), ENT_QUOTES, 'UTF-8') . '">'
+        . '<i class="bi bi-plus-lg"></i> Nova venda</a>';
+}
+require dirname(__DIR__) . '/components/page-header.php';
 
-<div class="card-soft filter-panel p-3 p-md-4 mb-3">
-    <form class="row g-2 align-items-end filter-form" method="get" action="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">
-        <div class="col-md-4">
-            <label class="form-label">Cliente</label>
-            <select class="form-select" name="customer_id">
-                <option value="">Todos</option>
-                <?php foreach ($customers as $c): ?>
-                    <option value="<?= (int) $c->id ?>" <?= $filters['customer_id'] === $c->id ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($c->name, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">De</label>
-            <input class="form-control" type="date" name="date_from" value="<?= htmlspecialchars($filters['date_from'], ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">Até</label>
-            <input class="form-control" type="date" name="date_to" value="<?= htmlspecialchars($filters['date_to'], ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-md-2 d-grid">
-            <button class="btn btn-primary btn-md" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
-        </div>
-    </form>
+ob_start();
+?>
+<div class="col-md-4">
+    <label class="form-label" for="filter_customer_id">Cliente</label>
+    <select class="form-select" id="filter_customer_id" name="customer_id">
+        <option value="">Todos</option>
+        <?php foreach ($customers as $c): ?>
+            <option value="<?= (int) $c->id ?>" <?= $filters['customer_id'] === $c->id ? 'selected' : '' ?>>
+                <?= htmlspecialchars($c->name, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
 </div>
+<div class="col-md-3">
+    <label class="form-label" for="filter_date_from">De</label>
+    <input class="form-control" type="date" id="filter_date_from" name="date_from"
+        value="<?= htmlspecialchars($filters['date_from'], ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<div class="col-md-3">
+    <label class="form-label" for="filter_date_to">Até</label>
+    <input class="form-control" type="date" id="filter_date_to" name="date_to"
+        value="<?= htmlspecialchars($filters['date_to'], ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url('orders');
+$filterClearHref = $url('orders');
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
@@ -93,7 +93,13 @@ if ($filters['date_to'] !== '')
                         </td>
                         <td class="text-muted small"><?= htmlspecialchars(DateHelper::toBrDateTime($o->created_at), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-ghost" href="<?= htmlspecialchars($url('orders/show?id=' . $o->id), ENT_QUOTES, 'UTF-8') ?>">Detalhes</a>
+                            <?php
+                            $mode = 'table-row';
+                            $canEdit = false;
+                            $canDelete = false;
+                            $detailsHref = $url('orders/show?id=' . $o->id);
+                            require dirname(__DIR__) . '/components/action-buttons.php';
+                            ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>

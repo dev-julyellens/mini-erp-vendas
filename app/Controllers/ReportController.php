@@ -11,6 +11,7 @@ use App\Models\ReportFilter;
 use App\Repositories\CategoryRepository;
 use App\Repositories\CustomerRepository;
 use App\Repositories\ProductRepository;
+use App\Services\ReportChartService;
 use App\Services\ReportExportService;
 use App\Services\ReportFilterService;
 use App\Services\ReportService;
@@ -158,6 +159,12 @@ final class ReportController extends Controller
         {
             $data['orderStatuses'] = ReportFilter::ORDER_STATUSES;
         }
+
+        $data['reportCharts'] = (new ReportChartService($this->reports))->build($type, $filter);
+        $data['pageScripts'] = [
+            'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js',
+            'assets/js/reports-charts.js',
+        ];
 
         $this->view($template, $data);
     }

@@ -21,63 +21,68 @@ $productId = $filters['product_id'] ?? null;
 $categoryId = $filters['category_id'] ?? null;
 
 require dirname(__DIR__) . '/reports/_report-header.php';
+
+ob_start();
 ?>
-<div class="card-soft p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url($reportPath), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end">
-        <div class="col-12 col-sm-6 col-lg-2">
-            <label class="form-label" for="date_from">De</label>
-            <input type="date" class="form-control" id="date_from" name="date_from"
-                value="<?= htmlspecialchars((string) ($filters['date_from'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-12 col-sm-6 col-lg-2">
-            <label class="form-label" for="date_to">Até</label>
-            <input type="date" class="form-control" id="date_to" name="date_to"
-                value="<?= htmlspecialchars((string) ($filters['date_to'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-12 col-sm-6 col-lg-3">
-            <label class="form-label" for="product_id">Produto</label>
-            <select class="form-select" id="product_id" name="product_id">
-                <option value="">Todos</option>
-                <?php foreach ($products as $p): ?>
-                    <option value="<?= (int) $p->id ?>" <?= $productId === $p->id ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($p->name, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-12 col-sm-6 col-lg-2">
-            <label class="form-label" for="category_id">Categoria</label>
-            <select class="form-select" id="category_id" name="category_id">
-                <option value="">Todas</option>
-                <?php foreach ($categories as $cat): ?>
-                    <option value="<?= (int) $cat->id ?>" <?= $categoryId === $cat->id ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($cat->name, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <?php require __DIR__ . '/partials/filters-order-status.php'; ?>
-        <div class="col-12 d-flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
-            <a class="btn btn-secondary" href="<?= htmlspecialchars($url($reportPath), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
-        </div>
-    </form>
+<div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label" for="filter_date_from">De</label>
+    <input type="date" class="form-control" id="filter_date_from" name="date_from"
+        value="<?= htmlspecialchars((string) ($filters['date_from'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label" for="filter_date_to">Até</label>
+    <input type="date" class="form-control" id="filter_date_to" name="date_to"
+        value="<?= htmlspecialchars((string) ($filters['date_to'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<div class="col-12 col-sm-6 col-lg-3">
+    <label class="form-label" for="filter_product_id">Produto</label>
+    <select class="form-select" id="filter_product_id" name="product_id">
+        <option value="">Todos</option>
+        <?php foreach ($products as $p): ?>
+            <option value="<?= (int) $p->id ?>" <?= $productId === $p->id ? 'selected' : '' ?>>
+                <?= htmlspecialchars($p->name, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+<div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label" for="filter_category_id">Categoria</label>
+    <select class="form-select" id="filter_category_id" name="category_id">
+        <option value="">Todas</option>
+        <?php foreach ($categories as $cat): ?>
+            <option value="<?= (int) $cat->id ?>" <?= $categoryId === $cat->id ? 'selected' : '' ?>>
+                <?= htmlspecialchars($cat->name, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+<?php require __DIR__ . '/partials/filters-order-status.php'; ?>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url($reportPath);
+$filterClearHref = $url($reportPath);
+$filterActionsColClass = 'col-12 col-md-auto';
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
+
+<div class="kpi-grid mb-3">
+    <?php
+    $label = 'Quantidade vendida';
+    $value = (string) (int) $summary['quantity_sold'];
+    $hint = 'Unidades no período';
+    $variant = 'stat-products';
+    $href = null;
+    require dirname(__DIR__) . '/components/kpi-card.php';
+
+    $label = 'Receita';
+    $value = 'R$ ' . htmlspecialchars($fmt((string) $summary['total_amount']), ENT_QUOTES, 'UTF-8');
+    $hint = 'Total no período';
+    $variant = 'stat-finance-month';
+    require dirname(__DIR__) . '/components/kpi-card.php';
+    ?>
 </div>
 
-<div class="row g-3 mb-3">
-    <div class="col-md-6">
-        <div class="card-soft p-3">
-            <div class="text-muted small">Quantidade vendida</div>
-            <div class="fs-4 fw-semibold"><?= (int) $summary['quantity_sold'] ?></div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card-soft p-3">
-            <div class="text-muted small">Receita</div>
-            <div class="fs-4 fw-semibold">R$ <?= htmlspecialchars($fmt((string) $summary['total_amount']), ENT_QUOTES, 'UTF-8') ?></div>
-        </div>
-    </div>
-</div>
+<?php require __DIR__ . '/partials/report-charts.php'; ?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
@@ -115,6 +120,8 @@ require dirname(__DIR__) . '/reports/_report-header.php';
             </tbody>
         </table>
     </div>
-    <?php $path = $reportPath;
-    require dirname(__DIR__) . '/partials/pagination.php'; ?>
+    <?php
+    $path = $reportPath;
+    require dirname(__DIR__) . '/partials/pagination.php';
+    ?>
 </div>

@@ -10,33 +10,33 @@ declare(strict_types=1);
 /** @var string $search */
 /** @var string $status */
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Empresas</h1>
-        <div class="text-muted">Gestão administrativa de empresas (multiempresa)</div>
-    </div>
-    <a class="btn btn-primary" href="<?= htmlspecialchars($url('admin/companies/create'), ENT_QUOTES, 'UTF-8') ?>">
-        <i class="bi bi-plus-lg"></i> Nova empresa
-    </a>
-</div>
+$title = 'Empresas';
+$subtitle = 'Gestão administrativa de empresas (multiempresa)';
+$actionsHtml = '<a class="btn btn-primary" href="' . htmlspecialchars($url('admin/companies/create'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-plus-lg"></i> Nova empresa</a>';
+require dirname(__DIR__) . '/components/page-header.php';
 
-<form class="row g-2 mb-3" method="get" action="<?= htmlspecialchars($url('admin/companies'), ENT_QUOTES, 'UTF-8') ?>">
-    <div class="col-md-5">
-        <input type="search" name="q" class="form-control" placeholder="Buscar nome, slug ou documento"
-            value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
-    </div>
-    <div class="col-md-3">
-        <select name="status" class="form-select">
-            <option value="">Todos os status</option>
-            <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Ativas</option>
-            <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Inativas</option>
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary btn-md"><i class="bi bi-funnel"></i> Filtrar</button>
-    </div>
-</form>
+ob_start();
+?>
+<div class="col-12 col-md-5">
+    <label class="form-label" for="filter_q">Buscar</label>
+    <input type="search" class="form-control" id="filter_q" name="q" placeholder="Nome, slug ou documento"
+        value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<div class="col-12 col-md-4">
+    <label class="form-label" for="filter_status">Status</label>
+    <select class="form-select" id="filter_status" name="status">
+        <option value="">Todos os status</option>
+        <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Ativas</option>
+        <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Inativas</option>
+    </select>
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url('admin/companies');
+$filterClearHref = $url('admin/companies');
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
@@ -66,25 +66,34 @@ declare(strict_types=1);
                         </td>
                         <td class="text-muted small"><?= htmlspecialchars(substr($c->created_at, 0, 16), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-end text-nowrap">
-                            <div class="table-actions">
-                                <a class="btn btn-sm btn-outline" href="<?= htmlspecialchars($url('admin/companies/edit?id=' . $c->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
-                                <form class="d-inline" method="post" action="<?= htmlspecialchars($url('admin/companies/toggle-active'), ENT_QUOTES, 'UTF-8') ?>"
-                                    data-confirm="<?= $c->active ? 'Desativar esta empresa?' : 'Ativar esta empresa?' ?>">
-                                    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                                    <input type="hidden" name="id" value="<?= (int) $c->id ?>">
-                                    <input type="hidden" name="active" value="<?= $c->active ? '0' : '1' ?>">
-                                    <button type="submit" class="btn btn-sm <?= $c->active ? 'btn-warning' : 'btn-outline' ?>">
-                                        <?= $c->active ? 'Desativar' : 'Ativar' ?>
-                                    </button>
-                                </form>
-                            </div>
+                            <?php
+                            $mode = 'table-row';
+                            $editHref = $url('admin/companies/edit?id=' . $c->id);
+                            $canEdit = true;
+                            $canDelete = false;
+                            $extraActions = [
+                                [
+                                    'action' => $url('admin/companies/toggle-active'),
+                                    'label' => $c->active ? 'Desativar' : 'Ativar',
+                                    'variant' => $c->active ? 'warning' : 'outline',
+                                    'confirm' => $c->active ? 'Desativar esta empresa?' : 'Ativar esta empresa?',
+                                    'extras' => [
+                                        'id' => (string) $c->id,
+                                        'active' => $c->active ? '0' : '1',
+                                    ],
+                                ],
+                            ];
+                            require dirname(__DIR__) . '/components/action-buttons.php';
+                            ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     </div>
-    <?php $path = 'admin/companies';
+    <?php
+    $path = 'admin/companies';
     $query = array_filter(['q' => $search, 'status' => $status]);
-    require dirname(__DIR__) . '/partials/pagination.php'; ?>
+    require dirname(__DIR__) . '/partials/pagination.php';
+    ?>
 </div>

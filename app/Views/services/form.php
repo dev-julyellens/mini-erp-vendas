@@ -55,12 +55,15 @@ $margins = ProductPricing::computeMargins($costPrice, $price !== '' ? $price : '
 $marginDisplay = $margins['margin'] ?? '—';
 $markupDisplay = $margins['markup'] ?? '—';
 
-?>
-<div class="mb-3">
-    <h1 class="h3 mb-1"><?= $isEdit ? 'Editar serviço' : 'Novo serviço' ?></h1>
-    <div class="text-muted">Valor padrão para vendas e tempo estimado opcional. Sem controle de estoque.</div>
-</div>
+$title = $isEdit ? 'Editar serviço' : 'Novo serviço';
+$subtitle = 'Valor padrão para vendas e tempo estimado opcional. Sem controle de estoque.';
+$breadcrumbs = [
+    ['label' => 'Serviços', 'href' => $url('services')],
+    ['label' => $title],
+];
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <div class="card-soft p-3 p-md-4">
     <?php if ($errors !== []): ?>
         <div class="alert alert-danger">
@@ -152,6 +155,7 @@ $markupDisplay = $margins['markup'] ?? '—';
         <?php
         $mode = 'form-footer';
         $cancelHref = $url('services');
+        $saveLoadingText = 'Salvando...';
         require dirname(__DIR__) . '/components/action-buttons.php';
         ?>
     </form>

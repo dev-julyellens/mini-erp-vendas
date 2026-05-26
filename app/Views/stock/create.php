@@ -14,17 +14,15 @@ $type = $old['type'] ?? 'entrada';
 $quantity = $old['quantity'] ?? '';
 $notes = $old['notes'] ?? '';
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Nova movimentação</h1>
-        <div class="text-muted">Entrada, saída, ajuste, perda ou inventário</div>
-    </div>
-    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('stock-movements'), ENT_QUOTES, 'UTF-8') ?>">
-        <i class="bi bi-arrow-left"></i> Voltar
-    </a>
-</div>
+$title = 'Nova movimentação';
+$subtitle = 'Entrada, saída, ajuste, perda ou inventário';
+$breadcrumbs = [
+    ['label' => 'Estoque', 'href' => $url('stock-movements')],
+    ['label' => 'Nova movimentação'],
+];
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <div class="card-soft p-3 p-md-4" style="max-width: 36rem;">
     <form method="post" action="<?= htmlspecialchars($url('stock-movements/store'), ENT_QUOTES, 'UTF-8') ?>">
         <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
@@ -75,8 +73,12 @@ $notes = $old['notes'] ?? '';
             <textarea class="form-control" id="notes" name="notes" rows="3"><?= htmlspecialchars($notes, ENT_QUOTES, 'UTF-8') ?></textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-check-lg"></i> Registrar
-        </button>
+        <?php
+        $mode = 'form-footer';
+        $cancelHref = $url('stock-movements');
+        $saveLabel = 'Registrar';
+        $saveLoadingText = 'Registrando...';
+        require dirname(__DIR__) . '/components/action-buttons.php';
+        ?>
     </form>
 </div>

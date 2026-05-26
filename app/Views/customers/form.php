@@ -15,12 +15,15 @@ $name = $old['name'] ?? ($customer ? $customer->name : '');
 $email = $old['email'] ?? ($customer ? $customer->email : '');
 $phone = $old['phone'] ?? ($customer ? (string) ($customer->phone ?? '') : '');
 
-?>
-<div class="mb-3">
-    <h1 class="h3 mb-1"><?= $isEdit ? 'Editar cliente' : 'Novo cliente' ?></h1>
-    <div class="text-muted">Campos obrigatórios: nome e e-mail</div>
-</div>
+$title = $isEdit ? 'Editar cliente' : 'Novo cliente';
+$subtitle = 'Campos obrigatórios: nome e e-mail';
+$breadcrumbs = [
+    ['label' => 'Clientes', 'href' => $url('customers')],
+    ['label' => $title],
+];
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <div class="card-soft p-3 p-md-4" style="max-width: 820px;">
     <?php if ($errors !== []): ?>
         <div class="alert alert-danger">
@@ -53,13 +56,11 @@ $phone = $old['phone'] ?? ($customer ? (string) ($customer->phone ?? '') : '');
                 value="<?= htmlspecialchars((string) $phone, ENT_QUOTES, 'UTF-8') ?>" placeholder="(00) 00000-0000">
         </div>
 
-        <div class="d-flex gap-2">
-            <?php
-            $mode = 'form-footer';
-            $cancelHref = $url('customers');
-            $saveLoadingText = 'Salvando...';
-            require dirname(__DIR__) . '/components/action-buttons.php';
-            ?>
-        </div>
+        <?php
+        $mode = 'form-footer';
+        $cancelHref = $url('customers');
+        $saveLoadingText = 'Salvando...';
+        require dirname(__DIR__) . '/components/action-buttons.php';
+        ?>
     </form>
 </div>

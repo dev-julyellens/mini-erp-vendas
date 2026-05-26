@@ -28,6 +28,8 @@ use App\Helpers\ActionButton;
  * @var bool $canDelete
  * @var string $saveLabel
  * @var string|null $saveLoadingText
+ * @var string|null $submitButtonId id do botão submit (ex.: formulários com JS dedicado)
+ * @var string|null $submitButtonExtraHtml HTML interno extra no botão submit (não escapado)
  * @var string $cancelLabel
  * @var string $filterLabel
  * @var string $clearLabel
@@ -35,11 +37,13 @@ use App\Helpers\ActionButton;
  */
 
 $mode = $mode ?? 'table-row';
-$url = $url ?? static fn (string $p): string => $p;
+$url = $url ?? static fn(string $p): string => $p;
 $canEdit = $canEdit ?? true;
 $canDelete = $canDelete ?? true;
 $saveLabel = $saveLabel ?? 'Salvar';
 $saveLoadingText = $saveLoadingText ?? null;
+$submitButtonId = $submitButtonId ?? null;
+$submitButtonExtraHtml = $submitButtonExtraHtml ?? null;
 $cancelLabel = $cancelLabel ?? 'Cancelar';
 $filterLabel = $filterLabel ?? '<i class="bi bi-funnel"></i> Filtrar';
 $clearLabel = $clearLabel ?? 'Limpar';
@@ -50,8 +54,10 @@ $csrfPartial = $csrfPartial ?? dirname(__DIR__) . '/partials/csrf.php';
 if ($mode === 'form-footer'): ?>
     <div class="form-actions">
         <button type="submit" class="<?= htmlspecialchars(ActionButton::classes('primary', 'md'), ENT_QUOTES, 'UTF-8') ?>"
-            <?php if ($saveLoadingText): ?>data-loading-text="<?= htmlspecialchars($saveLoadingText, ENT_QUOTES, 'UTF-8') ?>"<?php endif; ?>>
+            <?php if ($submitButtonId): ?>id="<?= htmlspecialchars($submitButtonId, ENT_QUOTES, 'UTF-8') ?>" <?php endif; ?>
+            <?php if ($saveLoadingText): ?>data-loading-text="<?= htmlspecialchars($saveLoadingText, ENT_QUOTES, 'UTF-8') ?>" <?php endif; ?>>
             <?= htmlspecialchars($saveLabel, ENT_QUOTES, 'UTF-8') ?>
+            <?php if ($submitButtonExtraHtml): ?><?= $submitButtonExtraHtml ?><?php endif; ?>
         </button>
         <?php if (!empty($cancelHref)): ?>
             <a class="<?= htmlspecialchars(ActionButton::classes('secondary', 'md'), ENT_QUOTES, 'UTF-8') ?>"
@@ -99,7 +105,7 @@ if ($mode === 'form-footer'): ?>
                 <form class="d-inline" method="<?= htmlspecialchars($action['method'] ?? 'post', ENT_QUOTES, 'UTF-8') ?>"
                     action="<?= htmlspecialchars((string) $action['action'], ENT_QUOTES, 'UTF-8') ?>"
                     <?php if (!empty($action['confirm'])): ?>
-                        data-confirm="<?= htmlspecialchars((string) $action['confirm'], ENT_QUOTES, 'UTF-8') ?>"
+                    data-confirm="<?= htmlspecialchars((string) $action['confirm'], ENT_QUOTES, 'UTF-8') ?>"
                     <?php endif; ?>>
                     <?php require $csrfPartial; ?>
                     <?php foreach (($action['extras'] ?? []) as $name => $value): ?>
@@ -115,10 +121,10 @@ if ($mode === 'form-footer'): ?>
         <?php if ($canDelete && !empty($deleteAction) && $deleteId !== null): ?>
             <form class="d-inline" method="post" action="<?= htmlspecialchars($deleteAction, ENT_QUOTES, 'UTF-8') ?>"
                 <?php if ($deleteConfirm): ?>
-                    data-confirm="<?= htmlspecialchars($deleteConfirm, ENT_QUOTES, 'UTF-8') ?>"
+                data-confirm="<?= htmlspecialchars($deleteConfirm, ENT_QUOTES, 'UTF-8') ?>"
                 <?php endif; ?>
                 <?php if ($deleteTitle): ?>
-                    data-confirm-title="<?= htmlspecialchars($deleteTitle, ENT_QUOTES, 'UTF-8') ?>"
+                data-confirm-title="<?= htmlspecialchars($deleteTitle, ENT_QUOTES, 'UTF-8') ?>"
                 <?php endif; ?>>
                 <?php require $csrfPartial; ?>
                 <input type="hidden" name="id" value="<?= (int) $deleteId ?>">

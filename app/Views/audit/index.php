@@ -19,56 +19,50 @@ use App\Services\AuditService;
 
 $displayEntity = in_array($filters['entity'], $entities, true) ? $filters['entity'] : '';
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Auditoria</h1>
-        <div class="text-muted">Rastreabilidade de operações críticas do sistema</div>
-    </div>
-</div>
+$title = 'Auditoria';
+$subtitle = 'Rastreabilidade de operações críticas do sistema';
+require dirname(__DIR__) . '/components/page-header.php';
 
-<div class="card-soft filter-panel p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url('audit-logs'), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end filter-form">
-        <div class="col-12 col-md-3">
-            <label class="form-label" for="user_id">Usuário</label>
-            <select class="form-select" id="user_id" name="user_id">
-                <option value="">Todos</option>
-                <?php foreach ($users as $u): ?>
-                    <option value="<?= (int) $u['id'] ?>" <?= $filters['user_id'] === $u['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($u['name'], ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-6 col-md-2">
-            <label class="form-label" for="entity">Entidade</label>
-            <select class="form-select" id="entity" name="entity">
-                <option value="">Todas</option>
-                <?php foreach ($entities as $ent): ?>
-                    <option value="<?= htmlspecialchars($ent, ENT_QUOTES, 'UTF-8') ?>" <?= $displayEntity === $ent ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($entityLabels[$ent] ?? $ent, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-6 col-md-2">
-            <label class="form-label" for="date_from">De</label>
-            <input type="date" class="form-control" id="date_from" name="date_from"
-                value="<?= htmlspecialchars($filters['date_from'], ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-6 col-md-2">
-            <label class="form-label" for="date_to">Até</label>
-            <input type="date" class="form-control" id="date_to" name="date_to"
-                value="<?= htmlspecialchars($filters['date_to'], ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-12 col-md-3 d-flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-funnel"></i> Filtrar
-            </button>
-            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('audit-logs'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
-        </div>
-    </form>
+ob_start();
+?>
+<div class="col-12 col-md-3">
+    <label class="form-label" for="filter_user_id">Usuário</label>
+    <select class="form-select" id="filter_user_id" name="user_id">
+        <option value="">Todos</option>
+        <?php foreach ($users as $u): ?>
+            <option value="<?= (int) $u['id'] ?>" <?= $filters['user_id'] === $u['id'] ? 'selected' : '' ?>>
+                <?= htmlspecialchars($u['name'], ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
 </div>
+<div class="col-6 col-md-2">
+    <label class="form-label" for="filter_entity">Entidade</label>
+    <select class="form-select" id="filter_entity" name="entity">
+        <option value="">Todas</option>
+        <?php foreach ($entities as $ent): ?>
+            <option value="<?= htmlspecialchars($ent, ENT_QUOTES, 'UTF-8') ?>" <?= $displayEntity === $ent ? 'selected' : '' ?>>
+                <?= htmlspecialchars($entityLabels[$ent] ?? $ent, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+<div class="col-6 col-md-2">
+    <label class="form-label" for="filter_date_from">De</label>
+    <input type="date" class="form-control" id="filter_date_from" name="date_from"
+        value="<?= htmlspecialchars($filters['date_from'], ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<div class="col-6 col-md-2">
+    <label class="form-label" for="filter_date_to">Até</label>
+    <input type="date" class="form-control" id="filter_date_to" name="date_to"
+        value="<?= htmlspecialchars($filters['date_to'], ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url('audit-logs');
+$filterClearHref = $url('audit-logs');
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
@@ -108,7 +102,7 @@ $displayEntity = in_array($filters['entity'], $entities, true) ? $filters['entit
                         <td><?= $log->entity_id !== null ? (int) $log->entity_id : '—' ?></td>
                         <td class="d-none d-lg-table-cell small text-muted"><?= htmlspecialchars((string) ($log->ip_address ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-end">
-                            <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal"
+                            <button type="button" class="btn btn-sm btn-ghost" data-bs-toggle="modal"
                                 data-bs-target="#<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>">
                                 Ver
                             </button>

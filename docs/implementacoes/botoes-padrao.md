@@ -44,6 +44,25 @@ Padrão único para botões em tabelas, formulários, filtros e cabeçalhos. Est
 </div>
 ```
 
+## Partial PHP (`filter-panel.php`)
+
+Envolve filtros em `card-soft filter-panel` e inclui automaticamente o modo `filter` de `action-buttons.php`.
+
+```php
+<?php
+ob_start();
+?>
+<div class="col-md-4">
+    <label class="form-label" for="q">Busca</label>
+    <input class="form-control" id="q" name="q" value="...">
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url('orders');
+$filterClearHref = $url('orders');
+require dirname(__DIR__) . '/components/filter-panel.php';
+```
+
 ## Partial PHP (`action-buttons.php`)
 
 ### Linha de tabela (`table-row`)
@@ -98,7 +117,8 @@ Todas as variantes usam variáveis CSS (`--text`, `--border`, `--danger`, etc.) 
 
 ## Telas já padronizadas (referência)
 
-- CRUD: clientes, produtos, serviços, categorias, usuários, empresas, vínculos
+- CRUD listagens: clientes, produtos, serviços, categorias, usuários, empresas (index com `page-header` + `filter-panel` quando há filtros)
+- Comercial: vendas (`orders/index`)
 - Comercial: vendas (lista), dashboard (atalhos)
 - Financeiro: painel, contas a receber, parcelamentos, fluxo
 - Relatórios: export PDF/Excel, filtros Limpar

@@ -19,17 +19,20 @@ foreach ($products as $p)
     ];
 }
 
-?>
-<div class="mb-3">
-    <h1 class="h3 mb-1">Nova venda</h1>
-    <div class="text-muted">Venda híbrida: produtos (com estoque) e serviços (sem estoque) na mesma venda.</div>
-</div>
+$title = 'Nova venda';
+$subtitle = 'Venda híbrida: produtos (com estoque) e serviços (sem estoque) na mesma venda.';
+$breadcrumbs = [
+    ['label' => 'Vendas', 'href' => $url('orders')],
+    ['label' => 'Nova venda'],
+];
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <div class="card-soft p-3 p-md-4">
-    <form id="orderForm" class="needs-validation" novalidate>
+    <form id="orderForm" class="needs-validation" novalidate data-no-loading>
         <div class="row g-3">
             <div class="col-md-4">
-                <label class="form-label">Cliente</label>
+                <label class="form-label" for="customerId">Cliente</label>
                 <select class="form-select" id="customerId" required>
                     <option value="">Selecione...</option>
                     <?php foreach ($customers as $c): ?>
@@ -68,13 +71,14 @@ foreach ($products as $p)
             <div class="fs-5">
                 Total: <span class="fw-bold" id="orderTotal">R$ 0,00</span>
             </div>
-            <div class="d-flex gap-2">
-                <a class="btn btn-secondary" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
-                <button class="btn btn-primary" type="submit" id="btnSubmit">
-                    <span class="submit-label">Registrar venda</span>
-                    <span class="spinner-border spinner-border-sm d-none" id="btnSpinner" role="status" aria-hidden="true"></span>
-                </button>
-            </div>
+            <?php
+            $mode = 'form-footer';
+            $cancelHref = $url('orders');
+            $saveLabel = 'Registrar venda';
+            $submitButtonId = 'btnSubmit';
+            $submitButtonExtraHtml = '<span class="spinner-border spinner-border-sm d-none ms-1" id="btnSpinner" role="status" aria-hidden="true"></span>';
+            require dirname(__DIR__) . '/components/action-buttons.php';
+            ?>
         </div>
     </form>
 </div>

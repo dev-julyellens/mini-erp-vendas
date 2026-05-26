@@ -19,46 +19,45 @@ use App\Models\Payment;
 $displayType = in_array($filters['type'], $types, true) ? $filters['type'] : '';
 $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Fluxo de caixa</h1>
-        <div class="text-muted">Entradas geradas por recebimentos e demais movimentações</div>
-    </div>
-    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">
-        <i class="bi bi-speedometer2"></i> Dashboard financeiro
-    </a>
-</div>
+$title = 'Fluxo de caixa';
+$subtitle = 'Entradas geradas por recebimentos e demais movimentações';
+$breadcrumbs = [
+    ['label' => 'Financeiro', 'href' => $url('finance')],
+    ['label' => 'Fluxo de caixa'],
+];
+$actionsHtml = '<a class="btn btn-secondary" href="' . htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-speedometer2"></i> Dashboard financeiro</a>';
+require dirname(__DIR__) . '/components/page-header.php';
 
-<div class="card-soft filter-panel p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end filter-form">
-        <div class="col-6 col-md-3">
-            <label class="form-label" for="type">Tipo</label>
-            <select class="form-select" id="type" name="type">
-                <option value="">Todos</option>
-                <?php foreach ($types as $t): ?>
-                    <option value="<?= htmlspecialchars($t, ENT_QUOTES, 'UTF-8') ?>" <?= $displayType === $t ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($typeLabels[$t] ?? $t, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-6 col-md-3">
-            <label class="form-label" for="date_from">De</label>
-            <input type="date" class="form-control" id="date_from" name="date_from"
-                value="<?= htmlspecialchars($filters['date_from'], ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-6 col-md-3">
-            <label class="form-label" for="date_to">Até</label>
-            <input type="date" class="form-control" id="date_to" name="date_to"
-                value="<?= htmlspecialchars($filters['date_to'], ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-12 col-md-3 d-flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
-            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
-        </div>
-    </form>
+ob_start();
+?>
+<div class="col-6 col-md-3">
+    <label class="form-label" for="filter_type">Tipo</label>
+    <select class="form-select" id="filter_type" name="type">
+        <option value="">Todos</option>
+        <?php foreach ($types as $t): ?>
+            <option value="<?= htmlspecialchars($t, ENT_QUOTES, 'UTF-8') ?>" <?= $displayType === $t ? 'selected' : '' ?>>
+                <?= htmlspecialchars($typeLabels[$t] ?? $t, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
 </div>
+<div class="col-6 col-md-3">
+    <label class="form-label" for="filter_date_from">De</label>
+    <input type="date" class="form-control" id="filter_date_from" name="date_from"
+        value="<?= htmlspecialchars($filters['date_from'], ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<div class="col-6 col-md-3">
+    <label class="form-label" for="filter_date_to">Até</label>
+    <input type="date" class="form-control" id="filter_date_to" name="date_to"
+        value="<?= htmlspecialchars($filters['date_to'], ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url('finance/cash-flow');
+$filterClearHref = $url('finance/cash-flow');
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">

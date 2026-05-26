@@ -18,35 +18,37 @@ $canPayInstallments = Permission::can('financeiro', 'criar')
     && $account->has_installments
     && in_array($account->status, ['pending', 'partial'], true);
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Conta a receber #<?= (int) $account->id ?></h1>
-        <div class="text-muted">Venda #<?= (int) $account->order_id ?></div>
-    </div>
-    <div class="d-flex flex-wrap gap-2">
-        <?php
-        /** @var \App\Models\PixCharge|null $pendingPix */
-        $pendingPix = $pendingPix ?? null;
-        ?>
-        <?php if ($pendingPix !== null): ?>
-            <a class="btn btn-success" href="<?= htmlspecialchars($url('finance/pix/charge?id=' . $pendingPix->id), ENT_QUOTES, 'UTF-8') ?>">
-                <i class="bi bi-qr-code"></i> PIX pendente
-            </a>
-        <?php endif; ?>
-        <?php if ($canReceive): ?>
-            <a class="btn btn-primary" href="<?= htmlspecialchars($url('finance/accounts-receivable/receive?id=' . $account->id), ENT_QUOTES, 'UTF-8') ?>">
-                <i class="bi bi-cash-coin"></i> Registrar recebimento
-            </a>
-        <?php elseif ($canPayInstallments): ?>
-            <a class="btn btn-primary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">
-                <i class="bi bi-calendar2-check"></i> Baixar parcelas
-            </a>
-        <?php endif; ?>
-        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
-    </div>
-</div>
+/** @var \App\Models\PixCharge|null $pendingPix */
+$pendingPix = $pendingPix ?? null;
 
+$title = 'Conta a receber #' . (int) $account->id;
+$subtitle = 'Venda #' . (int) $account->order_id;
+$breadcrumbs = [
+    ['label' => 'Financeiro', 'href' => $url('finance')],
+    ['label' => 'Contas a receber', 'href' => $url('finance/accounts-receivable')],
+    ['label' => 'Conta #' . (int) $account->id],
+];
+$actionsHtml = '';
+if ($pendingPix !== null)
+{
+    $actionsHtml .= '<a class="btn btn-success" href="' . htmlspecialchars($url('finance/pix/charge?id=' . $pendingPix->id), ENT_QUOTES, 'UTF-8') . '">'
+        . '<i class="bi bi-qr-code"></i> PIX pendente</a>';
+}
+if ($canReceive)
+{
+    $actionsHtml .= '<a class="btn btn-primary" href="' . htmlspecialchars($url('finance/accounts-receivable/receive?id=' . $account->id), ENT_QUOTES, 'UTF-8') . '">'
+        . '<i class="bi bi-cash-coin"></i> Registrar recebimento</a>';
+}
+elseif ($canPayInstallments)
+{
+    $actionsHtml .= '<a class="btn btn-primary" href="' . htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') . '">'
+        . '<i class="bi bi-calendar2-check"></i> Baixar parcelas</a>';
+}
+$actionsHtml .= '<a class="btn btn-secondary" href="' . htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-arrow-left"></i> Voltar</a>';
+require dirname(__DIR__, 2) . '/components/page-header.php';
+
+?>
 <div class="row g-3">
     <div class="col-lg-4">
         <div class="card-soft p-3 p-md-4 h-100">

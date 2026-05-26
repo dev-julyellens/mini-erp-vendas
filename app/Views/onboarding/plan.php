@@ -8,10 +8,11 @@ declare(strict_types=1);
 
 $errors = $errors ?? [];
 
-?>
-<h1 class="h4 mb-2">Escolha seu plano</h1>
-<p class="text-muted small mb-4">Passo 2 de 2 — define limites e cobrança recorrente da plataforma.</p>
+$title = 'Escolha seu plano';
+$subtitle = 'Passo 2 de 2 — define limites e cobrança recorrente da plataforma.';
+require dirname(__DIR__) . '/components/auth-form-header.php';
 
+?>
 <?php if (isset($errors['plan_code'])): ?>
     <div class="alert alert-danger"><?= htmlspecialchars($errors['plan_code'], ENT_QUOTES, 'UTF-8') ?></div>
 <?php endif; ?>
@@ -47,5 +48,5 @@ $errors = $errors ?? [];
         <?php endforeach; ?>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100 mt-4">Ativar plano e concluir</button>
+    <button type="submit" class="btn btn-primary w-100 mt-4" data-loading-text="Ativando...">Ativar plano e concluir</button>
 </form>

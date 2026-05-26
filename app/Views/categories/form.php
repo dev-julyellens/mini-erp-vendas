@@ -14,12 +14,15 @@ $isEdit = $category !== null;
 $name = $old['name'] ?? ($category ? $category->name : '');
 $description = $old['description'] ?? ($category ? (string) ($category->description ?? '') : '');
 
-?>
-<div class="mb-3">
-    <h1 class="h3 mb-1"><?= $isEdit ? 'Editar categoria' : 'Nova categoria' ?></h1>
-    <div class="text-muted">Nome único; usada no cadastro de produtos.</div>
-</div>
+$title = $isEdit ? 'Editar categoria' : 'Nova categoria';
+$subtitle = 'Nome único; usada no cadastro de produtos.';
+$breadcrumbs = [
+    ['label' => 'Categorias', 'href' => $url('categories')],
+    ['label' => $title],
+];
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <div class="card-soft p-3 p-md-4" style="max-width: 720px;">
     <?php if ($errors !== []): ?>
         <div class="alert alert-danger">
@@ -54,6 +57,7 @@ $description = $old['description'] ?? ($category ? (string) ($category->descript
         <?php
         $mode = 'form-footer';
         $cancelHref = $url('categories');
+        $saveLoadingText = 'Salvando...';
         require dirname(__DIR__) . '/components/action-buttons.php';
         ?>
     </form>

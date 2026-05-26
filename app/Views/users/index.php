@@ -8,30 +8,33 @@ declare(strict_types=1);
 /** @var string $search */
 /** @var string $status */
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Usuários</h1>
-        <div class="text-muted">Gestão de contas de acesso</div>
-    </div>
-    <a class="btn btn-primary" href="<?= htmlspecialchars($url('admin/users/create'), ENT_QUOTES, 'UTF-8') ?>">
-        <i class="bi bi-plus-lg"></i> Novo usuário
-    </a>
-</div>
+$title = 'Usuários';
+$subtitle = 'Gestão de contas de acesso';
+$actionsHtml = '<a class="btn btn-primary" href="' . htmlspecialchars($url('admin/users/create'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-plus-lg"></i> Novo usuário</a>';
+require dirname(__DIR__) . '/components/page-header.php';
 
-<form class="row g-2 mb-3" method="get">
-    <div class="col-md-5">
-        <input type="search" name="q" class="form-control" placeholder="Nome ou e-mail" value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
-    </div>
-    <div class="col-md-3">
-        <select name="status" class="form-select">
-            <option value="">Todos</option>
-            <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Ativos</option>
-            <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Inativos</option>
-        </select>
-    </div>
-    <div class="col-auto"><button class="btn btn-primary btn-md" type="submit"><i class="bi bi-funnel"></i> Filtrar</button></div>
-</form>
+ob_start();
+?>
+<div class="col-12 col-md-5">
+    <label class="form-label" for="filter_q">Buscar</label>
+    <input type="search" class="form-control" id="filter_q" name="q" placeholder="Nome ou e-mail"
+        value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<div class="col-12 col-md-4">
+    <label class="form-label" for="filter_status">Status</label>
+    <select class="form-select" id="filter_status" name="status">
+        <option value="">Todos</option>
+        <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Ativos</option>
+        <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Inativos</option>
+    </select>
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url('admin/users');
+$filterClearHref = $url('admin/users');
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
@@ -53,24 +56,39 @@ declare(strict_types=1);
                         <td><span class="badge text-bg-light border"><?= htmlspecialchars($u->role, ENT_QUOTES, 'UTF-8') ?></span></td>
                         <td><?= $u->active ? '<span class="badge text-bg-success">Ativo</span>' : '<span class="badge text-bg-secondary">Inativo</span>' ?></td>
                         <td class="text-end text-nowrap">
-                            <div class="table-actions">
-                                <a class="btn btn-sm btn-outline" href="<?= htmlspecialchars($url('admin/users/edit?id=' . $u->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
-                                <a class="btn btn-sm btn-ghost" href="<?= htmlspecialchars($url('admin/users/reset-password?id=' . $u->id), ENT_QUOTES, 'UTF-8') ?>">Senha</a>
-                                <form class="d-inline" method="post" action="<?= htmlspecialchars($url('admin/users/toggle-active'), ENT_QUOTES, 'UTF-8') ?>"
-                                    data-confirm="Alterar status deste usuário?">
-                                    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                                    <input type="hidden" name="id" value="<?= (int) $u->id ?>">
-                                    <input type="hidden" name="active" value="<?= $u->active ? '0' : '1' ?>">
-                                    <button class="btn btn-sm btn-warning" type="submit"><?= $u->active ? 'Desativar' : 'Ativar' ?></button>
-                                </form>
-                            </div>
+                            <?php
+                            $mode = 'table-row';
+                            $editHref = $url('admin/users/edit?id=' . $u->id);
+                            $canEdit = true;
+                            $canDelete = false;
+                            $extraActions = [
+                                [
+                                    'href' => $url('admin/users/reset-password?id=' . $u->id),
+                                    'label' => 'Senha',
+                                    'variant' => 'ghost',
+                                ],
+                                [
+                                    'action' => $url('admin/users/toggle-active'),
+                                    'label' => $u->active ? 'Desativar' : 'Ativar',
+                                    'variant' => 'warning',
+                                    'confirm' => 'Alterar status deste usuário?',
+                                    'extras' => [
+                                        'id' => (string) $u->id,
+                                        'active' => $u->active ? '0' : '1',
+                                    ],
+                                ],
+                            ];
+                            require dirname(__DIR__) . '/components/action-buttons.php';
+                            ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     </div>
-    <?php $path = 'admin/users';
+    <?php
+    $path = 'admin/users';
     $query = array_filter(['q' => $search, 'status' => $status]);
-    require dirname(__DIR__) . '/partials/pagination.php'; ?>
+    require dirname(__DIR__) . '/partials/pagination.php';
+    ?>
 </div>

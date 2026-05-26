@@ -23,53 +23,44 @@ use App\Helpers\Permission;
 $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 $canReceive = Permission::can('financeiro', 'criar');
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Financeiro</h1>
-        <div class="text-muted">Contas a receber, recebimentos e fluxo de caixa</div>
-    </div>
-    <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') ?>">
-            <i class="bi bi-wallet2"></i> Contas a receber
-        </a>
-        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') ?>">
-            <i class="bi bi-arrow-left-right"></i> Fluxo de caixa
-        </a>
-        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/installments/overdue'), ENT_QUOTES, 'UTF-8') ?>">
-            <i class="bi bi-exclamation-triangle"></i> Vencidas
-        </a>
-        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">
-            <i class="bi bi-calendar2-check"></i> Parcelas abertas
-        </a>
-        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/installments/history'), ENT_QUOTES, 'UTF-8') ?>">
-            <i class="bi bi-clock-history"></i> Histórico
-        </a>
-    </div>
-</div>
+$title = 'Financeiro';
+$subtitle = 'Contas a receber, recebimentos e fluxo de caixa';
+$actionsHtml = '<a class="btn btn-secondary" href="' . htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-wallet2"></i> Contas a receber</a>';
+$actionsHtml .= '<a class="btn btn-secondary" href="' . htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-arrow-left-right"></i> Fluxo de caixa</a>';
+$actionsHtml .= '<a class="btn btn-secondary" href="' . htmlspecialchars($url('finance/installments/overdue'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-exclamation-triangle"></i> Vencidas</a>';
+$actionsHtml .= '<a class="btn btn-secondary" href="' . htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-calendar2-check"></i> Parcelas abertas</a>';
+$actionsHtml .= '<a class="btn btn-secondary" href="' . htmlspecialchars($url('finance/installments/history'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-clock-history"></i> Histórico</a>';
+require dirname(__DIR__) . '/components/page-header.php';
 
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="stat-tile stat-finance-open">
-            <div class="text-white-50 small">A receber (aberto)</div>
-            <h3>R$ <?= htmlspecialchars($fmt($summary['open_balance']), ENT_QUOTES, 'UTF-8') ?></h3>
-            <div class="small text-white-50">Pendente + parcial</div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="stat-tile stat-finance-cash">
-            <div class="text-white-50 small">Saldo em caixa</div>
-            <h3>R$ <?= htmlspecialchars($fmt($summary['cash_balance']), ENT_QUOTES, 'UTF-8') ?></h3>
-            <div class="small text-white-50">Entradas − saídas</div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="stat-tile stat-finance-month">
-            <div class="text-white-50 small">Recebido no mês</div>
-            <h3>R$ <?= htmlspecialchars($fmt($summary['received_month']), ENT_QUOTES, 'UTF-8') ?></h3>
-            <div class="small text-white-50">Hoje: R$ <?= htmlspecialchars($fmt($summary['received_today']), ENT_QUOTES, 'UTF-8') ?></div>
-        </div>
-    </div>
+?>
+<div class="kpi-grid mb-4">
+    <?php
+    $label = 'A receber (aberto)';
+    $value = 'R$ ' . htmlspecialchars($fmt($summary['open_balance']), ENT_QUOTES, 'UTF-8');
+    $hint = 'Pendente + parcial';
+    $variant = 'stat-finance-open';
+    $href = $url('finance/accounts-receivable');
+    require dirname(__DIR__) . '/components/kpi-card.php';
+
+    $label = 'Saldo em caixa';
+    $value = 'R$ ' . htmlspecialchars($fmt($summary['cash_balance']), ENT_QUOTES, 'UTF-8');
+    $hint = 'Entradas − saídas';
+    $variant = 'stat-finance-cash';
+    $href = $url('finance/cash-flow');
+    require dirname(__DIR__) . '/components/kpi-card.php';
+
+    $label = 'Recebido no mês';
+    $value = 'R$ ' . htmlspecialchars($fmt($summary['received_month']), ENT_QUOTES, 'UTF-8');
+    $hint = 'Hoje: R$ ' . $fmt($summary['received_today']);
+    $variant = 'stat-finance-month';
+    $href = null;
+    require dirname(__DIR__) . '/components/kpi-card.php';
+    ?>
 </div>
 
 <div class="row g-3">

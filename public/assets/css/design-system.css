@@ -576,6 +576,26 @@ body.sidebar-collapsed .sidebar .nav-link i {
     display: none !important;
 }
 
+/* Report charts (Chart.js) */
+.report-chart-wrap {
+    position: relative;
+    height: 280px;
+}
+
+.report-chart-wrap--tall {
+    height: 320px;
+}
+
+@media (min-width: 992px) {
+    .report-chart-wrap {
+        height: 300px;
+    }
+
+    .report-chart-wrap--tall {
+        height: 360px;
+    }
+}
+
 /* KPI grid */
 .kpi-grid {
     display: grid;

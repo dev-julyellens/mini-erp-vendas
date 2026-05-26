@@ -11,9 +11,11 @@ $errors = $errors ?? [];
 $old = $old ?? [];
 $email = (string) ($old['email'] ?? '');
 
-?>
-<p class="text-muted small mb-4">Informe seu e-mail cadastrado. Enviaremos um link para redefinir a senha.</p>
+$title = 'Recuperar senha';
+$subtitle = 'Informe seu e-mail cadastrado. Enviaremos um link para redefinir a senha.';
+require dirname(__DIR__) . '/components/auth-form-header.php';
 
+?>
 <?php if (!empty($resetUrl)): ?>
     <div class="alert alert-info small">
         <strong>Ambiente de desenvolvimento:</strong> use o link abaixo para redefinir a senha.
@@ -36,7 +38,7 @@ $email = (string) ($old['email'] ?? '');
         <?php endif; ?>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100 mb-3">Enviar link de recuperação</button>
+    <button type="submit" class="btn btn-primary w-100 mb-3" data-loading-text="Enviando...">Enviar link de recuperação</button>
 
     <div class="text-center">
         <a class="small text-decoration-none" href="<?= htmlspecialchars($url('login'), ENT_QUOTES, 'UTF-8') ?>">

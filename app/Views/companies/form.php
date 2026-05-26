@@ -13,12 +13,15 @@ $name = (string) ($old['name'] ?? ($company->name ?? ''));
 $taxId = (string) ($old['tax_id'] ?? ($company->tax_id ?? ''));
 $slug = (string) ($old['slug'] ?? ($company->slug ?? ''));
 
-?>
-<div class="mb-3">
-    <h1 class="h3 mb-1"><?= $isEdit ? 'Editar empresa' : 'Nova empresa' ?></h1>
-    <a class="small text-muted" href="<?= htmlspecialchars($url('admin/companies'), ENT_QUOTES, 'UTF-8') ?>">&larr; Voltar</a>
-</div>
+$title = $isEdit ? 'Editar empresa' : 'Nova empresa';
+$subtitle = 'Identificação da empresa no sistema multi-tenant.';
+$breadcrumbs = [
+    ['label' => 'Empresas', 'href' => $url('admin/companies')],
+    ['label' => $title],
+];
+require dirname(__DIR__) . '/components/page-header.php';
 
+?>
 <div class="card-soft p-3 p-md-4 col-lg-8">
     <form method="post" action="<?= htmlspecialchars($url($isEdit ? 'admin/companies/update' : 'admin/companies/store'), ENT_QUOTES, 'UTF-8') ?>">
         <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
@@ -37,12 +40,15 @@ $slug = (string) ($old['slug'] ?? ($company->slug ?? ''));
         </div>
         <div class="mb-3">
             <label class="form-label" for="tax_id">CNPJ / Documento</label>
-            <input class="form-control <?= isset($errors['tax_id']) ? 'is-invalid' : '' ?>" id="tax_id" name="tax_id" value="<?= htmlspecialchars($taxId, ENT_QUOTES, 'UTF-8') ?>">
+            <input class="form-control <?= isset($errors['tax_id']) ? 'is-invalid' : '' ?>" id="tax_id" name="tax_id"
+                data-mask-document autocomplete="off" placeholder="00.000.000/0000-00"
+                value="<?= htmlspecialchars($taxId, ENT_QUOTES, 'UTF-8') ?>">
             <?php if (isset($errors['tax_id'])): ?><div class="invalid-feedback"><?= htmlspecialchars($errors['tax_id'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
         </div>
         <?php
         $mode = 'form-footer';
         $cancelHref = $url('admin/companies');
+        $saveLoadingText = 'Salvando...';
         require dirname(__DIR__) . '/components/action-buttons.php';
         ?>
     </form>

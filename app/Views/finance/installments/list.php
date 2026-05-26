@@ -29,17 +29,19 @@ $routes = [
 
 $currentPath = $routes[$listType] ?? 'finance/installments/open';
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></h1>
-        <div class="text-muted"><?= htmlspecialchars($subtitle, ENT_QUOTES, 'UTF-8') ?></div>
-    </div>
-    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">
-        <i class="bi bi-speedometer2"></i> Dashboard
-    </a>
-</div>
+$pageTitle = $title;
+$pageSubtitle = $subtitle;
+$breadcrumbs = [
+    ['label' => 'Financeiro', 'href' => $url('finance')],
+    ['label' => $title],
+];
+$actionsHtml = '<a class="btn btn-secondary" href="' . htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') . '">'
+    . '<i class="bi bi-speedometer2"></i> Dashboard</a>';
+$title = $pageTitle;
+$subtitle = $pageSubtitle;
+require dirname(__DIR__, 2) . '/components/page-header.php';
 
+?>
 <ul class="nav nav-pills mb-3 gap-1">
     <li class="nav-item">
         <a class="nav-link <?= $listType === 'overdue' ? 'active' : '' ?>" href="<?= htmlspecialchars($url('finance/installments/overdue'), ENT_QUOTES, 'UTF-8') ?>">
@@ -58,33 +60,36 @@ $currentPath = $routes[$listType] ?? 'finance/installments/open';
     </li>
 </ul>
 
-<div class="card-soft filter-panel p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url($currentPath), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end filter-form">
-        <div class="col-12 col-md-4">
-            <label class="form-label" for="customer_id">Cliente</label>
-            <select class="form-select" id="customer_id" name="customer_id">
-                <option value="">Todos</option>
-                <?php foreach ($customers as $c): ?>
-                    <option value="<?= (int) $c->id ?>" <?= $filters['customer_id'] === $c->id ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($c->name, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-6 col-md-3">
-            <label class="form-label" for="due_from">Vencimento de</label>
-            <input class="form-control" type="date" id="due_from" name="due_from" value="<?= htmlspecialchars($filters['due_from'], ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-6 col-md-3">
-            <label class="form-label" for="due_to">Vencimento até</label>
-            <input class="form-control" type="date" id="due_to" name="due_to" value="<?= htmlspecialchars($filters['due_to'], ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-12 col-md-2 d-grid d-md-flex gap-2">
-            <button class="btn btn-primary" type="submit">Filtrar</button>
-            <a class="btn btn-secondary" href="<?= htmlspecialchars($url($currentPath), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
-        </div>
-    </form>
+<?php
+ob_start();
+?>
+<div class="col-12 col-md-4">
+    <label class="form-label" for="filter_customer_id">Cliente</label>
+    <select class="form-select" id="filter_customer_id" name="customer_id">
+        <option value="">Todos</option>
+        <?php foreach ($customers as $c): ?>
+            <option value="<?= (int) $c->id ?>" <?= $filters['customer_id'] === $c->id ? 'selected' : '' ?>>
+                <?= htmlspecialchars($c->name, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
 </div>
+<div class="col-6 col-md-3">
+    <label class="form-label" for="filter_due_from">Vencimento de</label>
+    <input class="form-control" type="date" id="filter_due_from" name="due_from"
+        value="<?= htmlspecialchars($filters['due_from'], ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<div class="col-6 col-md-3">
+    <label class="form-label" for="filter_due_to">Vencimento até</label>
+    <input class="form-control" type="date" id="filter_due_to" name="due_to"
+        value="<?= htmlspecialchars($filters['due_to'], ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url($currentPath);
+$filterClearHref = $url($currentPath);
+require dirname(__DIR__, 2) . '/components/filter-panel.php';
+?>
 
 <div class="card-soft p-0 overflow-hidden">
     <div class="table-responsive">
@@ -135,15 +140,27 @@ $currentPath = $routes[$listType] ?? 'finance/installments/open';
                                 </td>
                             <?php endif; ?>
                             <td class="text-end">
-                                <?php if ($canPay && $inst->canPay()): ?>
-                                    <a class="btn btn-sm btn-primary" href="<?= htmlspecialchars($url('finance/installments/pay?id=' . $inst->id), ENT_QUOTES, 'UTF-8') ?>">
-                                        Baixar
-                                    </a>
-                                <?php else: ?>
-                                    <a class="btn btn-sm btn-ghost" href="<?= htmlspecialchars($url('orders/show?id=' . $inst->order_id), ENT_QUOTES, 'UTF-8') ?>">
-                                        Venda
-                                    </a>
-                                <?php endif; ?>
+                                <?php
+                                $mode = 'table-row';
+                                $canEdit = false;
+                                $canDelete = false;
+                                $extraActions = [];
+                                $detailsHref = null;
+                                if ($canPay && $inst->canPay())
+                                {
+                                    $extraActions[] = [
+                                        'href' => $url('finance/installments/pay?id=' . $inst->id),
+                                        'label' => 'Baixar',
+                                        'variant' => 'primary',
+                                    ];
+                                }
+                                else
+                                {
+                                    $detailsHref = $url('orders/show?id=' . $inst->order_id);
+                                    $detailsLabel = 'Venda';
+                                }
+                                require dirname(__DIR__, 2) . '/components/action-buttons.php';
+                                ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

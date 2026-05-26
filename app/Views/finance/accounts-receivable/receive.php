@@ -14,18 +14,19 @@ use App\Models\AccountsReceivable;
 $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 $remaining = $account->remaining_amount ?? $account->amount;
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Registrar recebimento</h1>
-        <div class="text-muted">Conta #<?= (int) $account->id ?> · restante R$ <?= htmlspecialchars($fmt($remaining), ENT_QUOTES, 'UTF-8') ?></div>
-    </div>
-    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $account->id), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
-</div>
-
-<?php
 /** @var \App\Models\PixCharge|null $pendingPix */
 $pendingPix = $pendingPix ?? null;
+
+$title = 'Registrar recebimento';
+$subtitle = 'Conta #' . (int) $account->id . ' · restante R$ ' . $fmt($remaining);
+$breadcrumbs = [
+    ['label' => 'Financeiro', 'href' => $url('finance')],
+    ['label' => 'Contas a receber', 'href' => $url('finance/accounts-receivable')],
+    ['label' => 'Conta #' . (int) $account->id, 'href' => $url('finance/accounts-receivable/show?id=' . $account->id)],
+    ['label' => 'Recebimento'],
+];
+require dirname(__DIR__, 2) . '/components/page-header.php';
+
 ?>
 <div class="row justify-content-center">
     <div class="col-lg-6">
@@ -106,10 +107,13 @@ $pendingPix = $pendingPix ?? null;
                     <div class="alert alert-danger"><?= htmlspecialchars($errors['auth'], ENT_QUOTES, 'UTF-8') ?></div>
                 <?php endif; ?>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Confirmar recebimento</button>
-                    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $account->id), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
-                </div>
+                <?php
+                $mode = 'form-footer';
+                $cancelHref = $url('finance/accounts-receivable/show?id=' . $account->id);
+                $saveLabel = 'Confirmar recebimento';
+                $saveLoadingText = 'Registrando...';
+                require dirname(__DIR__, 2) . '/components/action-buttons.php';
+                ?>
             </form>
         </div>
     </div>

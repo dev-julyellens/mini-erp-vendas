@@ -20,41 +20,46 @@ use App\Helpers\DateHelper;
 $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 
 require dirname(__DIR__) . '/reports/_report-header.php';
+
+ob_start();
 ?>
-<div class="card-soft p-3 p-md-4 mb-3">
-    <form method="get" action="<?= htmlspecialchars($url($reportPath), ENT_QUOTES, 'UTF-8') ?>" class="row g-3 align-items-end">
-        <div class="col-6 col-md-3">
-            <label class="form-label" for="date_from">De</label>
-            <input type="date" class="form-control" id="date_from" name="date_from"
-                value="<?= htmlspecialchars((string) ($filters['date_from'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="col-6 col-md-3">
-            <label class="form-label" for="date_to">Até</label>
-            <input type="date" class="form-control" id="date_to" name="date_to"
-                value="<?= htmlspecialchars((string) ($filters['date_to'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <?php require __DIR__ . '/partials/filters-order-status.php'; ?>
-        <div class="col-12 col-md-3 d-flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
-            <a class="btn btn-secondary" href="<?= htmlspecialchars($url($reportPath), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
-        </div>
-    </form>
+<div class="col-6 col-md-3">
+    <label class="form-label" for="filter_date_from">De</label>
+    <input type="date" class="form-control" id="filter_date_from" name="date_from"
+        value="<?= htmlspecialchars((string) ($filters['date_from'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<div class="col-6 col-md-3">
+    <label class="form-label" for="filter_date_to">Até</label>
+    <input type="date" class="form-control" id="filter_date_to" name="date_to"
+        value="<?= htmlspecialchars((string) ($filters['date_to'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+</div>
+<?php require __DIR__ . '/partials/filters-order-status.php'; ?>
+<?php
+$filterContent = ob_get_clean();
+$filterAction = $url($reportPath);
+$filterClearHref = $url($reportPath);
+$filterActionsColClass = 'col-12 col-md-auto';
+require dirname(__DIR__) . '/components/filter-panel.php';
+?>
+
+<div class="kpi-grid mb-3">
+    <?php
+    $label = 'Pedidos no período';
+    $value = (string) (int) $summary['order_count'];
+    $hint = 'Total de pedidos no filtro';
+    $variant = 'stat-revenue-month';
+    $href = null;
+    require dirname(__DIR__) . '/components/kpi-card.php';
+
+    $label = 'Receita total';
+    $value = 'R$ ' . htmlspecialchars($fmt((string) $summary['total_amount']), ENT_QUOTES, 'UTF-8');
+    $hint = 'Soma das vendas no período';
+    $variant = 'stat-finance-month';
+    require dirname(__DIR__) . '/components/kpi-card.php';
+    ?>
 </div>
 
-<div class="row g-3 mb-3">
-    <div class="col-md-6">
-        <div class="card-soft p-3">
-            <div class="text-muted small">Pedidos no período</div>
-            <div class="fs-4 fw-semibold"><?= (int) $summary['order_count'] ?></div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card-soft p-3">
-            <div class="text-muted small">Receita total</div>
-            <div class="fs-4 fw-semibold">R$ <?= htmlspecialchars($fmt((string) $summary['total_amount']), ENT_QUOTES, 'UTF-8') ?></div>
-        </div>
-    </div>
-</div>
+<?php require __DIR__ . '/partials/report-charts.php'; ?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
@@ -83,6 +88,8 @@ require dirname(__DIR__) . '/reports/_report-header.php';
             </tbody>
         </table>
     </div>
-    <?php $path = $reportPath;
-    require dirname(__DIR__) . '/partials/pagination.php'; ?>
+    <?php
+    $path = $reportPath;
+    require dirname(__DIR__) . '/partials/pagination.php';
+    ?>
 </div>

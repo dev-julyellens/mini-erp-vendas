@@ -6,35 +6,28 @@ declare(strict_types=1);
 /** @var array<string, int> $metrics */
 /** @var list<\App\Models\Plan> $plans */
 
-?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Administração SaaS</h1>
-        <div class="text-muted">Planos, assinaturas e indicadores da plataforma</div>
-    </div>
-    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('admin/saas/subscriptions'), ENT_QUOTES, 'UTF-8') ?>">
-        Assinaturas por empresa
-    </a>
-</div>
+$title = 'Administração SaaS';
+$subtitle = 'Planos, assinaturas e indicadores da plataforma';
+$actionsHtml = '<a class="btn btn-secondary" href="' . htmlspecialchars($url('admin/saas/subscriptions'), ENT_QUOTES, 'UTF-8') . '">'
+    . 'Assinaturas por empresa</a>';
+require dirname(__DIR__, 2) . '/components/page-header.php';
 
-<div class="row g-3 mb-4">
+?>
+<div class="kpi-grid mb-4">
     <?php
-    $cards = [
-        ['Empresas', $metrics['companies_total'] ?? 0, 'bi-building'],
-        ['Empresas ativas', $metrics['companies_active'] ?? 0, 'bi-check-circle'],
-        ['Usuários', $metrics['users_total'] ?? 0, 'bi-people'],
-        ['Assinaturas ativas', $metrics['subscriptions_active'] ?? 0, 'bi-credit-card'],
-        ['Em trial', $metrics['subscriptions_trialing'] ?? 0, 'bi-hourglass-split'],
+    $metricCards = [
+        ['Empresas', (int) ($metrics['companies_total'] ?? 0), 'stat-orders', null],
+        ['Empresas ativas', (int) ($metrics['companies_active'] ?? 0), 'stat-products', null],
+        ['Usuários', (int) ($metrics['users_total'] ?? 0), 'stat-customers', null],
+        ['Assinaturas ativas', (int) ($metrics['subscriptions_active'] ?? 0), 'stat-finance-month', $url('admin/saas/subscriptions')],
+        ['Em trial', (int) ($metrics['subscriptions_trialing'] ?? 0), 'stat-finance-open', null],
     ];
-    foreach ($cards as [$label, $value, $icon]):
+    foreach ($metricCards as [$label, $metricValue, $variant, $href]):
+        $value = (string) $metricValue;
+        $hint = null;
+        require dirname(__DIR__, 2) . '/components/kpi-card.php';
+    endforeach;
     ?>
-        <div class="col-6 col-md-4 col-xl">
-            <div class="card-soft p-3 h-100">
-                <div class="text-muted small"><i class="bi <?= htmlspecialchars($icon, ENT_QUOTES, 'UTF-8') ?>"></i> <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></div>
-                <div class="display-6 fw-semibold mb-0"><?= (int) $value ?></div>
-            </div>
-        </div>
-    <?php endforeach; ?>
 </div>
 
 <div class="card-soft p-3 p-md-4">
