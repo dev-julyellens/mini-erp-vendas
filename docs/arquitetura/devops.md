@@ -45,6 +45,14 @@ Workflow: `.github/workflows/quality.yml`
 
 Variáveis de ambiente no job definem `APP_DEBUG=true` e `JWT_SECRET` de teste (PHPUnit não carrega `SecurityBootstrap` em modo web).
 
+Workflow adicional: `.github/workflows/integration.yml`
+
+- Serviço PostgreSQL 16
+- Importa `database/database.sql` + `php database/run_migration.php`
+- Executa `composer test:integration`
+
+Localmente, testes de integração usam `config/.env` e fazem `markTestSkipped` se o banco não estiver acessível.
+
 ## 5. Scripts em `bin/`
 
 | Script | Função |

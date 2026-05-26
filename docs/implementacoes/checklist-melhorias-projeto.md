@@ -151,9 +151,9 @@ Fazer **antes** de expor o sistema a usuários reais fora de ambiente controlado
 | # | Tarefa | Sigla | Status | Arquivo / ação |
 |---|--------|-------|--------|----------------|
 | 5.1 | Testes unitários existentes | TST | ✅ | `tests/Unit/` — Validator, Money, ValidationException |
-| 5.2 | Testes de `OrderService` (estoque, transação, preço histórico) | TST | ⬜ | `tests/Unit/Services/` |
-| 5.3 | Testes de isolamento multi-tenant | TST | ⬜ | Repositories com `CompanyScope` |
-| 5.4 | Testes de API auth + permissões | TST | ⬜ | Integração HTTP |
+| 5.2 | Testes de `OrderService` (estoque, transação, preço histórico) | TST | ✅ | `OrderServiceTest` + `OrderServiceIntegrationTest` |
+| 5.3 | Testes de isolamento multi-tenant | TST | ✅ | `TenantIsolationTest` |
+| 5.4 | Testes de API auth + permissões | TST | ✅ | `JwtServiceTest`, `ApiAuthServiceTest`, `ApiAuthServiceIntegrationTest` |
 | 5.5 | Testes de `AuthService` / reset de senha | TST | ⬜ | Após e-mail implementado |
 | 5.6 | Reduzir `ignoreErrors` no PHPStan (controllers) | TST | ⬜ | `phpstan.neon` |
 | 5.7 | Subir nível PHPStan gradualmente (5 → 6) | TST | P2 | `composer analyse` |
@@ -272,12 +272,12 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 3. ~~3.1 — mensagens PT (pedidos, clientes, cancelamento, API)~~  
 4. ~~4.8 parcial — log em `ApiOrderController`~~
 
-### Sprint D — Testes mínimos (2–3 dias) — P1
+### Sprint D — Testes mínimos (2–3 dias) — P1 ✅
 
-1. 5.2 — `OrderService`  
-2. 5.3 — tenant isolation  
-3. 5.4 — API auth  
-4. Integrar no CI (5.1 já existe)
+1. ~~5.2 — `OrderService`~~  
+2. ~~5.3 — tenant isolation~~  
+3. ~~5.4 — API auth~~  
+4. ~~CI integração — `.github/workflows/integration.yml` + `composer test:integration`~~
 
 ### Sprint E — Performance frontend (1–2 dias) — P1
 
@@ -312,7 +312,7 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 | Segurança produção | ~60% | JWT, webhook, e-mail reset |
 | DevOps / CI | ~10% | Workflow `composer check` |
 | Documentação externa (README) | ~90% | README + devops + banco §12 |
-| Testes automatizados | ~15% | OrderService + API + tenant |
+| Testes automatizados | ~45% | 30 testes (unit + integration); CI integration com PostgreSQL |
 | API REST | ~85% | DTO, paginação, N+1, datas; rate limit por token pendente |
 | Backend refatoração | ~50% | Transações, ACL, logging |
 | Migrations / DB | ~92% | Bootstrap 018–020; índices pendentes (2.4) |
@@ -343,4 +343,4 @@ Atualizar também `docs/bugs/bugs-conhecidos.md` ou `debito-tecnico.md` se for b
 3. Novos bugs → `docs/bugs/bugs-conhecidos.md` + referência cruzada aqui.  
 4. Antes de release: Fase 0 deve estar ✅ ou explicitamente aceita com risco documentado.
 
-**Última atualização:** 26/05/2026 — Sprint C: API produtos/pedidos, mensagens PT, status `paid` documentado.
+**Última atualização:** 26/05/2026 — Sprint D: testes OrderService, tenant, API auth + workflow CI integração.

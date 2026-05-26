@@ -80,9 +80,10 @@ Executa, em sequência: verificação UTF-8 sem BOM, PHPStan (nível 5) e PHPUni
 Comandos individuais:
 
 ```bash
-composer encoding   # bin/check-encoding.php
-composer analyse    # PHPStan
-composer test       # PHPUnit
+composer encoding          # bin/check-encoding.php
+composer analyse           # PHPStan
+composer test              # PHPUnit (unit + integration)
+composer test:integration  # Somente integração (requer PostgreSQL)
 ```
 
 ### Migrations
