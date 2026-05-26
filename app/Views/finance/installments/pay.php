@@ -42,7 +42,28 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
         </div>
     </div>
     <div class="col-lg-8">
+        <?php
+        /** @var \App\Models\PixCharge|null $pendingPix */
+        $pendingPix = $pendingPix ?? null;
+        ?>
+        <?php if ($pendingPix !== null): ?>
+            <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <span>Cobrança PIX pendente para esta parcela.</span>
+                <a class="btn btn-sm btn-primary" href="<?= htmlspecialchars($url('finance/pix/charge?id=' . $pendingPix->id), ENT_QUOTES, 'UTF-8') ?>">Abrir QR Code</a>
+            </div>
+        <?php else: ?>
+            <div class="card-soft p-3 p-md-4 mb-3">
+                <h2 class="h6 mb-2"><i class="bi bi-qr-code"></i> Pagar parcela via PIX</h2>
+                <form method="post" action="<?= htmlspecialchars($url('finance/pix/create-installment'), ENT_QUOTES, 'UTF-8') ?>">
+                    <?php require dirname(__DIR__, 2) . '/partials/csrf.php'; ?>
+                    <input type="hidden" name="installment_id" value="<?= (int) $installment->id ?>">
+                    <button type="submit" class="btn btn-success">Gerar QR Code PIX (R$ <?= htmlspecialchars($fmt($installment->amount), ENT_QUOTES, 'UTF-8') ?>)</button>
+                </form>
+            </div>
+        <?php endif; ?>
+
         <div class="card-soft p-3 p-md-4">
+            <h2 class="h6 mb-3">Baixa manual</h2>
             <form method="post" action="<?= htmlspecialchars($url('finance/installments/pay'), ENT_QUOTES, 'UTF-8') ?>">
                 <?php require dirname(__DIR__, 2) . '/partials/csrf.php'; ?>
                 <input type="hidden" name="installment_id" value="<?= (int) $installment->id ?>">
