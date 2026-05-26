@@ -23,9 +23,36 @@ $remaining = $account->remaining_amount ?? $account->amount;
     <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $account->id), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
 </div>
 
+<?php
+/** @var \App\Models\PixCharge|null $pendingPix */
+$pendingPix = $pendingPix ?? null;
+?>
 <div class="row justify-content-center">
     <div class="col-lg-6">
+        <?php if ($pendingPix !== null): ?>
+            <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <span>Já existe uma cobrança PIX pendente para esta conta.</span>
+                <a class="btn btn-sm btn-primary" href="<?= htmlspecialchars($url('finance/pix/charge?id=' . $pendingPix->id), ENT_QUOTES, 'UTF-8') ?>">Abrir QR Code</a>
+            </div>
+        <?php else: ?>
+            <div class="card-soft p-3 p-md-4 mb-3">
+                <h2 class="h6 mb-2"><i class="bi bi-qr-code"></i> Receber via PIX (QR Code)</h2>
+                <p class="text-muted small mb-3">Gera cobrança automática com conciliação no financeiro após o pagamento.</p>
+                <form method="post" action="<?= htmlspecialchars($url('finance/pix/create-account'), ENT_QUOTES, 'UTF-8') ?>">
+                    <?php require dirname(__DIR__, 2) . '/partials/csrf.php'; ?>
+                    <input type="hidden" name="accounts_receivable_id" value="<?= (int) $account->id ?>">
+                    <div class="mb-3">
+                        <label class="form-label" for="pix_amount">Valor da cobrança (R$)</label>
+                        <input type="text" class="form-control" id="pix_amount" name="amount" inputmode="decimal"
+                            value="<?= htmlspecialchars($old['amount'], ENT_QUOTES, 'UTF-8') ?>" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Gerar QR Code PIX</button>
+                </form>
+            </div>
+        <?php endif; ?>
+
         <div class="card-soft p-3 p-md-4">
+            <h2 class="h6 mb-3">Registro manual (já recebido)</h2>
             <form method="post" action="<?= htmlspecialchars($url('finance/accounts-receivable/receive'), ENT_QUOTES, 'UTF-8') ?>">
                 <?php require dirname(__DIR__, 2) . '/partials/csrf.php'; ?>
                 <input type="hidden" name="accounts_receivable_id" value="<?= (int) $account->id ?>">

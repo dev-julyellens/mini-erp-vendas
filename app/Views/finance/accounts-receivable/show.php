@@ -25,6 +25,15 @@ $canPayInstallments = Permission::can('financeiro', 'criar')
         <div class="text-muted">Venda #<?= (int) $account->order_id ?></div>
     </div>
     <div class="d-flex flex-wrap gap-2">
+        <?php
+        /** @var \App\Models\PixCharge|null $pendingPix */
+        $pendingPix = $pendingPix ?? null;
+        ?>
+        <?php if ($pendingPix !== null): ?>
+            <a class="btn btn-success" href="<?= htmlspecialchars($url('finance/pix/charge?id=' . $pendingPix->id), ENT_QUOTES, 'UTF-8') ?>">
+                <i class="bi bi-qr-code"></i> PIX pendente
+            </a>
+        <?php endif; ?>
         <?php if ($canReceive): ?>
             <a class="btn btn-primary" href="<?= htmlspecialchars($url('finance/accounts-receivable/receive?id=' . $account->id), ENT_QUOTES, 'UTF-8') ?>">
                 <i class="bi bi-cash-coin"></i> Registrar recebimento
