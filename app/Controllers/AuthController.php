@@ -12,6 +12,7 @@ use App\Helpers\Flash;
 use App\Helpers\Redirect;
 use App\Services\AuthService;
 use App\Services\CompanyAuthService;
+use App\Services\PasswordPolicyService;
 
 final class AuthController extends Controller
 {
@@ -196,6 +197,7 @@ final class AuthController extends Controller
             'token' => $token,
             'errors' => [],
             'flash' => Flash::pull(),
+            'passwordHint' => (new PasswordPolicyService())->requirementsHint(),
         ], 'layouts/auth');
     }
 
@@ -226,6 +228,7 @@ final class AuthController extends Controller
                 'token' => $token,
                 'errors' => $e->getErrors(),
                 'flash' => Flash::pull(),
+                'passwordHint' => (new PasswordPolicyService())->requirementsHint(),
             ], 'layouts/auth');
         }
     }
