@@ -111,7 +111,7 @@ require dirname(__DIR__) . '/components/page-header.php';
             </div>
             <div class="col-md-2">
                 <label class="form-label">Preço (snapshot)</label>
-                <div class="form-control bg-light unit-price" data-unit-price>R$ —</div>
+                <div class="form-control form-control-readonly unit-price" data-unit-price>R$ —</div>
             </div>
             <div class="col-md-1 d-grid">
                 <button class="btn btn-destructive" type="button" data-remove-line title="Remover">

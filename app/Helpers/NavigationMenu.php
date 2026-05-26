@@ -59,42 +59,18 @@ final class NavigationMenu
 
         $groups = [];
 
-        $dashboardItems = [
-            [
-                'label' => 'Visão geral',
-                'href' => $url(''),
-                'icon' => 'bi-speedometer2',
-                'active' => $navActive('/') !== '',
+        $groups[] = [
+            'id' => 'dashboard',
+            'label' => 'Dashboard',
+            'items' => [
+                [
+                    'label' => 'Dashboard',
+                    'href' => $url(''),
+                    'icon' => 'bi-speedometer2',
+                    'active' => $navActive('/') !== '',
+                ],
             ],
         ];
-        if ($canVendas || $canFinanceiro || $canEstoque)
-        {
-            $dashboardItems[] = [
-                'label' => 'Comercial',
-                'href' => $url('') . '#dash-comercial',
-                'icon' => 'bi-graph-up-arrow',
-                'active' => false,
-            ];
-            $dashboardItems[] = [
-                'label' => 'Financeiro',
-                'href' => $url('') . '#dash-financeiro',
-                'icon' => 'bi-cash-coin',
-                'active' => false,
-            ];
-            $dashboardItems[] = [
-                'label' => 'Operacional',
-                'href' => $url('') . '#dash-operacional',
-                'icon' => 'bi-boxes',
-                'active' => false,
-            ];
-            $dashboardItems[] = [
-                'label' => 'Executivo',
-                'href' => $url('') . '#dash-executivo',
-                'icon' => 'bi-bar-chart-steps',
-                'active' => false,
-            ];
-        }
-        $groups[] = ['id' => 'dashboard', 'label' => 'Dashboard', 'items' => $dashboardItems];
 
         $cadastros = [];
         if ($canClientes)
@@ -213,58 +189,26 @@ final class NavigationMenu
                 'icon' => 'bi-archive',
                 'active' => $navPrefix('/stock-movements') !== '',
             ];
-            if ($canRelatorios)
-            {
-                $estoque[] = [
-                    'label' => 'Alertas de estoque',
-                    'href' => $url('reports/low-stock'),
-                    'icon' => 'bi-exclamation-circle',
-                    'active' => $navPrefix('/reports/low-stock') !== '',
-                ];
-            }
         }
         if ($estoque !== [])
         {
             $groups[] = ['id' => 'estoque', 'label' => 'Estoque', 'items' => $estoque];
         }
 
-        $relatorios = [];
         if ($canRelatorios)
         {
-            $relatorios[] = [
-                'label' => 'Central de relatórios',
-                'href' => $url('reports'),
-                'icon' => 'bi-bar-chart-line',
-                'active' => $currentPath === '/reports',
+            $groups[] = [
+                'id' => 'relatorios',
+                'label' => 'Relatórios',
+                'items' => [
+                    [
+                        'label' => 'Central de relatórios',
+                        'href' => $url('reports'),
+                        'icon' => 'bi-bar-chart-line',
+                        'active' => $navPrefix('/reports') !== '',
+                    ],
+                ],
             ];
-            if ($canVendas)
-            {
-                $relatorios[] = [
-                    'label' => 'Vendas por período',
-                    'href' => $url('reports/sales-period'),
-                    'icon' => 'bi-calendar-range',
-                    'active' => $navPrefix('/reports/sales-period') !== '',
-                ];
-                $relatorios[] = [
-                    'label' => 'Top produtos',
-                    'href' => $url('reports/top-products'),
-                    'icon' => 'bi-trophy',
-                    'active' => $navPrefix('/reports/top-products') !== '',
-                ];
-            }
-            if ($canFinanceiro)
-            {
-                $relatorios[] = [
-                    'label' => 'Fluxo de caixa',
-                    'href' => $url('reports/cash-flow'),
-                    'icon' => 'bi-graph-down-arrow',
-                    'active' => $navPrefix('/reports/cash-flow') !== '',
-                ];
-            }
-        }
-        if ($relatorios !== [])
-        {
-            $groups[] = ['id' => 'relatorios', 'label' => 'Relatórios', 'items' => $relatorios];
         }
 
         $groups[] = [

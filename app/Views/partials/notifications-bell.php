@@ -60,7 +60,7 @@ use App\Services\NotificationService;
             </div>
         <?php endif; ?>
         <div class="border-top p-2">
-            <a class="btn btn-sm btn-light w-100" href="<?= htmlspecialchars($url('notifications'), ENT_QUOTES, 'UTF-8') ?>">
+            <a class="btn btn-sm btn-secondary w-100" href="<?= htmlspecialchars($url('notifications'), ENT_QUOTES, 'UTF-8') ?>">
                 Ver histórico completo
             </a>
         </div>

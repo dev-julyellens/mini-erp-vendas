@@ -142,12 +142,12 @@ require dirname(__DIR__) . '/components/page-header.php';
             </div>
             <div class="col-md-2">
                 <label class="form-label">Margem %</label>
-                <input class="form-control bg-light" id="serviceMarginPercent" readonly
+                <input class="form-control form-control-readonly" id="serviceMarginPercent" readonly
                     value="<?= htmlspecialchars((string) $marginDisplay, ENT_QUOTES, 'UTF-8') ?>">
             </div>
             <div class="col-md-2">
                 <label class="form-label">Markup %</label>
-                <input class="form-control bg-light" id="serviceMarkupPercent" readonly
+                <input class="form-control form-control-readonly" id="serviceMarkupPercent" readonly
                     value="<?= htmlspecialchars((string) $markupDisplay, ENT_QUOTES, 'UTF-8') ?>">
             </div>
         </div>

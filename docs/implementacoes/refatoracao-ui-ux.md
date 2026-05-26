@@ -84,12 +84,12 @@ Documentação da refatoração visual e de experiência do Mini ERP de Vendas.
 
 ## Menus reorganizados
 
-- Dashboard (visão + atalhos por área)
+- Dashboard (item único no menu; abas Comercial / Financeiro / Operacional / Executivo na tela)
 - Cadastros (clientes, produtos, serviços, categorias, empresas)
 - Comercial (vendas, nova venda, parcelamentos)
 - Financeiro (painel, fluxo, contas a receber, vencidas)
-- Estoque (movimentações, alertas)
-- Relatórios (central + principais)
+- Estoque (movimentações)
+- Relatórios (central de relatórios; demais relatórios só pela central)
 - Comunicação (notificações)
 - Administração (auditoria, logs, backup, assinatura, usuários, SaaS, vínculos)
 - API (links externos)

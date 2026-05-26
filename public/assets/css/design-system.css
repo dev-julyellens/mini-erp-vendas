@@ -675,6 +675,15 @@ body.sidebar-collapsed .sidebar .nav-link i {
     color: var(--text) !important;
 }
 
+[data-theme="dark"] .page-title,
+[data-theme="dark"] .page-subtitle {
+    color: var(--text);
+}
+
+[data-theme="dark"] .page-subtitle {
+    color: var(--muted);
+}
+
 [data-theme="dark"] .dashboard-tabs .nav-link.active {
     background: var(--card);
     border-color: var(--border);

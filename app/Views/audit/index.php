@@ -145,11 +145,11 @@ require dirname(__DIR__) . '/components/filter-panel.php';
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <h3 class="h6">Valores anteriores</h3>
-                                <pre class="bg-light border rounded p-2 small mb-0" style="max-height: 14rem; overflow: auto;"><?= htmlspecialchars(AuditService::formatJsonDisplay($log->old_values), ENT_QUOTES, 'UTF-8') ?></pre>
+                                <pre class="theme-surface rounded p-2 small mb-0" style="max-height: 14rem; overflow: auto;"><?= htmlspecialchars(AuditService::formatJsonDisplay($log->old_values), ENT_QUOTES, 'UTF-8') ?></pre>
                             </div>
                             <div class="col-md-6">
                                 <h3 class="h6">Valores novos</h3>
-                                <pre class="bg-light border rounded p-2 small mb-0" style="max-height: 14rem; overflow: auto;"><?= htmlspecialchars(AuditService::formatJsonDisplay($log->new_values), ENT_QUOTES, 'UTF-8') ?></pre>
+                                <pre class="theme-surface rounded p-2 small mb-0" style="max-height: 14rem; overflow: auto;"><?= htmlspecialchars(AuditService::formatJsonDisplay($log->new_values), ENT_QUOTES, 'UTF-8') ?></pre>
                             </div>
                         </div>
                     </div>

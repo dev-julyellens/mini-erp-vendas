@@ -34,24 +34,22 @@ require dirname(__DIR__) . '/components/page-header.php';
 <?php if ($subscription === null): ?>
     <div class="alert alert-warning">Nenhuma assinatura vinculada a esta empresa.</div>
 <?php else: ?>
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="text-muted small">Plano</div>
-                    <div class="fw-semibold"><?= htmlspecialchars($subscription->plan_name ?? '—', ENT_QUOTES, 'UTF-8') ?></div>
+    <div class="card-soft p-3 p-md-4 mb-4">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="text-muted small">Plano</div>
+                <div class="fw-semibold"><?= htmlspecialchars($subscription->plan_name ?? '—', ENT_QUOTES, 'UTF-8') ?></div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Status</div>
+                <div class="fw-semibold">
+                    <?= htmlspecialchars($statusLabels[$subscription->status] ?? $subscription->status, ENT_QUOTES, 'UTF-8') ?>
                 </div>
-                <div class="col-md-4">
-                    <div class="text-muted small">Status</div>
-                    <div class="fw-semibold">
-                        <?= htmlspecialchars($statusLabels[$subscription->status] ?? $subscription->status, ENT_QUOTES, 'UTF-8') ?>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="text-muted small">Período atual até</div>
-                    <div class="fw-semibold">
-                        <?= htmlspecialchars(DateHelper::toBrDateTime($subscription->current_period_end), ENT_QUOTES, 'UTF-8') ?>
-                    </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Período atual até</div>
+                <div class="fw-semibold">
+                    <?= htmlspecialchars(DateHelper::toBrDateTime($subscription->current_period_end), ENT_QUOTES, 'UTF-8') ?>
                 </div>
             </div>
         </div>
@@ -59,7 +57,7 @@ require dirname(__DIR__) . '/components/page-header.php';
 <?php endif; ?>
 
 <?php if ($pendingInvoice !== null): ?>
-    <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
             Fatura pendente: <strong>R$ <?= number_format((float) $pendingInvoice->amount, 2, ',', '.') ?></strong>
             (venc. <?= htmlspecialchars(DateHelper::toBrDate($pendingInvoice->due_at), ENT_QUOTES, 'UTF-8') ?>)
@@ -74,8 +72,8 @@ require dirname(__DIR__) . '/components/page-header.php';
 
 <div class="row g-4">
     <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header">Uso do plano</div>
+        <div class="card-soft h-100 overflow-hidden">
+            <div class="card-section-title px-3 pt-3">Uso do plano</div>
             <ul class="list-group list-group-flush">
                 <?php
                 $limitLabels = [
@@ -90,7 +88,7 @@ require dirname(__DIR__) . '/components/page-header.php';
                         ? $usage['current'] . ' · ilimitado'
                         : $usage['current'] . ' / ' . $usage['limit'];
                 ?>
-                    <li class="list-group-item d-flex justify-content-between">
+                    <li class="list-group-item d-flex justify-content-between px-3">
                         <span><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
                         <span class="text-muted"><?= htmlspecialchars($text, ENT_QUOTES, 'UTF-8') ?></span>
                     </li>
@@ -100,34 +98,32 @@ require dirname(__DIR__) . '/components/page-header.php';
     </div>
 
     <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header">Alterar plano</div>
-            <div class="card-body">
-                <form method="post" action="<?= htmlspecialchars($url('subscription/change-plan'), ENT_QUOTES, 'UTF-8') ?>">
-                    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                    <div class="mb-3">
-                        <select name="plan_code" class="form-select" required>
-                            <?php foreach ($plans as $plan): ?>
-                                <option value="<?= htmlspecialchars($plan->code, ENT_QUOTES, 'UTF-8') ?>"
-                                    <?= ($subscription !== null && $subscription->plan_code === $plan->code) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($plan->name, ENT_QUOTES, 'UTF-8') ?>
-                                    — R$ <?= number_format((float) $plan->price_monthly, 2, ',', '.') ?>/mês
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm" data-loading-text="Atualizando...">Atualizar plano</button>
-                </form>
-            </div>
+        <div class="card-soft p-3 p-md-4 h-100">
+            <div class="fw-semibold mb-3">Alterar plano</div>
+            <form method="post" action="<?= htmlspecialchars($url('subscription/change-plan'), ENT_QUOTES, 'UTF-8') ?>">
+                <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
+                <div class="mb-3">
+                    <select name="plan_code" class="form-select" required>
+                        <?php foreach ($plans as $plan): ?>
+                            <option value="<?= htmlspecialchars($plan->code, ENT_QUOTES, 'UTF-8') ?>"
+                                <?= ($subscription !== null && $subscription->plan_code === $plan->code) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($plan->name, ENT_QUOTES, 'UTF-8') ?>
+                                — R$ <?= number_format((float) $plan->price_monthly, 2, ',', '.') ?>/mês
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm" data-loading-text="Atualizando...">Atualizar plano</button>
+            </form>
         </div>
     </div>
 </div>
 
 <?php if ($invoices !== []): ?>
-    <div class="card mt-4">
-        <div class="card-header">Histórico de cobrança</div>
+    <div class="card-soft p-3 p-md-4 mt-4">
+        <div class="fw-semibold mb-3">Histórico de cobrança</div>
         <div class="table-responsive">
-            <table class="table table-sm mb-0">
+            <table class="table table-sm table-hover align-middle mb-0">
                 <thead>
                     <tr>
                         <th>Período</th>

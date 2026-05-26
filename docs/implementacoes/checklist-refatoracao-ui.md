@@ -184,6 +184,8 @@ Partial `auth-form-header.php` para telas no layout `auth` (evita duplicar títu
 
 ## Menu — alinhamento com o prompt
 
+**Simplificado (mai/2026):** Dashboard e Relatórios com um único item no sidebar cada (`Dashboard` → `/`; `Central de relatórios` → `/reports/*`). Abas internas do dashboard e cards da central cobrem os atalhos.
+
 Itens do documento ainda **não refletidos** em `NavigationMenu.php`:
 
 | Item sugerido no prompt | Ação sugerida |

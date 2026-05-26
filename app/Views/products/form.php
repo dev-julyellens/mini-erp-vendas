@@ -182,16 +182,16 @@ require dirname(__DIR__) . '/components/page-header.php';
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Margem %</label>
-                        <input class="form-control bg-light" id="marginPercent" readonly
+                        <input class="form-control form-control-readonly" id="marginPercent" readonly
                             value="<?= htmlspecialchars((string) $marginDisplay, ENT_QUOTES, 'UTF-8') ?>">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Markup %</label>
-                        <input class="form-control bg-light" id="markupPercent" readonly
+                        <input class="form-control form-control-readonly" id="markupPercent" readonly
                             value="<?= htmlspecialchars((string) $markupDisplay, ENT_QUOTES, 'UTF-8') ?>">
                     </div>
                     <div class="col-12">
-                        <div class="alert alert-light border mb-0 small">
+                        <div class="alert alert-light mb-0 small">
                             Margem = (venda − custo) ÷ venda · Markup = (venda − custo) ÷ custo. Calculados automaticamente ao salvar.
                         </div>
                     </div>
