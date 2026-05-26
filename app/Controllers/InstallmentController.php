@@ -9,6 +9,7 @@ use App\Core\ValidationException;
 use App\Helpers\Flash;
 use App\Models\Payment;
 use App\Repositories\CustomerRepository;
+use App\Repositories\PixChargeRepository;
 use App\Services\InstallmentService;
 
 final class InstallmentController extends Controller
@@ -52,10 +53,15 @@ final class InstallmentController extends Controller
             return;
         }
 
+        $pixRepo = new PixChargeRepository();
+        $pixRepo->expirePendingPastDue();
+        $pendingPix = $pixRepo->findPendingByInstallmentId($id);
+
         $this->view('finance/installments/pay', [
             'installment' => $installment,
             'methods' => Payment::METHODS,
             'methodLabels' => Payment::METHOD_LABELS,
+            'pendingPix' => $pendingPix,
             'errors' => [],
             'old' => [
                 'payment_method' => 'pix',
@@ -146,10 +152,14 @@ final class InstallmentController extends Controller
             return;
         }
 
+        $pixRepo = new PixChargeRepository();
+        $pendingPix = $pixRepo->findPendingByInstallmentId($id);
+
         $this->view('finance/installments/pay', [
             'installment' => $installment,
             'methods' => Payment::METHODS,
             'methodLabels' => Payment::METHOD_LABELS,
+            'pendingPix' => $pendingPix,
             'errors' => $errors,
             'old' => $old,
             'flash' => Flash::pull(),

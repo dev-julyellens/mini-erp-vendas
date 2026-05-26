@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Core\Controller;
-use App\Core\ValidationException;
 use App\Helpers\Flash;
 use App\Models\Payment;
-use App\Repositories\CustomerRepository;
-use App\Services\AccountsReceivableService;
-use App\Services\InstallmentService;
+use App\Core\Controller;
 use App\Services\PaymentService;
+use App\Core\ValidationException;
+use App\Services\InstallmentService;
+use App\Repositories\CustomerRepository;
+use App\Repositories\PixChargeRepository;
+use App\Services\AccountsReceivableService;
 
 final class AccountsReceivableController extends Controller
 {
@@ -81,10 +82,15 @@ final class AccountsReceivableController extends Controller
             return;
         }
 
+        $pixRepo = new PixChargeRepository();
+        $pixRepo->expirePendingPastDue();
+        $pendingPix = $pixRepo->findPendingByAccountsReceivableId($id);
+
         $this->view('finance/accounts-receivable/show', [
             'account' => $detail['account'],
             'payments' => $detail['payments'],
             'methodLabels' => Payment::METHOD_LABELS,
+            'pendingPix' => $pendingPix,
             'flash' => Flash::pull(),
         ]);
     }
@@ -120,10 +126,15 @@ final class AccountsReceivableController extends Controller
             return;
         }
 
+        $pixRepo = new PixChargeRepository();
+        $pixRepo->expirePendingPastDue();
+        $pendingPix = $pixRepo->findPendingByAccountsReceivableId($id);
+
         $this->view('finance/accounts-receivable/receive', [
             'account' => $account,
             'methods' => Payment::METHODS,
             'methodLabels' => Payment::METHOD_LABELS,
+            'pendingPix' => $pendingPix,
             'errors' => [],
             'old' => [
                 'amount' => $account->remaining_amount ?? $account->amount,
@@ -209,10 +220,14 @@ final class AccountsReceivableController extends Controller
             return;
         }
 
+        $pixRepo = new PixChargeRepository();
+        $pendingPix = $pixRepo->findPendingByAccountsReceivableId($id);
+
         $this->view('finance/accounts-receivable/receive', [
             'account' => $detail['account'],
             'methods' => Payment::METHODS,
             'methodLabels' => Payment::METHOD_LABELS,
+            'pendingPix' => $pendingPix,
             'errors' => $errors,
             'old' => $old,
             'flash' => Flash::pull(),
