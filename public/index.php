@@ -111,6 +111,15 @@ $router->get('/finance/installments/history', \App\Controllers\InstallmentContro
 $router->get('/finance/installments/pay', \App\Controllers\InstallmentController::class . '@pay');
 $router->post('/finance/installments/pay', \App\Controllers\InstallmentController::class . '@storePayment');
 
+$router->get('/finance/pix/charge', \App\Controllers\PixChargeController::class . '@show');
+$router->get('/finance/pix/receipt', \App\Controllers\PixChargeController::class . '@receipt');
+$router->get('/finance/pix/status', \App\Controllers\PixChargeController::class . '@status');
+$router->post('/finance/pix/create-account', \App\Controllers\PixChargeController::class . '@createForAccount');
+$router->post('/finance/pix/create-installment', \App\Controllers\PixChargeController::class . '@createForInstallment');
+$router->post('/finance/pix/simulate-pay', \App\Controllers\PixChargeController::class . '@simulatePay');
+
+$router->post('/webhooks/pix/mock', \App\Controllers\PixWebhookController::class . '@mock');
+
 $router->get('/stock-movements', \App\Controllers\StockMovementController::class . '@index');
 $router->get('/stock-movements/create', \App\Controllers\StockMovementController::class . '@create');
 $router->post('/stock-movements/store', \App\Controllers\StockMovementController::class . '@store');
