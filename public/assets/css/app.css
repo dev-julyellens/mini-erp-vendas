@@ -405,9 +405,11 @@ body {
 }
 
 .stat-tile {
+    --kpi-text: #ffffff;
+    --kpi-text-muted: rgba(255, 255, 255, 0.78);
     border-radius: 16px;
     padding: 1rem 1.1rem;
-    color: #fff;
+    color: var(--kpi-text);
     position: relative;
     overflow: hidden;
 }
@@ -420,11 +422,21 @@ body {
     height: 160px;
     background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 60%);
     opacity: 0.35;
+    pointer-events: none;
 }
 
+.stat-tile .kpi-label,
+.stat-tile .kpi-hint,
+.stat-tile .text-white-50 {
+    color: var(--kpi-text-muted) !important;
+}
+
+.stat-tile .kpi-value,
+.stat-tile h3.kpi-value,
 .stat-tile h3 {
     font-size: 1.75rem;
     font-weight: 700;
+    color: var(--kpi-text) !important;
 }
 
 .stat-orders { background: linear-gradient(135deg, #0ea5e9, #6366f1); }

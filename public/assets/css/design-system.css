@@ -603,14 +603,19 @@ body.sidebar-collapsed .sidebar .nav-link i {
     gap: var(--space-3);
 }
 
-.kpi-card {
+.kpi-card.stat-tile {
     display: block;
-    color: inherit;
+    color: #fff;
 }
 
-.kpi-card:hover {
+.kpi-card.stat-tile:hover {
     filter: brightness(1.03);
-    color: inherit;
+    color: #fff;
+}
+
+.kpi-card.stat-tile .kpi-value,
+.kpi-card.stat-tile h3 {
+    color: #fff !important;
 }
 
 /* Skeleton loading */
