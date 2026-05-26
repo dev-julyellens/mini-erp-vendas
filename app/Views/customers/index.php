@@ -15,17 +15,17 @@ use App\Helpers\SecurityConfig;
 $maskSensitive = SecurityConfig::maskSensitiveDataInLists();
 
 ?>
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-    <div>
-        <h1 class="h3 mb-1">Clientes</h1>
-        <div class="text-muted">Cadastro e manutenção de clientes</div>
-    </div>
-    <?php if (\App\Helpers\Permission::can('clientes', 'criar')): ?>
-        <a class="btn btn-primary" href="<?= htmlspecialchars($url('customers/create'), ENT_QUOTES, 'UTF-8') ?>">
-            <i class="bi bi-plus-lg"></i> Novo cliente
-        </a>
-    <?php endif; ?>
-</div>
+<?php
+$title = 'Clientes';
+$subtitle = 'Cadastro e manutenção de clientes';
+$actionsHtml = '';
+if (\App\Helpers\Permission::can('clientes', 'criar'))
+{
+    $actionsHtml = '<a class="btn btn-primary" href="' . htmlspecialchars($url('customers/create'), ENT_QUOTES, 'UTF-8') . '">'
+        . '<i class="bi bi-plus-lg"></i> Novo cliente</a>';
+}
+require dirname(__DIR__) . '/components/page-header.php';
+?>
 
 <div class="card-soft p-3 p-md-4">
     <div class="table-responsive">
@@ -56,7 +56,7 @@ $maskSensitive = SecurityConfig::maskSensitiveDataInLists();
                                     data-confirm-title="Excluir cliente">
                                     <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                                     <input type="hidden" name="id" value="<?= (int) $c->id ?>">
-                                    <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+                                    <button class="btn btn-sm btn-danger-soft" type="submit">Excluir</button>
                                 </form>
                             <?php endif; ?>
                         </td>

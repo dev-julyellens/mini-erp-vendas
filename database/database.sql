@@ -189,7 +189,12 @@ CREATE INDEX idx_role_permissions_role ON role_permissions (role);
 CREATE TABLE user_companies (
     user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     company_id INTEGER NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
-    CONSTRAINT user_companies_pkey PRIMARY KEY (user_id, company_id)
+    role VARCHAR(50) NOT NULL DEFAULT 'employee',
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT user_companies_pkey PRIMARY KEY (user_id, company_id),
+    CONSTRAINT user_companies_role_check CHECK (role IN ('owner', 'admin', 'manager', 'employee'))
 );
 
 CREATE INDEX idx_user_companies_company ON user_companies (company_id);

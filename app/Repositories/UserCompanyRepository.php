@@ -199,4 +199,33 @@ final class UserCompanyRepository
 
         return (int) $stmt->fetchColumn();
     }
+
+    /**
+     * Empresas vinculadas ao usuário com papel (para perfil).
+     *
+     * @return list<array{company_id: int, company_name: string, role: string, active: bool}>
+     */
+    public function listBindingsForUser(int $userId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT uc.company_id, c.name AS company_name, uc.role, uc.active
+             FROM user_companies uc
+             INNER JOIN companies c ON c.id = uc.company_id
+             WHERE uc.user_id = :user_id
+             ORDER BY c.name ASC'
+        );
+        $stmt->execute(['user_id' => $userId]);
+        $list = [];
+        foreach ($stmt->fetchAll() as $row)
+        {
+            $list[] = [
+                'company_id' => (int) $row['company_id'],
+                'company_name' => (string) $row['company_name'],
+                'role' => (string) $row['role'],
+                'active' => (bool) $row['active'],
+            ];
+        }
+
+        return $list;
+    }
 }

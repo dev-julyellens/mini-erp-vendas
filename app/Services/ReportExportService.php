@@ -85,17 +85,31 @@ final class ReportExportService
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle(mb_substr($title, 0, 31));
 
-        $sheet->setCellValue('A1', $title);
-        $sheet->mergeCells('A1:' . $this->columnLetter(count($headers)) . '1');
+        $kpis = $this->buildKpis($type, $rows);
+        $lastCol = $this->columnLetter(max(1, count($headers)));
 
+        $sheet->setCellValue('A1', $title);
+        $sheet->mergeCells('A1:' . $lastCol . '1');
+        $sheet->setCellValue('A2', 'Gerado em ' . DateHelper::nowBr());
+        $sheet->mergeCells('A2:' . $lastCol . '2');
+
+        $kpiRow = 4;
         $col = 1;
-        foreach ($headers as $header)
+        foreach ($kpis as $kpi)
         {
-            $sheet->setCellValue([$col, 3], $header);
+            $sheet->setCellValue([$col, $kpiRow], $kpi['label'] . ': ' . $kpi['value']);
             $col++;
         }
 
-        $rowNum = 4;
+        $headerRow = 6;
+        $col = 1;
+        foreach ($headers as $header)
+        {
+            $sheet->setCellValue([$col, $headerRow], $header);
+            $col++;
+        }
+
+        $rowNum = $headerRow + 1;
         foreach ($rows as $row)
         {
             $col = 1;
@@ -130,6 +144,85 @@ final class ReportExportService
      * @param list<string> $headers
      * @param list<array<string, mixed>> $rows
      */
+    /**
+     * @param list<array<string, mixed>> $rows
+     * @return list<array{label: string, value: string}>
+     */
+    private function buildKpis(string $type, array $rows): array
+    {
+        $count = count($rows);
+        $kpis = [
+            ['label' => 'Registros', 'value' => (string) $count],
+        ];
+
+        if ($count === 0)
+        {
+            return $kpis;
+        }
+
+        return match ($type)
+        {
+            ReportService::TYPE_SALES_PERIOD => array_merge($kpis, [
+                [
+                    'label' => 'Pedidos',
+                    'value' => (string) array_sum(array_map(static fn(array $r): int => (int) ($r['order_count'] ?? 0), $rows)),
+                ],
+                [
+                    'label' => 'Total faturado',
+                    'value' => 'R$ ' . $this->formatMoney((string) array_sum(array_map(
+                        static fn(array $r): float => (float) ($r['total_amount'] ?? 0),
+                        $rows
+                    ))),
+                ],
+            ]),
+            ReportService::TYPE_SALES_CUSTOMER => array_merge($kpis, [
+                [
+                    'label' => 'Total faturado',
+                    'value' => 'R$ ' . $this->formatMoney((string) array_sum(array_map(
+                        static fn(array $r): float => (float) ($r['total_amount'] ?? 0),
+                        $rows
+                    ))),
+                ],
+            ]),
+            ReportService::TYPE_SALES_PRODUCT, ReportService::TYPE_TOP_PRODUCTS => array_merge($kpis, [
+                [
+                    'label' => 'Unidades vendidas',
+                    'value' => (string) array_sum(array_map(static fn(array $r): int => (int) ($r['quantity_sold'] ?? 0), $rows)),
+                ],
+                [
+                    'label' => 'Receita total',
+                    'value' => 'R$ ' . $this->formatMoney((string) array_sum(array_map(
+                        static fn(array $r): float => (float) ($r['total_amount'] ?? 0),
+                        $rows
+                    ))),
+                ],
+            ]),
+            ReportService::TYPE_LOW_STOCK => array_merge($kpis, [
+                [
+                    'label' => 'Itens críticos',
+                    'value' => (string) $count,
+                ],
+            ]),
+            ReportService::TYPE_CASH_FLOW => array_merge($kpis, [
+                [
+                    'label' => 'Entradas',
+                    'value' => 'R$ ' . $this->formatMoney((string) array_sum(array_map(
+                        static fn(array $r): float => ($r['type'] ?? '') === 'entrada' ? (float) ($r['amount'] ?? 0) : 0.0,
+                        $rows
+                    ))),
+                ],
+                [
+                    'label' => 'Saídas',
+                    'value' => 'R$ ' . $this->formatMoney((string) array_sum(array_map(
+                        static fn(array $r): float => ($r['type'] ?? '') === 'saida' ? (float) ($r['amount'] ?? 0) : 0.0,
+                        $rows
+                    ))),
+                ],
+            ]),
+            default => $kpis,
+        };
+    }
+
     private function renderPdfHtml(
         string $type,
         string $title,
@@ -142,6 +235,7 @@ final class ReportExportService
         $appName = (string) ($config['app_name'] ?? 'Mini ERP');
         $period = $this->formatPeriodLabel($filter);
         $generated = DateHelper::nowBr();
+        $kpis = $this->buildKpis($type, $rows);
 
         ob_start();
 ?>
@@ -157,15 +251,55 @@ final class ReportExportService
                     color: #222;
                 }
 
+                .report-header {
+                    border-bottom: 2px solid #0ea5e9;
+                    padding-bottom: 8px;
+                    margin-bottom: 14px;
+                }
+
                 h1 {
-                    font-size: 16px;
+                    font-size: 18px;
                     margin: 0 0 4px;
+                    color: #0f172a;
                 }
 
                 .meta {
                     color: #555;
-                    margin-bottom: 12px;
                     font-size: 10px;
+                }
+
+                .kpi-row {
+                    width: 100%;
+                    margin-bottom: 14px;
+                }
+
+                .kpi-box {
+                    display: inline-block;
+                    width: 23%;
+                    margin-right: 1%;
+                    padding: 8px 10px;
+                    background: #f0f9ff;
+                    border: 1px solid #bae6fd;
+                    border-radius: 6px;
+                    vertical-align: top;
+                }
+
+                .kpi-label {
+                    font-size: 9px;
+                    color: #64748b;
+                    text-transform: uppercase;
+                }
+
+                .kpi-value {
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #0f172a;
+                }
+
+                .summary {
+                    font-size: 10px;
+                    color: #475569;
+                    margin-bottom: 12px;
                 }
 
                 table {
@@ -181,8 +315,9 @@ final class ReportExportService
                 }
 
                 th {
-                    background: #f0f0f0;
+                    background: #e2e8f0;
                     font-weight: bold;
+                    font-size: 10px;
                 }
 
                 tr:nth-child(even) td {
@@ -192,14 +327,34 @@ final class ReportExportService
                 .text-end {
                     text-align: right;
                 }
+
+                .footer {
+                    margin-top: 16px;
+                    font-size: 9px;
+                    color: #94a3b8;
+                    text-align: center;
+                    border-top: 1px solid #e2e8f0;
+                    padding-top: 8px;
+                }
             </style>
         </head>
 
         <body>
-            <h1><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></h1>
-            <div class="meta">
-                <?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?> · Gerado em <?= htmlspecialchars($generated, ENT_QUOTES, 'UTF-8') ?>
-                <?php if ($period !== ''): ?> · <?= htmlspecialchars($period, ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
+            <div class="report-header">
+                <h1><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></h1>
+                <div class="meta">
+                    <?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?> · Relatório gerencial · <?= htmlspecialchars($generated, ENT_QUOTES, 'UTF-8') ?>
+                    <?php if ($period !== ''): ?> · <?= htmlspecialchars($period, ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
+                </div>
+            </div>
+            <div class="summary">Resumo executivo com indicadores consolidados do período filtrado.</div>
+            <div class="kpi-row">
+                <?php foreach ($kpis as $kpi): ?>
+                    <div class="kpi-box">
+                        <div class="kpi-label"><?= htmlspecialchars($kpi['label'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="kpi-value"><?= htmlspecialchars($kpi['value'], ENT_QUOTES, 'UTF-8') ?></div>
+                    </div>
+                <?php endforeach; ?>
             </div>
             <table>
                 <thead>
@@ -226,6 +381,9 @@ final class ReportExportService
                     <?php endif; ?>
                 </tbody>
             </table>
+            <div class="footer">
+                <?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?> — Documento gerado automaticamente. Uso interno.
+            </div>
         </body>
 
         </html>

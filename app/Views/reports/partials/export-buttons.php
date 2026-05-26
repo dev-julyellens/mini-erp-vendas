@@ -11,7 +11,7 @@ $pdfUrl = $url($exportPath . '?format=pdf' . ($baseQuery !== '' ? '&' . $baseQue
 $xlsxUrl = $url($exportPath . '?format=xlsx' . ($baseQuery !== '' ? '&' . $baseQuery : ''));
 
 ?>
-<div class="d-flex flex-wrap gap-2">
+<div class="d-flex flex-wrap gap-2 export-bar">
     <a class="btn btn-outline-danger btn-sm" href="<?= htmlspecialchars($pdfUrl, ENT_QUOTES, 'UTF-8') ?>">
         <i class="bi bi-file-earmark-pdf"></i> PDF
     </a>

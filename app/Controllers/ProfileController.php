@@ -8,7 +8,10 @@ use App\Core\Controller;
 use App\Core\ValidationException;
 use App\Helpers\Auth;
 use App\Helpers\Flash;
+use App\Repositories\UserCompanyRepository;
 use App\Services\PasswordPolicyService;
+use App\Services\PermissionService;
+use App\Services\TenantContextService;
 use App\Services\UserService;
 
 final class ProfileController extends Controller
@@ -21,12 +24,18 @@ final class ProfileController extends Controller
             $this->redirect('/login');
         }
 
+        $userId = (int) $user->id;
         $snapshot = Auth::sessionSnapshot();
+        $effectiveRole = (new TenantContextService())->resolveEffectiveAclRole();
+        $permissionKeys = (new PermissionService())->permissionKeysForRole($effectiveRole);
 
         $this->view('profile/show', [
             'user' => $user,
             'companyName' => $snapshot['company_name'] ?? null,
             'companyRole' => $snapshot['company_role'] ?? null,
+            'companyBindings' => (new UserCompanyRepository())->listBindingsForUser($userId),
+            'effectiveRole' => $effectiveRole,
+            'permissionKeys' => $permissionKeys,
             'flash' => Flash::pull(),
         ]);
     }
@@ -53,10 +62,14 @@ final class ProfileController extends Controller
         {
             $user = Auth::user();
             $snapshot = Auth::sessionSnapshot();
+            $effectiveRole = (new TenantContextService())->resolveEffectiveAclRole();
             $this->view('profile/show', [
                 'user' => $user,
                 'companyName' => $snapshot['company_name'] ?? null,
                 'companyRole' => $snapshot['company_role'] ?? null,
+                'companyBindings' => (new UserCompanyRepository())->listBindingsForUser($userId),
+                'effectiveRole' => $effectiveRole,
+                'permissionKeys' => (new PermissionService())->permissionKeysForRole($effectiveRole),
                 'errors' => $e->getErrors(),
                 'old' => $_POST,
                 'flash' => Flash::pull(),

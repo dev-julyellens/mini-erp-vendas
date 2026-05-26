@@ -132,7 +132,9 @@ body {
     min-height: 100vh;
     border-right: 1px solid rgba(148, 163, 184, 0.18);
     z-index: 1040;
-    transition: transform 0.25s ease;
+    transition: transform 0.25s ease, width 0.2s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar .brand {

@@ -6,41 +6,10 @@ declare(strict_types=1);
 /** @var string $baseUrl */
 /** @var string $__viewFile */
 
-$currentPath = \App\Helpers\PathHelper::requestPath();
-
 $url = static function (string $path = '') use ($baseUrl): string
 {
     return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
 };
-
-$navActive = static function (string $path) use ($currentPath): string
-{
-    return $currentPath === $path ? 'active' : '';
-};
-
-$navPrefix = static function (string $prefix) use ($currentPath): string
-{
-    $prefix = '/' . trim($prefix, '/');
-    if ($prefix === '//')
-    {
-        $prefix = '/';
-    }
-    if ($prefix !== '/' && strpos($currentPath, $prefix) === 0)
-    {
-        return 'active';
-    }
-    return '';
-};
-
-$canClientes = \App\Helpers\Permission::canView('clientes');
-$canProdutos = \App\Helpers\Permission::canView('produtos');
-$canVendas = \App\Helpers\Permission::canView('vendas');
-$canEstoque = \App\Helpers\Permission::canView('estoque');
-$canFinanceiro = \App\Helpers\Permission::canView('financeiro');
-$canUsuarios = \App\Helpers\Permission::canView('usuarios');
-$canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
-$isPlatformAdmin = (new \App\Services\PlatformAdminService())->isPlatformAdmin();
-$canManageLinks = $isPlatformAdmin || \App\Helpers\Permission::can('usuarios', 'editar');
 
 ?>
 <!DOCTYPE html>
@@ -55,6 +24,9 @@ $canManageLinks = $isPlatformAdmin || \App\Helpers\Permission::can('usuarios', '
             try {
                 var t = localStorage.getItem("mini-erp-theme");
                 if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
+                if (localStorage.getItem("mini-erp-sidebar-collapsed") === "1") {
+                    document.documentElement.classList.add("sidebar-collapsed-pending");
+                }
             } catch (e) {}
         })();
     </script>
@@ -64,116 +36,22 @@ $canManageLinks = $isPlatformAdmin || \App\Helpers\Permission::can('usuarios', '
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="<?= htmlspecialchars($url('assets/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($url('assets/css/design-system.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>">
     <div class="sidebar-backdrop" aria-hidden="true"></div>
     <div class="app-shell">
-        <aside class="sidebar">
-            <div class="brand">
-                <div class="brand-mark">M</div>
-                <div>
-                    <div class="fw-semibold"><?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?></div>
-                    <small class="text-secondary">Painel</small>
-                </div>
-            </div>
-            <nav class="nav flex-column">
-                <a class="nav-link <?= $navActive('/') ?>" href="<?= htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') ?>">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-                <a class="nav-link <?= $navPrefix('/notifications') ?>" href="<?= htmlspecialchars($url('notifications'), ENT_QUOTES, 'UTF-8') ?>">
-                    <i class="bi bi-bell"></i> Notificações
-                    <?php if (!empty($notificationUnreadCount) && (int) $notificationUnreadCount > 0): ?>
-                        <span class="badge rounded-pill text-bg-danger ms-1"><?= (int) $notificationUnreadCount > 99 ? '99+' : (int) $notificationUnreadCount ?></span>
-                    <?php endif; ?>
-                </a>
-                <?php if ($canClientes): ?>
-                    <a class="nav-link <?= $navPrefix('/customers') ?>" href="<?= htmlspecialchars($url('customers'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-people"></i> Clientes
-                    </a>
-                <?php endif; ?>
-                <?php if ($canProdutos): ?>
-                    <a class="nav-link <?= $navPrefix('/products') ?>" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-box-seam"></i> Produtos
-                    </a>
-                    <a class="nav-link <?= $navPrefix('/services') ?>" href="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-tools"></i> Serviços
-                    </a>
-                <?php endif; ?>
-                <?php if ($canVendas): ?>
-                    <a class="nav-link <?= $navPrefix('/orders') ?>" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-receipt"></i> Vendas
-                    </a>
-                <?php endif; ?>
-                <?php if ($canEstoque): ?>
-                    <a class="nav-link <?= $navPrefix('/stock-movements') ?>" href="<?= htmlspecialchars($url('stock-movements'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-archive"></i> Estoque
-                    </a>
-                <?php endif; ?>
-                <?php if ($canFinanceiro): ?>
-                    <a class="nav-link <?= $navPrefix('/finance') ?>" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-cash-stack"></i> Financeiro
-                    </a>
-                <?php endif; ?>
-                <?php if ($canRelatorios): ?>
-                    <a class="nav-link <?= $navPrefix('/reports') ?>" href="<?= htmlspecialchars($url('reports'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-bar-chart-line"></i> Relatórios
-                    </a>
-                <?php endif; ?>
-                <?php if ($canUsuarios): ?>
-                    <a class="nav-link <?= $navPrefix('/audit-logs') ?>" href="<?= htmlspecialchars($url('audit-logs'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-journal-text"></i> Auditoria
-                    </a>
-                    <a class="nav-link <?= $navPrefix('/access-logs') ?>" href="<?= htmlspecialchars($url('access-logs'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-door-open"></i> Logs de acesso
-                    </a>
-                    <a class="nav-link <?= $navPrefix('/backups') ?>" href="<?= htmlspecialchars($url('backups'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-hdd-stack"></i> Backup
-                    </a>
-                    <a class="nav-link <?= $navActive('/subscription') ?>" href="<?= htmlspecialchars($url('subscription'), ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-credit-card"></i> Assinatura
-                    </a>
-                    <?php if ($isPlatformAdmin): ?>
-                        <a class="nav-link <?= $navPrefix('/admin/users') ?>" href="<?= htmlspecialchars($url('admin/users'), ENT_QUOTES, 'UTF-8') ?>">
-                            <i class="bi bi-person-gear"></i> Usuários
-                        </a>
-                        <a class="nav-link <?= $navPrefix('/admin/companies') ?>" href="<?= htmlspecialchars($url('admin/companies'), ENT_QUOTES, 'UTF-8') ?>">
-                            <i class="bi bi-buildings"></i> Empresas
-                        </a>
-                        <a class="nav-link <?= $navPrefix('/admin/saas') ?>" href="<?= htmlspecialchars($url('admin/saas'), ENT_QUOTES, 'UTF-8') ?>">
-                            <i class="bi bi-cloud"></i> SaaS
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($canManageLinks): ?>
-                        <a class="nav-link <?= $navPrefix('/user-companies') ?>" href="<?= htmlspecialchars($url('user-companies'), ENT_QUOTES, 'UTF-8') ?>">
-                            <i class="bi bi-link-45deg"></i> Vínculos
-                        </a>
-                    <?php endif; ?>
-                <?php endif; ?>
-                <?php if ($canProdutos || $canVendas): ?>
-                    <hr class="border-secondary-subtle">
-                    <div class="px-2 pb-1 small text-secondary text-uppercase">API</div>
-                    <?php if ($canProdutos): ?>
-                        <a class="nav-link" href="<?= htmlspecialchars($url('api/products'), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer">
-                            <i class="bi bi-braces"></i> /api/products
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($canVendas): ?>
-                        <a class="nav-link" href="<?= htmlspecialchars($url('api/orders'), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer">
-                            <i class="bi bi-braces"></i> /api/orders
-                        </a>
-                    <?php endif; ?>
-                <?php endif; ?>
-            </nav>
-        </aside>
+        <?php require dirname(__DIR__) . '/components/sidebar.php'; ?>
         <div class="content">
             <header class="topbar">
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary d-lg-none" data-sidebar-toggle aria-label="Abrir menu">
                         <i class="bi bi-list"></i>
                     </button>
-                    <span class="badge text-bg-light border d-none d-sm-inline">PHP + PostgreSQL</span>
-                    <span class="text-muted small d-none d-md-inline">MVC · Services · Repositories</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary d-none d-lg-inline-flex" data-sidebar-collapse aria-label="Recolher menu" title="Recolher menu">
+                        <i class="bi bi-layout-sidebar-inset"></i>
+                    </button>
                 </div>
                 <div class="d-flex align-items-center gap-2 gap-md-3 flex-wrap justify-content-end">
                     <button type="button" class="btn btn-sm btn-outline-secondary theme-toggle-btn" data-theme-toggle aria-label="Modo escuro" title="Modo escuro">
@@ -192,8 +70,8 @@ $canManageLinks = $isPlatformAdmin || \App\Helpers\Permission::can('usuarios', '
                                 </span>
                             </a>
                         <?php endif; ?>
-                        <a class="text-end text-decoration-none" href="<?= htmlspecialchars($url('profile'), ENT_QUOTES, 'UTF-8') ?>" title="Meu perfil">
-                            <div class="small fw-semibold text-dark text-truncate" style="max-width: 10rem;">
+                        <a class="text-end text-decoration-none user-menu-link" href="<?= htmlspecialchars($url('profile'), ENT_QUOTES, 'UTF-8') ?>" title="Meu perfil">
+                            <div class="small fw-semibold text-truncate user-menu-name" style="max-width: 10rem;">
                                 <?= htmlspecialchars($authUser['name'], ENT_QUOTES, 'UTF-8') ?>
                             </div>
                             <div class="text-muted d-none d-md-block" style="font-size: 0.75rem;">
@@ -210,12 +88,12 @@ $canManageLinks = $isPlatformAdmin || \App\Helpers\Permission::can('usuarios', '
                             </button>
                         </form>
                     <?php endif; ?>
-                    <div class="text-muted small text-nowrap">
+                    <div class="text-muted small text-nowrap d-none d-lg-block">
                         <?= htmlspecialchars(\App\Helpers\DateHelper::nowBr(), ENT_QUOTES, 'UTF-8') ?>
                     </div>
                 </div>
             </header>
-            <main class="page">
+            <main class="page" id="mainContent">
                 <?php require dirname(__DIR__) . '/partials/flash.php'; ?>
                 <?php require $__viewFile; ?>
             </main>

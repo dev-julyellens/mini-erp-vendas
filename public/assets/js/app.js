@@ -2,6 +2,9 @@
     "use strict";
 
     var THEME_KEY = "mini-erp-theme";
+    var SIDEBAR_COLLAPSED_KEY = "mini-erp-sidebar-collapsed";
+    var DASHBOARD_TAB_KEY = "mini-erp-dashboard-tab";
+    var NAV_GROUPS_KEY = "mini-erp-nav-groups";
     var pendingConfirmForm = null;
 
     function getBaseUrl() {
@@ -286,11 +289,99 @@
         });
     }
 
+    function getStoredJson(key, fallback) {
+        try {
+            var raw = localStorage.getItem(key);
+            if (!raw) {
+                return fallback;
+            }
+            return JSON.parse(raw);
+        } catch (e) {
+            return fallback;
+        }
+    }
+
+    function setStoredJson(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    function initSidebarCollapse() {
+        if (document.documentElement.classList.contains("sidebar-collapsed-pending")) {
+            document.body.classList.add("sidebar-collapsed");
+            document.documentElement.classList.remove("sidebar-collapsed-pending");
+        } else {
+            try {
+                if (localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1") {
+                    document.body.classList.add("sidebar-collapsed");
+                }
+            } catch (e) {
+                /* ignore */
+            }
+        }
+
+        function toggleCollapsed() {
+            var collapsed = document.body.classList.toggle("sidebar-collapsed");
+            try {
+                localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "1" : "0");
+            } catch (e) {
+                /* ignore */
+            }
+        }
+
+        document.querySelectorAll("[data-sidebar-collapse]").forEach(function (btn) {
+            btn.addEventListener("click", toggleCollapsed);
+        });
+    }
+
+    function initNavGroups() {
+        var stored = getStoredJson(NAV_GROUPS_KEY, {});
+        document.querySelectorAll("[data-nav-group]").forEach(function (group) {
+            var id = group.getAttribute("data-nav-group");
+            if (!id) {
+                return;
+            }
+            if (stored[id] === true) {
+                group.classList.add("is-open");
+                var btn = group.querySelector("[data-nav-group-toggle]");
+                if (btn) {
+                    btn.setAttribute("aria-expanded", "true");
+                }
+            } else if (stored[id] === false) {
+                group.classList.remove("is-open");
+                var btnClosed = group.querySelector("[data-nav-group-toggle]");
+                if (btnClosed) {
+                    btnClosed.setAttribute("aria-expanded", "false");
+                }
+            }
+        });
+
+        document.querySelectorAll("[data-nav-group-toggle]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                var group = btn.closest("[data-nav-group]");
+                if (!group) {
+                    return;
+                }
+                var id = group.getAttribute("data-nav-group");
+                var open = group.classList.toggle("is-open");
+                btn.setAttribute("aria-expanded", open ? "true" : "false");
+                if (id) {
+                    var state = getStoredJson(NAV_GROUPS_KEY, {});
+                    state[id] = open;
+                    setStoredJson(NAV_GROUPS_KEY, state);
+                }
+            });
+        });
+    }
+
     function initSidebar() {
         var sidebar = document.querySelector(".sidebar");
         var toggle = document.querySelector("[data-sidebar-toggle]");
         var backdrop = document.querySelector(".sidebar-backdrop");
-        if (!sidebar || !toggle) {
+        if (!sidebar) {
             return;
         }
 
@@ -310,13 +401,15 @@
             document.body.style.overflow = "hidden";
         }
 
-        toggle.addEventListener("click", function () {
-            if (sidebar.classList.contains("is-open")) {
-                closeSidebar();
-            } else {
-                openSidebar();
-            }
-        });
+        if (toggle) {
+            toggle.addEventListener("click", function () {
+                if (sidebar.classList.contains("is-open")) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            });
+        }
 
         if (backdrop) {
             backdrop.addEventListener("click", closeSidebar);
@@ -326,6 +419,97 @@
             link.addEventListener("click", function () {
                 if (window.matchMedia("(max-width: 991px)").matches) {
                     closeSidebar();
+                }
+            });
+        });
+    }
+
+    function initDashboardTabs() {
+        var root = document.getElementById("dashboardRoot");
+        if (!root) {
+            return;
+        }
+        var tabs = root.querySelectorAll("[data-dash-tab]");
+        var panels = root.querySelectorAll("[data-dash-panel]");
+        if (!tabs.length || !panels.length) {
+            return;
+        }
+
+        function activate(tabId) {
+            tabs.forEach(function (tab) {
+                var active = tab.getAttribute("data-dash-tab") === tabId;
+                tab.classList.toggle("active", active);
+                tab.setAttribute("aria-selected", active ? "true" : "false");
+            });
+            panels.forEach(function (panel) {
+                var active = panel.getAttribute("data-dash-panel") === tabId;
+                panel.classList.toggle("is-active", active);
+                panel.hidden = !active;
+            });
+            try {
+                localStorage.setItem(DASHBOARD_TAB_KEY, tabId);
+            } catch (e) {
+                /* ignore */
+            }
+        }
+
+        var initial = "overview";
+        try {
+            var hash = (window.location.hash || "").replace("#dash-", "");
+            if (hash && root.querySelector('[data-dash-panel="' + hash + '"]')) {
+                initial = hash;
+            } else {
+                var saved = localStorage.getItem(DASHBOARD_TAB_KEY);
+                if (saved && root.querySelector('[data-dash-panel="' + saved + '"]')) {
+                    initial = saved;
+                }
+            }
+        } catch (e) {
+            /* ignore */
+        }
+        activate(initial);
+
+        tabs.forEach(function (tab) {
+            tab.addEventListener("click", function (ev) {
+                ev.preventDefault();
+                var id = tab.getAttribute("data-dash-tab");
+                if (id) {
+                    activate(id);
+                    if (history.replaceState) {
+                        history.replaceState(null, "", "#dash-" + id);
+                    } else {
+                        window.location.hash = "dash-" + id;
+                    }
+                }
+            });
+        });
+    }
+
+    function initInputMasks() {
+        document.querySelectorAll("[data-mask-phone]").forEach(function (el) {
+            el.addEventListener("input", function () {
+                var digits = el.value.replace(/\D/g, "").slice(0, 11);
+                if (digits.length <= 10) {
+                    el.value = digits.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3").replace(/-$/, "");
+                } else {
+                    el.value = digits.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3").replace(/-$/, "");
+                }
+            });
+        });
+        document.querySelectorAll("[data-mask-document]").forEach(function (el) {
+            el.addEventListener("input", function () {
+                var digits = el.value.replace(/\D/g, "").slice(0, 14);
+                if (digits.length <= 11) {
+                    el.value = digits
+                        .replace(/(\d{3})(\d)/, "$1.$2")
+                        .replace(/(\d{3})(\d)/, "$1.$2")
+                        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                } else {
+                    el.value = digits
+                        .replace(/^(\d{2})(\d)/, "$1.$2")
+                        .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+                        .replace(/\.(\d{3})(\d)/, ".$1/$2")
+                        .replace(/(\d{4})(\d)/, "$1-$2");
                 }
             });
         });
@@ -343,7 +527,11 @@
         initFlashToasts();
         initFormLoading();
         initConfirmModal();
+        initSidebarCollapse();
+        initNavGroups();
         initSidebar();
+        initDashboardTabs();
+        initInputMasks();
         initFilterPanels();
         initDataTables();
     });
@@ -354,6 +542,10 @@
         theme: {
             get: getStoredTheme,
             set: applyTheme,
+        },
+        prefs: {
+            sidebarCollapsedKey: SIDEBAR_COLLAPSED_KEY,
+            dashboardTabKey: DASHBOARD_TAB_KEY,
         },
     };
 })();

@@ -49,7 +49,8 @@ $phone = $old['phone'] ?? ($customer ? (string) ($customer->phone ?? '') : '');
         </div>
         <div class="mb-3">
             <label class="form-label">Telefone</label>
-            <input class="form-control" name="phone" value="<?= htmlspecialchars((string) $phone, ENT_QUOTES, 'UTF-8') ?>">
+            <input class="form-control" name="phone" data-mask-phone autocomplete="tel"
+                value="<?= htmlspecialchars((string) $phone, ENT_QUOTES, 'UTF-8') ?>" placeholder="(00) 00000-0000">
         </div>
 
         <div class="d-flex gap-2">
