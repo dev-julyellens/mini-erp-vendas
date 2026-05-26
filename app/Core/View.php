@@ -35,6 +35,22 @@ final class View
         $baseUrl = rtrim((string) ($config['base_url'] ?? ''), '/');
         $__viewFile = $file;
 
+        if ($layout === 'layouts/main')
+        {
+            $notificationLayout = [
+                'notificationUnreadCount' => 0,
+                'notificationRecent' => [],
+                'notificationToasts' => [],
+            ];
+
+            if (\App\Helpers\Auth::check() && \App\Helpers\CompanyContext::hasSelected())
+            {
+                $notificationLayout = (new \App\Services\NotificationService())->layoutPayload();
+            }
+
+            extract($notificationLayout, EXTR_SKIP);
+        }
+
         require $layoutFile;
     }
 }
