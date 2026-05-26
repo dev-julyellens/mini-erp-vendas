@@ -41,7 +41,7 @@ require dirname(__DIR__) . '/components/auth-form-header.php';
     <button type="submit" class="btn btn-primary w-100 mb-3" data-loading-text="Enviando...">Enviar link de recuperação</button>
 
     <div class="text-center">
-        <a class="small text-decoration-none" href="<?= htmlspecialchars($url('login'), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="small auth-link" href="<?= htmlspecialchars($url('login'), ENT_QUOTES, 'UTF-8') ?>">
             Voltar ao login
         </a>
     </div>

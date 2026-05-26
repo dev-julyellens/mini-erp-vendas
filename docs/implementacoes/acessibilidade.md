@@ -98,9 +98,21 @@ MiniErp.a11y.announce("Pedido salvo.");
 MiniErp.a11y.syncDocumentTitle();
 ```
 
+## Contraste nas telas de acesso (auth)
+
+Tokens em `app.css`: `--auth-muted`, `--auth-link`, `--auth-placeholder` (claro e escuro).
+
+| Elemento | Claro | Escuro |
+|----------|-------|--------|
+| Texto secundário (`.text-muted`) | `#475569` no card branco | `#cbd5e1` no card `#1e293b` |
+| Links (`a.auth-link`) | `#1d4ed8` sublinhado | `#7dd3fc` |
+| Placeholders | `#475569` | `#94a3b8` |
+| Alertas `alert-danger` | Bootstrap padrão | fundo escuro + texto `#fecaca` |
+
+Validar alternando o botão de tema no canto superior direito em `/login`, `/forgot-password` e `/select-company`.
+
 ## Pendências conhecidas
 
-- Contraste fino em `layouts/auth.php` (Sprint 6, item 6)
 - DataTables gerados dinamicamente: revisar cabeçalhos após redraw se adicionar colunas custom
 - Gráficos Chart.js: considerar tabela/resumo alternativo para leitores de tela (relatórios)
 

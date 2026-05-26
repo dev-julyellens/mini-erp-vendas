@@ -153,7 +153,7 @@ Export PDF/Excel já tem KPIs (`ReportExportService`). Foco: **experiência na t
 | `profile/password.php` | ✅ | PH + AB-F + LD + indicador de força de senha |
 | `notifications/index.php` | ✅ | PH; filter-panel; ação no header |
 | `layouts/main.php` | ✅ | — |
-| `layouts/auth.php` | 🟡 | `design-system.css` + toggle de tema OK; revisar contraste claro/escuro (backlog 0.x) |
+| `layouts/auth.php` | ✅ | Tema claro/escuro + contraste WCAG (`--auth-*`, `auth-link`) |
 | `components/sidebar.php` | ✅ | Recolher/expandir (`data-sidebar-collapse`); fixar só no perfil |
 | `components/page-header.php` | ✅ | — |
 | `components/action-buttons.php` | ✅ | — |
@@ -232,14 +232,14 @@ Itens do documento ainda **não refletidos** em `NavigationMenu.php`:
 3. ~~`filter-panel` em todos os relatórios com filtros~~
 4. ~~Gráficos embutidos na tela (Chart.js) — `ReportChartService`, `report-charts.php`, `reports-charts.js`~~
 
-### Sprint 6 — Formulários CRUD + infra avançada (backlog)
+### Sprint 6 — Formulários CRUD + infra avançada ✅
 
 1. ~~**Formulários:** migrar os 7 arquivos para `page-header` + `saveLoadingText`~~ ✅
 2. ~~Avatar, prefs servidor, skeleton, pin sidebar, PDF com gráficos (Fase 0.3–0.8)~~ ✅
 3. ~~Autosave em `orders/create`, `products/form`~~ ✅
 4. ~~Máscaras globais (documento, CEP, moeda) — `input-masks.js`~~ ✅
 5. ~~Revisão acessibilidade (audit com axe ou checklist WCAG) — `a11y.js`, skip link, ARIA tabs/dashboard, doc `acessibilidade.md`~~ ✅
-6. `layouts/auth.php` — contraste tema claro/escuro
+6. ~~`layouts/auth.php` — contraste tema claro/escuro (`--auth-*`, `.auth-card`, links `auth-link`)~~ ✅
 
 ---
 

@@ -43,7 +43,7 @@ $loginError = $errors['login'] ?? null;
     </button>
 
     <div class="text-center">
-        <a class="small text-decoration-none" href="<?= htmlspecialchars($url('forgot-password'), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="small auth-link" href="<?= htmlspecialchars($url('forgot-password'), ENT_QUOTES, 'UTF-8') ?>">
             Esqueci minha senha
         </a>
     </div>
