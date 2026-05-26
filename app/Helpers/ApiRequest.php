@@ -149,6 +149,13 @@ final class ApiRequest
             'access_token',
             'refresh_token',
             'authorization',
-        ], true);
+            'cpf',
+            'cnpj',
+            'phone',
+            'telefone',
+            'email',
+            'secret',
+            'api_key',
+        ], true) || str_contains($normalized, 'password') || str_contains($normalized, 'token');
     }
 }
