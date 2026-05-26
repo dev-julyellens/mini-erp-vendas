@@ -18,6 +18,12 @@ use PDOException;
 
 final class OrderService
 {
+    /** Venda concluída na criação (baixa de estoque + conta a receber). */
+    public const STATUS_PAID = 'paid';
+
+    /** Reservado para rascunho/orçamento futuro; não usado em placeOrder(). */
+    public const STATUS_PENDING = 'pending';
+
     /**
      * @param array<int, array{product_id?: mixed, quantity?: mixed}> $lines
      */
@@ -35,7 +41,7 @@ final class OrderService
         $customerRepo = new CustomerRepository($pdo);
         if ($customerRepo->findById($customerId) === null)
         {
-            throw new ValidationException(['customer_id' => 'Customer not found.']);
+            throw new ValidationException(['customer_id' => 'Cliente não encontrado.']);
         }
 
         usort(
@@ -72,19 +78,19 @@ final class OrderService
                 $product = $productRepo->findById($productId, true);
                 if ($product === null)
                 {
-                    throw new ValidationException(['items' => 'Product not found: ' . $productId]);
+                    throw new ValidationException(['items' => 'Produto não encontrado: ' . $productId]);
                 }
 
                 if ($quantity <= 0)
                 {
-                    throw new ValidationException(['items' => 'Quantity must be positive.']);
+                    throw new ValidationException(['items' => 'A quantidade deve ser positiva.']);
                 }
 
                 if (!$product->isService() && $product->stock < $quantity)
                 {
                     throw new ValidationException([
                         'items' => sprintf(
-                            'Insufficient stock for "%s". Available: %d, requested: %d.',
+                            'Estoque insuficiente para "%s". Disponível: %d, solicitado: %d.',
                             $product->name,
                             $product->stock,
                             $quantity
@@ -118,7 +124,7 @@ final class OrderService
                 }
             }
 
-            $orderId = $orderRepo->insert($customerId, $total);
+            $orderId = $orderRepo->insert($customerId, $total, self::STATUS_PAID);
 
             foreach ($prepared as $row)
             {
@@ -239,7 +245,7 @@ final class OrderService
     {
         if ($lines === [])
         {
-            throw new ValidationException(['items' => 'The sale must contain at least one item.']);
+            throw new ValidationException(['items' => 'A venda deve conter pelo menos um item.']);
         }
 
         /** @var array<int, int> $merged */
@@ -252,7 +258,7 @@ final class OrderService
 
             if ($productId <= 0 || $quantity <= 0)
             {
-                throw new ValidationException(['items' => 'Each line needs a valid product and a positive quantity.']);
+                throw new ValidationException(['items' => 'Cada linha precisa de um produto válido e quantidade positiva.']);
             }
 
             if (!isset($merged[$productId]))

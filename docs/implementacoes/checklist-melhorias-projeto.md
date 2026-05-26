@@ -117,8 +117,8 @@ Fazer **antes** de expor o sistema a usuários reais fora de ambiente controlado
 
 | # | Tarefa | Sigla | Status | Arquivo / ação |
 |---|--------|-------|--------|----------------|
-| 3.1 | Padronizar mensagens de domínio em **português** (ou camada i18n) | BE | ⬜ | Services, `CustomerController`, API |
-| 3.2 | Alinhar status de pedido (`pending` vs `paid` na criação) | BE | ⬜ | `OrderService`, schema, relatórios |
+| 3.1 | Padronizar mensagens de domínio em **português** (ou camada i18n) | BE | 🟡 | Pedidos, clientes, cancelamento, API; outros services pendentes |
+| 3.2 | Alinhar status de pedido (`pending` vs `paid` na criação) | BE | ✅ | `OrderService::STATUS_PAID`; doc em `bugs-conhecidos.md` |
 | 3.3 | Adotar `Database::transaction()` nos services com transação manual | BE | ⬜ | `OrderService`, `PaymentService`, `PixChargeService`, … |
 | 3.4 | Remover side-effect em leitura: `refreshOverdueStatuses()` no `paginateFiltered` | BE | ⬜ | `InstallmentRepository` |
 | 3.5 | Migrar repositórios para `BaseRepository` + PDO injetável | BE | ⬜ | Só `CustomerRepository` hoje — ver débito técnico |
@@ -135,14 +135,14 @@ Fazer **antes** de expor o sistema a usuários reais fora de ambiente controlado
 
 | # | Tarefa | Sigla | Status | Arquivo / ação |
 |---|--------|-------|--------|----------------|
-| 4.1 | DTO público de produto **sem** `cost_price`, margem, markup | API | ⬜ | `ApiProductController` |
-| 4.2 | Paginação em `GET /api/products` | API | ⬜ | `ProductRepository::allOrderedByName()` |
-| 4.3 | Eliminar N+1 em `GET /api/orders` (itens em batch/JOIN) | API | ⬜ | `ApiOrderController` ~L37–41 |
-| 4.4 | Validar formato de `date_from` / `date_to` na API | API | ⬜ | `ApiOrderController` |
+| 4.1 | DTO público de produto **sem** `cost_price`, margem, markup | API | ✅ | `ApiProductPresenter` |
+| 4.2 | Paginação em `GET /api/products` | API | ✅ | `ProductRepository::paginate()` + `meta` |
+| 4.3 | Eliminar N+1 em `GET /api/orders` (itens em batch/JOIN) | API | ✅ | `OrderItemRepository::findByOrderIds()` |
+| 4.4 | Validar formato de `date_from` / `date_to` na API | API | ✅ | `DateFilter` + intervalo |
 | 4.5 | Rate limit por token/usuário além de IP | API | P2 | `ApiRateLimitService` |
 | 4.6 | Revogação / rotação de JWT (ou TTL curto + refresh) | API | P2 | `JwtService` |
 | 4.7 | Evitar `Auth::setJwtUser()` poluir sessão de browser no mesmo domínio | API | P2 | `Auth.php` |
-| 4.8 | Log local em `catch` dos controllers API (hoje só 500 genérico) | API | ⬜ | `ApiOrderController`, `ApiAuthController` |
+| 4.8 | Log local em `catch` dos controllers API (hoje só 500 genérico) | API | 🟡 | `ApiOrderController` (index/store/cancel); `ApiAuthController` já tinha log |
 
 ---
 
@@ -265,11 +265,12 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 5. ~~2.2 — documentar sync `database.sql`~~  
 6. ~~1.9 — `bin/migrate` + `composer migrate`~~
 
-### Sprint C — API e dados sensíveis (1–2 dias) — P1
+### Sprint C — API e dados sensíveis (1–2 dias) — P1 ✅
 
-1. 4.1–4.4 — API produtos/pedidos  
-2. 3.2 — status de pedido  
-3. 3.1 — mensagens PT
+1. ~~4.1–4.4 — API produtos/pedidos~~  
+2. ~~3.2 — status de pedido~~  
+3. ~~3.1 — mensagens PT (pedidos, clientes, cancelamento, API)~~  
+4. ~~4.8 parcial — log em `ApiOrderController`~~
 
 ### Sprint D — Testes mínimos (2–3 dias) — P1
 
@@ -312,7 +313,7 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 | DevOps / CI | ~10% | Workflow `composer check` |
 | Documentação externa (README) | ~90% | README + devops + banco §12 |
 | Testes automatizados | ~15% | OrderService + API + tenant |
-| API REST | ~70% | DTO público, paginação, N+1 |
+| API REST | ~85% | DTO, paginação, N+1, datas; rate limit por token pendente |
 | Backend refatoração | ~50% | Transações, ACL, logging |
 | Migrations / DB | ~92% | Bootstrap 018–020; índices pendentes (2.4) |
 | Performance JS | ~50% | DataTables condicional, auth-lite |
@@ -342,4 +343,4 @@ Atualizar também `docs/bugs/bugs-conhecidos.md` ou `debito-tecnico.md` se for b
 3. Novos bugs → `docs/bugs/bugs-conhecidos.md` + referência cruzada aqui.  
 4. Antes de release: Fase 0 deve estar ✅ ou explicitamente aceita com risco documentado.
 
-**Última atualização:** 26/05/2026 — Sprint B: README, devops, frontend, migrations 018–020, `composer.lock`, `bin/migrate`.
+**Última atualização:** 26/05/2026 — Sprint C: API produtos/pedidos, mensagens PT, status `paid` documentado.

@@ -32,12 +32,12 @@ final class CustomerService
 
         if ($email !== '' && $excludeId === null && $this->customers->findByEmail($email) !== null)
         {
-            $errors['email'] = 'Email already registered.';
+            $errors['email'] = 'E-mail já cadastrado.';
         }
 
         if ($email !== '' && $excludeId !== null && $this->customers->emailExistsForOther($email, $excludeId))
         {
-            $errors['email'] = 'Email already registered.';
+            $errors['email'] = 'E-mail já cadastrado.';
         }
 
         $phone = InputSanitizer::phone($phone);
@@ -70,7 +70,7 @@ final class CustomerService
         $existing = $this->customers->findById($id);
         if ($existing === null)
         {
-            throw new ValidationException(['id' => 'Customer not found.']);
+            throw new ValidationException(['id' => 'Cliente não encontrado.']);
         }
 
         $v = $this->validate($name, $email, $phone, $id);
@@ -93,7 +93,7 @@ final class CustomerService
         $existing = $this->customers->findById($id);
         if ($existing === null)
         {
-            throw new ValidationException(['id' => 'Customer not found.']);
+            throw new ValidationException(['id' => 'Cliente não encontrado.']);
         }
 
         $oldSnapshot = AuditService::customerSnapshot($existing);

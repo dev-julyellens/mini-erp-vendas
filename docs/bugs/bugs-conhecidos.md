@@ -6,7 +6,7 @@ Lista baseada no código e comportamento observável. Não inclui issues externa
 
 | Item | Descrição |
 |------|-----------|
-| Status `pending` em pedidos | Coluna existe e migration documenta fluxo, mas `OrderService` grava `paid` na criação. Relatórios/filtros que assumem `pending` podem não refletir a operação real. |
+| Status `pending` em pedidos | **Comportamento intencional (mai/2026):** `placeOrder()` grava `paid` porque a venda é finalizada na hora (estoque + AR). `pending` fica reservado para rascunho/orçamento futuro (`OrderService::STATUS_PENDING`). |
 
 ## Segurança / ambiente
 

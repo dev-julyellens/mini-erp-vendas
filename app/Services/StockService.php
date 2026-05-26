@@ -362,7 +362,7 @@ final class StockService
 
         if (!in_array($type, self::TYPES, true))
         {
-            throw new ValidationException(['type' => 'Invalid movement type.']);
+            throw new ValidationException(['type' => 'Tipo de movimentação inválido.']);
         }
 
         return $type;

@@ -71,6 +71,9 @@ Body: { "email", "password", "company_id"? }
   - Header `Retry-After` em HTTP 429
 - Content-Type JSON esperado em POST.
 - Cancelamento: body com `order_id` ou `id`.
+- **GET `/api/products`:** paginação (`page`, `per_page` até 100); resposta **sem** `cost_price`, `margin_percent`, `markup_percent` (`ApiProductPresenter`).
+- **GET `/api/orders`:** filtros `date_from` / `date_to` em `AAAA-MM-DD`; itens carregados em lote (sem N+1).
+- Mensagens de validação dos services de pedido/cliente em **português**.
 
 ## 8. Fluxo de dados
 
@@ -89,7 +92,7 @@ Helpers: `App\Helpers\ApiRequest`, `App\Helpers\ApiResponse`.
 ## 9. Pontos críticos
 
 - `JWT_SECRET` deve ser forte em produção.
-- Mensagens de validação em inglês nos services; respostas API seguem o mesmo padrão.
+- Alguns services legados ainda podem retornar mensagens em inglês; pedidos, clientes e cancelamento já em PT.
 - Webhook PIX mock não faz parte da API autenticada — rota pública separada.
 - Logs podem conter payloads — revisar retenção e LGPD (`MASK_SENSITIVE_DATA`).
 
@@ -104,5 +107,6 @@ Helpers: `App\Helpers\ApiRequest`, `App\Helpers\ApiResponse`.
 - OpenAPI/Swagger.
 - Versionamento `/api/v1`.
 - Scopes OAuth2 ou API keys por integração.
-- Paginação cursor-based em `/api/orders`.
+- Paginação cursor-based em listagens muito grandes.
+- Filtros adicionais em `/api/products` (categoria, estoque baixo).
 - Testes de contrato (Pact).

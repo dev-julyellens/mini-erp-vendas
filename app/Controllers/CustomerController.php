@@ -41,7 +41,8 @@ final class CustomerController extends Controller
     public function store(): void
     {
         $service = new CustomerService();
-        try {
+        try
+        {
             $service->create(
                 (string) ($_POST['name'] ?? ''),
                 (string) ($_POST['email'] ?? ''),
@@ -49,7 +50,9 @@ final class CustomerController extends Controller
             );
             Flash::success('Customer created successfully.');
             $this->redirect('/customers');
-        } catch (ValidationException $e) {
+        }
+        catch (ValidationException $e)
+        {
             $this->view('customers/form', [
                 'customer' => null,
                 'errors' => $e->getErrors(),
@@ -64,8 +67,9 @@ final class CustomerController extends Controller
         $id = (int) ($_GET['id'] ?? 0);
         $repo = new CustomerRepository();
         $customer = $repo->findById($id);
-        if ($customer === null) {
-            Flash::error('Customer not found.');
+        if ($customer === null)
+        {
+            Flash::error('Cliente não encontrado.');
             $this->redirect('/customers');
         }
 
@@ -80,7 +84,8 @@ final class CustomerController extends Controller
     {
         $id = (int) ($_POST['id'] ?? 0);
         $service = new CustomerService();
-        try {
+        try
+        {
             $service->update(
                 $id,
                 (string) ($_POST['name'] ?? ''),
@@ -89,7 +94,9 @@ final class CustomerController extends Controller
             );
             Flash::success('Customer updated successfully.');
             $this->redirect('/customers');
-        } catch (ValidationException $e) {
+        }
+        catch (ValidationException $e)
+        {
             $repo = new CustomerRepository();
             $customer = $repo->findById($id);
             $this->view('customers/form', [
@@ -105,13 +112,18 @@ final class CustomerController extends Controller
     {
         $id = (int) ($_POST['id'] ?? 0);
         $service = new CustomerService();
-        try {
+        try
+        {
             $service->delete($id);
             Flash::success('Customer removed.');
-        } catch (ValidationException $e) {
+        }
+        catch (ValidationException $e)
+        {
             $msg = implode(' ', $e->getErrors());
             Flash::error($msg !== '' ? $msg : 'Unable to remove customer.');
-        } catch (\PDOException $e) {
+        }
+        catch (\PDOException $e)
+        {
             Flash::error('Database error while removing customer.');
         }
 

@@ -23,7 +23,7 @@ final class OrderCancelService
         $userId = $userId ?? Auth::id();
         if ($userId === null)
         {
-            throw new ValidationException(['auth' => 'User must be authenticated to cancel a sale.']);
+            throw new ValidationException(['auth' => 'É necessário estar autenticado para cancelar a venda.']);
         }
 
         $pdo = Database::getConnection();
@@ -43,7 +43,7 @@ final class OrderCancelService
             $order = $orderRepo->findByIdForUpdate($orderId);
             if ($order === null)
             {
-                throw new ValidationException(['order_id' => 'Order not found.']);
+                throw new ValidationException(['order_id' => 'Pedido não encontrado.']);
             }
 
             $this->assertCancelable($order);
@@ -51,7 +51,7 @@ final class OrderCancelService
             $items = $itemRepo->findByOrderId($orderId);
             if ($items === [])
             {
-                throw new ValidationException(['order_id' => 'Order has no items.']);
+                throw new ValidationException(['order_id' => 'O pedido não possui itens.']);
             }
 
             /** @var list<array{product_id: int, quantity: int, stock_before: int}> $stockAudit */
@@ -158,17 +158,17 @@ final class OrderCancelService
     {
         if ($order->status === 'canceled')
         {
-            throw new ValidationException(['status' => 'This sale is already canceled.']);
+            throw new ValidationException(['status' => 'Esta venda já está cancelada.']);
         }
 
         if ($order->status === 'refunded')
         {
-            throw new ValidationException(['status' => 'Refunded sales cannot be canceled.']);
+            throw new ValidationException(['status' => 'Vendas estornadas não podem ser canceladas.']);
         }
 
         if (!in_array($order->status, ['pending', 'paid'], true))
         {
-            throw new ValidationException(['status' => 'This sale cannot be canceled.']);
+            throw new ValidationException(['status' => 'Esta venda não pode ser cancelada.']);
         }
     }
 

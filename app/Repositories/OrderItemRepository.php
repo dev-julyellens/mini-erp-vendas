@@ -60,4 +60,44 @@ final class OrderItemRepository
 
         return $list;
     }
+
+    /**
+     * Carrega itens de vários pedidos em uma consulta (evita N+1 na API).
+     *
+     * @param list<int> $orderIds
+     * @return array<int, list<OrderItem>> Chave = order_id
+     */
+    public function findByOrderIds(array $orderIds): array
+    {
+        $orderIds = array_values(array_unique(array_filter(
+            array_map('intval', $orderIds),
+            static fn(int $id): bool => $id > 0
+        )));
+
+        if ($orderIds === [])
+        {
+            return [];
+        }
+
+        $in = implode(',', $orderIds);
+        $sql = 'SELECT oi.id, oi.order_id, oi.product_id, oi.quantity, oi.unit_price, oi.subtotal,
+                       p.name AS product_name, p.type AS product_type
+                FROM order_items oi
+                INNER JOIN orders o ON o.id = oi.order_id AND o.company_id = :company_id
+                INNER JOIN products p ON p.id = oi.product_id AND p.company_id = :company_id
+                WHERE oi.order_id IN (' . $in . ')
+                ORDER BY oi.order_id ASC, oi.id ASC';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['company_id' => $this->companyId()]);
+
+        /** @var array<int, list<OrderItem>> $grouped */
+        $grouped = [];
+        foreach ($stmt->fetchAll() as $row)
+        {
+            $orderId = (int) $row['order_id'];
+            $grouped[$orderId][] = OrderItem::fromArray($row);
+        }
+
+        return $grouped;
+    }
 }
