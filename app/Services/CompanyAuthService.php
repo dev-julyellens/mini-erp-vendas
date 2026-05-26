@@ -42,6 +42,7 @@ final class CompanyAuthService
         }
 
         Auth::login($user, $company->id, $company->name);
+        (new SessionService())->initializeOnLogin();
     }
 
     /**

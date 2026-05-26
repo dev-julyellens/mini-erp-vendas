@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Helpers\DateHelper;
 use App\Models\CashFlow;
 use App\Models\Payment;
 use App\Models\ReportFilter;
@@ -140,7 +141,7 @@ final class ReportExportService
         $config = require dirname(__DIR__, 2) . '/config/app.php';
         $appName = (string) ($config['app_name'] ?? 'Mini ERP');
         $period = $this->formatPeriodLabel($filter);
-        $generated = date('d/m/Y H:i');
+        $generated = DateHelper::nowBr();
 
         ob_start();
 ?>
@@ -288,7 +289,7 @@ final class ReportExportService
                 (int) ($row['min_stock'] ?? 0),
             ],
             ReportService::TYPE_CASH_FLOW => [
-                date('d/m/Y H:i', strtotime((string) ($row['occurred_at'] ?? 'now'))),
+                DateHelper::toBrDateTime((string) ($row['occurred_at'] ?? 'now')),
                 CashFlow::typeLabel((string) ($row['type'] ?? '')),
                 $this->formatMoney((string) ($row['amount'] ?? '0')),
                 isset($row['payment_method']) && $row['payment_method'] !== null
@@ -317,9 +318,7 @@ final class ReportExportService
 
     private function formatDate(string $iso): string
     {
-        $dt = \DateTimeImmutable::createFromFormat('Y-m-d', $iso);
-
-        return $dt !== false ? $dt->format('d/m/Y') : $iso;
+        return DateHelper::toBrDate($iso);
     }
 
     private function formatMoney(string $value): string

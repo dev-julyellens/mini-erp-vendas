@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Helpers\CompanyContext;
 use App\Helpers\AppConfig;
+use App\Helpers\CompanyContext;
+use App\Helpers\DateHelper;
 use App\Core\ValidationException;
 use App\Models\Notification;
 use App\Models\Order;
@@ -340,7 +341,7 @@ final class NotificationService
                 'Conta a receber #%d (pedido #%d) venceu em %s.',
                 $account->id,
                 $account->order_id,
-                date('d/m/Y', strtotime($account->due_date))
+                DateHelper::toBrDate($account->due_date)
             ),
             'entity_type' => 'accounts_receivable',
             'entity_id' => $account->id,
@@ -365,7 +366,7 @@ final class NotificationService
                 'Parcela %d do pedido #%d venceu em %s (R$ %s).',
                 $installment->installment_number,
                 $installment->order_id,
-                date('d/m/Y', strtotime($installment->due_date)),
+                DateHelper::toBrDate($installment->due_date),
                 number_format((float) $installment->amount, 2, ',', '.')
             ),
             'entity_type' => 'installment',

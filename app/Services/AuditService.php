@@ -25,6 +25,7 @@ final class AuditService
         'logout' => 'Logout',
         'solicitar_redefinir_senha' => 'Solicitar redefinição de senha',
         'redefinir_senha' => 'Redefinir senha',
+        'consentimento_lgpd' => 'Consentimento LGPD',
         'venda' => 'Venda',
         'saida_estoque' => 'Saída de estoque',
         'cancelamento_venda' => 'Cancelamento de venda',

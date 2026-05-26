@@ -15,15 +15,20 @@ use App\Repositories\UserRepository;
 final class AuthService
 {
     private const RESET_TOKEN_TTL_HOURS = 2;
-    private const MIN_PASSWORD_LENGTH = 8;
 
     private UserRepository $users;
     private CompanyAuthService $companyAuth;
+    private PasswordPolicyService $passwordPolicy;
 
-    public function __construct(?UserRepository $users = null, ?CompanyAuthService $companyAuth = null)
+    public function __construct(
+        ?UserRepository $users = null,
+        ?CompanyAuthService $companyAuth = null,
+        ?PasswordPolicyService $passwordPolicy = null
+    )
     {
         $this->users = $users ?? new UserRepository();
         $this->companyAuth = $companyAuth ?? new CompanyAuthService();
+        $this->passwordPolicy = $passwordPolicy ?? new PasswordPolicyService();
     }
 
     /**
@@ -247,20 +252,11 @@ final class AuthService
     /**
      * @return array<string, string>
      */
+    /**
+     * @return array<string, string>
+     */
     private function validatePasswordFields(string $password, string $passwordConfirm): array
     {
-        $errors = [];
-
-        if (strlen($password) < self::MIN_PASSWORD_LENGTH)
-        {
-            $errors['password'] = 'A senha deve ter no mínimo ' . self::MIN_PASSWORD_LENGTH . ' caracteres.';
-        }
-
-        if ($password !== $passwordConfirm)
-        {
-            $errors['password_confirm'] = 'As senhas não conferem.';
-        }
-
-        return $errors;
+        return $this->passwordPolicy->validate($password, $passwordConfirm);
     }
 }

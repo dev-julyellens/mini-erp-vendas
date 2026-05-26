@@ -66,6 +66,7 @@ final class RoutePermissionMap
         'GET /reports/cash-flow/export' => ['financeiro', 'visualizar'],
 
         'GET /audit-logs' => ['usuarios', 'visualizar'],
+        'GET /access-logs' => ['usuarios', 'visualizar'],
 
         'GET /backups' => ['usuarios', 'visualizar'],
         'POST /backups/create' => ['usuarios', 'criar'],

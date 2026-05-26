@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Core\ValidationException;
 use App\Helpers\Audit;
+use App\Helpers\InputSanitizer;
 use App\Repositories\CustomerRepository;
 
 final class CustomerService
@@ -23,13 +24,13 @@ final class CustomerService
     private function validate(string $name, string $email, ?string $phone, ?int $excludeId = null): array
     {
         $errors = [];
-        $name = trim($name);
+        $name = InputSanitizer::string($name, 255);
         if ($name === '')
         {
             $errors['name'] = 'Name is required.';
         }
 
-        $email = trim($email);
+        $email = InputSanitizer::email($email);
         if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL))
         {
             $errors['email'] = 'Valid email is required.';
@@ -45,11 +46,7 @@ final class CustomerService
             $errors['email'] = 'Email already registered.';
         }
 
-        $phone = $phone !== null ? trim($phone) : null;
-        if ($phone === '')
-        {
-            $phone = null;
-        }
+        $phone = InputSanitizer::phone($phone);
 
         return ['errors' => $errors, 'name' => $name, 'email' => $email, 'phone' => $phone];
     }
