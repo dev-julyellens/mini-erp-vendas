@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Helpers\DateHelper;
+
 /** @var callable(string):string $url */
 /** @var list<\App\Models\BackupLog> $logs */
 /** @var int $total */
@@ -120,7 +122,7 @@ $totalPages = max(1, (int) ceil($total / $perPage));
                                 <tr>
                                     <td class="font-monospace small text-break"><?= htmlspecialchars($file['filename'], ENT_QUOTES, 'UTF-8') ?></td>
                                     <td><?= htmlspecialchars($formatBytes($file['size']), ENT_QUOTES, 'UTF-8') ?></td>
-                                    <td><?= htmlspecialchars($file['created_at'], ENT_QUOTES, 'UTF-8') ?></td>
+                                    <td><?= htmlspecialchars(DateHelper::toBrDateTime($file['created_at']), ENT_QUOTES, 'UTF-8') ?></td>
                                     <td class="text-end text-nowrap">
                                         <?php if ($isAdmin): ?>
                                             <a class="btn btn-sm btn-outline-primary" href="<?= htmlspecialchars($url('backups/download?file=' . rawurlencode($file['filename'])), ENT_QUOTES, 'UTF-8') ?>">
@@ -166,7 +168,7 @@ $totalPages = max(1, (int) ceil($total / $perPage));
                 <tbody>
                     <?php foreach ($logs as $log): ?>
                         <tr>
-                            <td class="text-nowrap small"><?= htmlspecialchars($log->created_at, ENT_QUOTES, 'UTF-8') ?></td>
+                            <td class="text-nowrap small"><?= htmlspecialchars(DateHelper::toBrDateTime($log->created_at), ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars($operationLabels[$log->operation] ?? $log->operation, ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars($triggerLabels[$log->trigger_type] ?? $log->trigger_type, ENT_QUOTES, 'UTF-8') ?></td>
                             <td class="font-monospace small text-break"><?= htmlspecialchars($log->filename ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
