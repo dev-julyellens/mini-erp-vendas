@@ -121,6 +121,6 @@ foreach ($products as $p)
 
 <script>
     window.__PRODUCTS__ = <?= json_encode($productPayload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?>;
-    window.__ORDER_STORE_URL__ = <?= json_encode($url('orders/store'), JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?>;
+    window.__ORDER_STORE_URL__ = <?= json_encode($url('api/orders'), JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?>;
 </script>
 <script src="<?= htmlspecialchars($url('assets/js/order_create.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
