@@ -77,6 +77,11 @@ $router->get('/reports/cash-flow/export', \App\Controllers\ReportController::cla
 
 $router->get('/audit-logs', \App\Controllers\AuditLogController::class . '@index');
 
+$router->get('/notifications', \App\Controllers\NotificationController::class . '@index');
+$router->post('/notifications/open', \App\Controllers\NotificationController::class . '@open');
+$router->post('/notifications/read', \App\Controllers\NotificationController::class . '@markRead');
+$router->post('/notifications/read-all', \App\Controllers\NotificationController::class . '@markAllRead');
+
 $router->get('/backups', \App\Controllers\BackupController::class . '@index');
 $router->post('/backups/create', \App\Controllers\BackupController::class . '@create');
 $router->get('/backups/download', \App\Controllers\BackupController::class . '@download');
