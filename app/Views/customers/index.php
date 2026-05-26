@@ -2,13 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Helpers\DataMask;
 use App\Helpers\DateHelper;
+use App\Helpers\SecurityConfig;
 
 /** @var callable(string):string $url */
 /** @var list<\App\Models\Customer> $customers */
 /** @var int $total */
 /** @var int $page */
 /** @var int $perPage */
+
+$maskSensitive = SecurityConfig::maskSensitiveDataInLists();
 
 ?>
 <div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
@@ -39,8 +43,8 @@ use App\Helpers\DateHelper;
                 <?php foreach ($customers as $c): ?>
                     <tr>
                         <td class="fw-semibold"><?= htmlspecialchars($c->name, ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($c->email, ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars((string) ($c->phone ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
+                        <td><?= htmlspecialchars($maskSensitive ? DataMask::email($c->email) : $c->email, ENT_QUOTES, 'UTF-8') ?></td>
+                        <td><?= htmlspecialchars($maskSensitive ? DataMask::phone($c->phone) : (string) ($c->phone ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-muted small"><?= htmlspecialchars(DateHelper::toBrDateTime($c->created_at), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-end">
                             <?php if (\App\Helpers\Permission::can('clientes', 'editar')): ?>
