@@ -11,7 +11,7 @@ Checklist derivada de [`.cursor/prompts/gerenciamento-completo.md`](../../.curso
 | **AB-F** | Adotar `action-buttons.php` modo `form-footer` |
 | **AB-Flt** | Adotar `action-buttons.php` modo `filter` |
 | **FP** | Envolver filtros em `card-soft filter-panel` + `filter-form` |
-| **MSK** | Máscaras (`data-mask-phone`, `data-mask-document`, etc.) |
+| **MSK** | Máscaras (`data-mask-phone`, `data-mask-document`, `data-mask-cep`, `data-mask-money`) |
 | **LD** | `data-loading-text` em submit |
 | **KPI** | Usar `kpi-card.php` em resumos (relatórios/dashboard) |
 
@@ -49,7 +49,7 @@ Fazer **antes** ou **em paralelo** às ondas 1–3 para evitar copiar HTML em de
 | Arquivo | Status | PH | AB-R | AB-F | AB-Flt | FP | MSK | LD | Notas |
 |---------|--------|----|------|------|--------|----|-----|----|-------|
 | `orders/index.php` | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | — | Referência comercial (filter-panel + PH) |
-| `orders/create.php` | ✅ | — | — | ✅ | — | — | — | — | PH + breadcrumbs; `form-footer` + spinner AJAX |
+| `orders/create.php` | ✅ | — | — | ✅ | — | — | — | — | PH + breadcrumbs; AJAX + autosave local |
 | `orders/show.php` | ✅ | — | — | — | — | — | — | — | PH + breadcrumbs; ações no header |
 
 ### Cadastros — já referência
@@ -59,9 +59,9 @@ Fazer **antes** ou **em paralelo** às ondas 1–3 para evitar copiar HTML em de
 | `customers/index.php` | ✅ | ✅ | ✅ | — | — | — | — | — | **Modelo de listagem** |
 | `customers/form.php` | ✅ | ✅ | — | ✅ | — | — | ✅ phone | ✅ | Breadcrumbs + `page-header` |
 | `products/index.php` | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | — | |
-| `products/form.php` | ✅ | ✅ | — | ✅ | — | — | ⬜ | ✅ | Preços via `product_form.js` (máscara moeda em backlog) |
+| `products/form.php` | ✅ | ✅ | — | ✅ | — | — | ✅ moeda | ✅ | `data-mask-money` + autosave local |
 | `services/index.php` | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | — | |
-| `services/form.php` | ✅ | ✅ | — | ✅ | — | — | ⬜ | ✅ | Preços via `service_form.js` (máscara moeda em backlog) |
+| `services/form.php` | ✅ | ✅ | — | ✅ | — | — | ✅ moeda | ✅ | `data-mask-money` + `service_form.js` |
 | `categories/index.php` | ✅ | ✅ | ✅ | — | — | — | — | — | |
 | `categories/form.php` | ✅ | ✅ | — | ✅ | — | — | — | ✅ | |
 
@@ -118,8 +118,8 @@ Os 7 formulários abaixo foram migrados para `page-header` (com breadcrumbs) + `
 | Arquivo | Status | PH | AB-F | LD | MSK |
 |---------|--------|----|------|----|-----|
 | `customers/form.php` | ✅ | ✅ | ✅ | ✅ | ✅ phone |
-| `products/form.php` | ✅ | ✅ | ✅ | ✅ | ⬜ moeda |
-| `services/form.php` | ✅ | ✅ | ✅ | ✅ | ⬜ moeda |
+| `products/form.php` | ✅ | ✅ | ✅ | ✅ | ✅ moeda |
+| `services/form.php` | ✅ | ✅ | ✅ | ✅ | ✅ moeda |
 | `categories/form.php` | ✅ | ✅ | ✅ | ✅ | — |
 | `users/form.php` | ✅ | ✅ | ✅ | ✅ | — |
 | `users/reset-password.php` | ✅ | ✅ | ✅ | ✅ | — |
@@ -236,9 +236,9 @@ Itens do documento ainda **não refletidos** em `NavigationMenu.php`:
 
 1. ~~**Formulários:** migrar os 7 arquivos para `page-header` + `saveLoadingText`~~ ✅
 2. ~~Avatar, prefs servidor, skeleton, pin sidebar, PDF com gráficos (Fase 0.3–0.8)~~ ✅
-3. Autosave em `orders/create`, `products/form`
-4. Máscaras globais (documento, CEP, moeda) — começar por `companies/form` (`tax_id`)
-5. Revisão acessibilidade (audit com axe ou checklist WCAG)
+3. ~~Autosave em `orders/create`, `products/form`~~ ✅
+4. ~~Máscaras globais (documento, CEP, moeda) — `input-masks.js`~~ ✅
+5. ~~Revisão acessibilidade (audit com axe ou checklist WCAG) — `a11y.js`, skip link, ARIA tabs/dashboard, doc `acessibilidade.md`~~ ✅
 6. `layouts/auth.php` — contraste tema claro/escuro
 
 ---
@@ -305,10 +305,10 @@ require dirname(__DIR__) . '/components/action-buttons.php';
 | Perfil | ~95% | Avatar, prefs servidor, força de senha |
 | Export relatórios | ~95% | PDF com KPIs + gráfico (GD) |
 | **Listagens (index)** | **~98%** | PH + AB-R + filter-panel onde há filtros |
-| **Formulários CRUD** | **~95%** | PH + AB-F + LD em todos; máscara moeda em produto/serviço em backlog |
+| **Formulários CRUD** | **~98%** | PH + AB-F + LD; máscaras phone/document/money |
 | Componentização (partials) | ~90% | `filter-panel`, `action-buttons`, `page-header` maduros |
 | Telas secundárias (auth/onboarding/LGPD) | ~95% | `auth-form-header` + loading nos submits |
 | Relatórios na tela (BI) | ~95% | KPIs + Chart.js nos 5 relatórios principais |
 | Acessibilidade / performance visual | ~30% | Sem auditoria automatizada ainda |
 
-**Última atualização:** 26/05/2026 — Sprint 6 item 2: avatar, `user_preferences`, skeleton AJAX, pin sidebar, força de senha, gráficos no PDF.
+**Última atualização:** 26/05/2026 — Sprint 6 item 4: máscaras globais (`input-masks.js`).

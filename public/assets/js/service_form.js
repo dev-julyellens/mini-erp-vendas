@@ -2,6 +2,9 @@
     "use strict";
 
     function parseMoney(value) {
+        if (window.MiniErp && window.MiniErp.masks && typeof window.MiniErp.masks.parseMoney === "function") {
+            return window.MiniErp.masks.parseMoney(value);
+        }
         if (!value) {
             return 0;
         }
@@ -13,6 +16,17 @@
         }
         var n = parseFloat(v);
         return isFinite(n) ? n : 0;
+    }
+
+    function refreshMoneyFields() {
+        if (!window.MiniErp || !window.MiniErp.masks) {
+            return;
+        }
+        document.querySelectorAll("#productForm [data-mask-money], #serviceForm [data-mask-money]").forEach(
+            function (el) {
+                window.MiniErp.masks.maskMoney(el);
+            }
+        );
     }
 
     function formatPercent(n) {
@@ -65,5 +79,6 @@
         }
 
         recalcMargins();
+        refreshMoneyFields();
     });
 })();

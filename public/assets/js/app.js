@@ -508,16 +508,41 @@
             return;
         }
 
+        tabs.forEach(function (tab) {
+            var tabId = tab.getAttribute("data-dash-tab");
+            if (!tabId) {
+                return;
+            }
+            if (!tab.id) {
+                tab.id = "dash-tab-" + tabId;
+            }
+            var panel = root.querySelector('[data-dash-panel="' + tabId + '"]');
+            if (!panel) {
+                return;
+            }
+            if (!panel.id) {
+                panel.id = "dash-panel-" + tabId;
+            }
+            tab.setAttribute("aria-controls", panel.id);
+            panel.setAttribute("aria-labelledby", tab.id);
+        });
+
         function activate(tabId) {
             tabs.forEach(function (tab) {
                 var active = tab.getAttribute("data-dash-tab") === tabId;
                 tab.classList.toggle("active", active);
                 tab.setAttribute("aria-selected", active ? "true" : "false");
+                tab.setAttribute("tabindex", active ? "0" : "-1");
             });
             panels.forEach(function (panel) {
                 var active = panel.getAttribute("data-dash-panel") === tabId;
                 panel.classList.toggle("is-active", active);
                 panel.hidden = !active;
+                if (active) {
+                    panel.setAttribute("tabindex", "0");
+                } else {
+                    panel.removeAttribute("tabindex");
+                }
             });
             try {
                 localStorage.setItem(DASHBOARD_TAB_KEY, tabId);
@@ -559,33 +584,9 @@
     }
 
     function initInputMasks() {
-        document.querySelectorAll("[data-mask-phone]").forEach(function (el) {
-            el.addEventListener("input", function () {
-                var digits = el.value.replace(/\D/g, "").slice(0, 11);
-                if (digits.length <= 10) {
-                    el.value = digits.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3").replace(/-$/, "");
-                } else {
-                    el.value = digits.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3").replace(/-$/, "");
-                }
-            });
-        });
-        document.querySelectorAll("[data-mask-document]").forEach(function (el) {
-            el.addEventListener("input", function () {
-                var digits = el.value.replace(/\D/g, "").slice(0, 14);
-                if (digits.length <= 11) {
-                    el.value = digits
-                        .replace(/(\d{3})(\d)/, "$1.$2")
-                        .replace(/(\d{3})(\d)/, "$1.$2")
-                        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-                } else {
-                    el.value = digits
-                        .replace(/^(\d{2})(\d)/, "$1.$2")
-                        .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
-                        .replace(/\.(\d{3})(\d)/, ".$1/$2")
-                        .replace(/(\d{4})(\d)/, "$1-$2");
-                }
-            });
-        });
+        if (window.MiniErp && window.MiniErp.masks && typeof window.MiniErp.masks.init === "function") {
+            window.MiniErp.masks.init();
+        }
     }
 
     function initFilterPanels() {

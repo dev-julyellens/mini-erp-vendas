@@ -2,6 +2,9 @@
     "use strict";
 
     function parseMoney(value) {
+        if (window.MiniErp && window.MiniErp.masks && typeof window.MiniErp.masks.parseMoney === "function") {
+            return window.MiniErp.masks.parseMoney(value);
+        }
         if (!value) {
             return 0;
         }
@@ -13,6 +16,15 @@
         }
         var n = parseFloat(v);
         return isFinite(n) ? n : 0;
+    }
+
+    function refreshMoneyFields() {
+        if (!window.MiniErp || !window.MiniErp.masks) {
+            return;
+        }
+        document.querySelectorAll("#productForm [data-mask-money]").forEach(function (el) {
+            window.MiniErp.masks.maskMoney(el);
+        });
     }
 
     function formatPercent(n) {
@@ -95,7 +107,56 @@
         }
     }
 
+    function collectProductState(form) {
+        var data = {};
+        form.querySelectorAll("input, select, textarea").forEach(function (el) {
+            if (!el.name || el.name === "_csrf") {
+                return;
+            }
+            if (el.type === "checkbox" || el.type === "radio") {
+                if (el.checked) {
+                    data[el.name] = el.value;
+                }
+                return;
+            }
+            data[el.name] = el.value;
+        });
+        return data;
+    }
+
+    function isProductStateEmpty(state) {
+        if (!state) {
+            return true;
+        }
+        return (
+            String(state.name || "").trim() === "" &&
+            String(state.sku || "").trim() === "" &&
+            String(state.price || "").trim() === "" &&
+            String(state.description || "").trim() === ""
+        );
+    }
+
+    function applyProductState(form, state) {
+        if (!state) {
+            return;
+        }
+        form.querySelectorAll("input, select, textarea").forEach(function (el) {
+            if (!el.name || el.name === "_csrf" || state[el.name] === undefined) {
+                return;
+            }
+            if (el.type === "checkbox" || el.type === "radio") {
+                el.checked = el.value === state[el.name];
+                return;
+            }
+            el.value = state[el.name];
+        });
+        recalcMargins();
+        toggleServiceMode();
+        refreshMoneyFields();
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
+        var form = document.getElementById("productForm");
         var costEl = document.getElementById("costPrice");
         var priceEl = document.getElementById("salePrice");
         var typeEl = document.getElementById("productType");
@@ -118,5 +179,25 @@
 
         recalcMargins();
         toggleServiceMode();
+
+        if (form && window.MiniErp && window.MiniErp.autosave) {
+            var autosaveKey =
+                typeof window.__PRODUCT_AUTOSAVE_KEY__ === "string"
+                    ? window.__PRODUCT_AUTOSAVE_KEY__
+                    : "product-create";
+            window.MiniErp.autosave.init({
+                key: autosaveKey,
+                form: form,
+                getState: function () {
+                    return collectProductState(form);
+                },
+                applyState: function (state) {
+                    applyProductState(form, state);
+                },
+                isEmpty: isProductStateEmpty,
+                skipRestore: window.__SKIP_AUTOSAVE_RESTORE__ === true,
+                statusEl: document.getElementById("productAutosaveStatus"),
+            });
+        }
     });
 })();

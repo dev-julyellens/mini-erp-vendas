@@ -59,6 +59,91 @@
         }
     }
 
+    var orderAutosave = null;
+
+    function collectOrderState() {
+        var items = [];
+        document.querySelectorAll("[data-line]").forEach(function (line) {
+            var select = line.querySelector(".product-select");
+            var qtyInput = line.querySelector(".qty-input");
+            if (!select || !qtyInput) {
+                return;
+            }
+            var pid = parseInt(select.value || "0", 10);
+            var qty = parseInt(qtyInput.value || "0", 10);
+            if (pid > 0 && qty > 0) {
+                items.push({ product_id: pid, quantity: qty });
+            }
+        });
+
+        return {
+            customer_id: document.getElementById("customerId")
+                ? document.getElementById("customerId").value
+                : "",
+            installment_count: document.getElementById("installmentCount")
+                ? document.getElementById("installmentCount").value
+                : "1",
+            items: items,
+        };
+    }
+
+    function isOrderStateEmpty(state) {
+        if (!state) {
+            return true;
+        }
+        if (state.customer_id) {
+            return false;
+        }
+        return !state.items || state.items.length === 0;
+    }
+
+    function applyOrderState(state) {
+        if (!state) {
+            return;
+        }
+
+        var customerEl = document.getElementById("customerId");
+        var installmentEl = document.getElementById("installmentCount");
+        var host = document.getElementById("lines");
+
+        if (customerEl && state.customer_id) {
+            customerEl.value = String(state.customer_id);
+        }
+        if (installmentEl && state.installment_count) {
+            installmentEl.value = String(state.installment_count);
+        }
+        if (!host) {
+            return;
+        }
+
+        host.innerHTML = "";
+        var items = state.items || [];
+        if (items.length === 0) {
+            addLine();
+        } else {
+            items.forEach(function (item) {
+                addLine();
+                var lines = document.querySelectorAll("[data-line]");
+                var line = lines[lines.length - 1];
+                var select = line.querySelector(".product-select");
+                var qtyInput = line.querySelector(".qty-input");
+                if (select) {
+                    select.value = String(item.product_id);
+                }
+                if (qtyInput) {
+                    qtyInput.value = String(item.quantity);
+                }
+            });
+        }
+        recalc();
+    }
+
+    function touchAutosave() {
+        if (orderAutosave && typeof orderAutosave.save === "function") {
+            orderAutosave.save();
+        }
+    }
+
     function addLine() {
         var tpl = document.getElementById("lineTemplate");
         var host = document.getElementById("lines");
@@ -68,14 +153,22 @@
         var node = tpl.content.firstElementChild.cloneNode(true);
         host.appendChild(node);
 
-        node.querySelector(".product-select").addEventListener("change", recalc);
-        node.querySelector(".qty-input").addEventListener("input", recalc);
+        node.querySelector(".product-select").addEventListener("change", function () {
+            recalc();
+            touchAutosave();
+        });
+        node.querySelector(".qty-input").addEventListener("input", function () {
+            recalc();
+            touchAutosave();
+        });
         node.querySelector("[data-remove-line]").addEventListener("click", function () {
             node.remove();
             recalc();
+            touchAutosave();
         });
 
         recalc();
+        touchAutosave();
     }
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -87,6 +180,17 @@
         addLine();
 
         var form = document.getElementById("orderForm");
+        if (form && window.MiniErp && window.MiniErp.autosave) {
+            orderAutosave = window.MiniErp.autosave.init({
+                key: "order-create",
+                form: form,
+                getState: collectOrderState,
+                applyState: applyOrderState,
+                isEmpty: isOrderStateEmpty,
+                statusEl: document.getElementById("orderAutosaveStatus"),
+                clearOnSubmit: false,
+            });
+        }
         if (!form) {
             return;
         }
@@ -173,6 +277,9 @@
                 })
                 .then(function (result) {
                     if (result.ok && result.body && result.body.success) {
+                        if (orderAutosave && typeof orderAutosave.clear === "function") {
+                            orderAutosave.clear();
+                        }
                         if (window.MiniErp && window.MiniErp.toast) {
                             window.MiniErp.toast("Sucesso", "Venda #" + result.body.order_id + " registrada.", "success");
                         }

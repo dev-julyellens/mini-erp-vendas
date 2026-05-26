@@ -55,7 +55,7 @@ Documentação da refatoração visual e de experiência do Mini ERP de Vendas.
 - Barra de exportação estilizada
 
 ### Formulários e listagens
-- Máscara de telefone (`data-mask-phone`) em clientes
+- Máscaras em `public/assets/js/input-masks.js`: telefone, documento (CPF/CNPJ), CEP, moeda — ver `docs/implementacoes/mascaras-formulario.md`
 - Cabeçalho padronizado em clientes (modelo para demais telas)
 - Loading em botões de submit
 
