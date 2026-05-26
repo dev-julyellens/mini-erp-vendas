@@ -11,6 +11,7 @@ use App\Helpers\CompanyContext;
 use App\Helpers\Csrf;
 use App\Helpers\PathHelper;
 use App\Helpers\Redirect;
+use App\Services\SessionService;
 
 final class AuthMiddleware
 {
@@ -31,6 +32,8 @@ final class AuthMiddleware
     private const COMPANY_OPTIONAL_ROUTES = [
         'GET /select-company',
         'POST /select-company',
+        'GET /lgpd/consent',
+        'POST /lgpd/consent',
         'POST /logout',
     ];
 
@@ -62,6 +65,15 @@ final class AuthMiddleware
         {
             self::denyUnauthenticated($path);
         }
+
+        $session = new SessionService();
+        $sessionCheck = $session->validate();
+        if ($sessionCheck['expired'])
+        {
+            $session->expireSession((string) ($sessionCheck['reason'] ?? 'inatividade'));
+        }
+
+        $session->touch();
 
         if (
             !in_array($routeKey, self::COMPANY_OPTIONAL_ROUTES, true)
