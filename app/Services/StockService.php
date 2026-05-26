@@ -116,9 +116,15 @@ final class StockService
 
             $this->products->adjustStock($productId, $delta);
 
+            $updatedProduct = $this->products->findById($productId, false);
+
             if ($startedHere)
             {
                 $pdo->commit();
+                if ($updatedProduct !== null && !$updatedProduct->isService())
+                {
+                    (new \App\Services\NotificationService(null, $pdo))->notifyLowStock($updatedProduct);
+                }
             }
 
             return $movementId;

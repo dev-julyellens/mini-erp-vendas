@@ -96,6 +96,14 @@ final class OrderCancelService
 
             $this->recordAudit($order, $orderId, $userId, $items, $stockAudit);
 
+            try
+            {
+                (new \App\Services\NotificationService(null, $pdo))->notifyOrderCanceled($order);
+            }
+            catch (\Throwable $ignored)
+            {
+            }
+
             if ($installmentsCanceled !== null)
             {
                 Audit::record(
