@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Helpers\DateHelper;
 use App\Helpers\Permission;
 use App\Models\AccountsReceivable;
 
@@ -356,7 +357,7 @@ if ($hasCharts)
                                 ?>
                                 <tr>
                                     <td><?= htmlspecialchars((string) $ar->customer_name, ENT_QUOTES, 'UTF-8') ?></td>
-                                    <td><?= htmlspecialchars(date('d/m/Y', strtotime($ar->due_date)), ENT_QUOTES, 'UTF-8') ?></td>
+                                    <td><?= htmlspecialchars(DateHelper::toBrDate($ar->due_date), ENT_QUOTES, 'UTF-8') ?></td>
                                     <td class="text-end">R$ <?= htmlspecialchars($fmt((string) $remaining), ENT_QUOTES, 'UTF-8') ?></td>
                                     <td>
                                         <span class="badge text-bg-<?= AccountsReceivable::STATUS_BADGE[$ar->status] ?? 'secondary' ?>">
