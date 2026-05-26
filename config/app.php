@@ -28,6 +28,12 @@ $passwordMinLength = getenv('PASSWORD_MIN_LENGTH');
 $passwordRequireComplexity = getenv('PASSWORD_REQUIRE_COMPLEXITY');
 $lgpdPolicyVersion = getenv('LGPD_POLICY_VERSION');
 $maskSensitiveData = getenv('MASK_SENSITIVE_DATA');
+$pixEnabled = getenv('PIX_ENABLED');
+$pixGateway = getenv('PIX_DEFAULT_GATEWAY');
+$pixTtl = getenv('PIX_CHARGE_TTL_SECONDS');
+$pixWebhookSecret = getenv('PIX_WEBHOOK_SECRET');
+$pixMerchantName = getenv('PIX_MERCHANT_NAME');
+$pixMerchantCity = getenv('PIX_MERCHANT_CITY');
 
 return [
     'app_name' => 'Mini ERP de Vendas',
@@ -67,5 +73,15 @@ return [
         'mask_sensitive_data' => ($maskSensitiveData !== false && $maskSensitiveData !== '')
             ? filter_var($maskSensitiveData, FILTER_VALIDATE_BOOLEAN)
             : true,
+    ],
+    'pix' => [
+        'enabled' => ($pixEnabled !== false && $pixEnabled !== '')
+            ? filter_var($pixEnabled, FILTER_VALIDATE_BOOLEAN)
+            : true,
+        'default_gateway' => ($pixGateway !== false && $pixGateway !== '') ? $pixGateway : 'mock',
+        'charge_ttl_seconds' => ($pixTtl !== false && $pixTtl !== '') ? max(300, (int) $pixTtl) : 3600,
+        'webhook_secret' => ($pixWebhookSecret !== false && $pixWebhookSecret !== '') ? $pixWebhookSecret : '',
+        'merchant_name' => ($pixMerchantName !== false && $pixMerchantName !== '') ? $pixMerchantName : 'Mini ERP',
+        'merchant_city' => ($pixMerchantCity !== false && $pixMerchantCity !== '') ? $pixMerchantCity : 'Sao Paulo',
     ],
 ];
