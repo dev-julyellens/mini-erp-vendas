@@ -22,3 +22,6 @@ composer.lock
 
 # Backups
 /storage/backups/*.sql
+
+# Scripts
+scripts/
