@@ -30,7 +30,11 @@ $hint = (new PasswordPolicyService())->requirementsHint();
             <label class="form-label" for="password_confirm">Confirmar</label>
             <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
         </div>
-        <button type="submit" class="btn btn-primary">Redefinir</button>
-        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('admin/users'), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
+        <?php
+        $mode = 'form-footer';
+        $cancelHref = $url('admin/users');
+        $saveLabel = 'Redefinir';
+        require dirname(__DIR__) . '/components/action-buttons.php';
+        ?>
     </form>
 </div>

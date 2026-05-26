@@ -12,7 +12,7 @@ use App\Services\NotificationService;
 ?>
 <div class="dropdown notification-dropdown">
     <button type="button"
-        class="btn btn-sm btn-outline-secondary position-relative notification-bell-btn"
+        class="btn btn-sm btn-secondary position-relative notification-bell-btn"
         data-bs-toggle="dropdown"
         aria-expanded="false"
         aria-label="Notificações">

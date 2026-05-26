@@ -22,7 +22,7 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
             Venda #<?= (int) $installment->order_id ?> — parcela <?= (int) $installment->installment_number ?>
         </div>
     </div>
-    <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
+    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
 </div>
 
 <div class="row g-3">
@@ -107,7 +107,7 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
 
                 <div class="d-flex gap-2">
                     <button class="btn btn-primary" type="submit">Confirmar baixa</button>
-                    <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
+                    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
                 </div>
             </form>
         </div>

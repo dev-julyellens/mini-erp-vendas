@@ -48,7 +48,7 @@ $title = $canSwitch ? 'Trocar empresa' : 'Selecionar empresa';
     </button>
 
     <?php if ($canSwitch): ?>
-        <a class="btn btn-outline-secondary w-100" href="<?= htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="btn btn-secondary w-100" href="<?= htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') ?>">
             Cancelar
         </a>
     <?php endif; ?>

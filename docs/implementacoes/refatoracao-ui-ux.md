@@ -18,7 +18,8 @@ Documentação da refatoração visual e de experiência do Mini ERP de Vendas.
 ### Padronização visual
 - Design system em `public/assets/css/design-system.css` (tokens, botões, badges, KPIs, formulários, dashboard tabs, skeleton, acessibilidade)
 - Componentes PHP reutilizáveis em `app/Views/components/`
-- Botão destrutivo suave (`btn-danger-soft`)
+- **Botões de ação:** variantes `primary`, `secondary`, `outline`, `destructive`, `warning`, `ghost` + tamanhos `sm`/`md`/`lg` — ver [botoes-padrao.md](./botoes-padrao.md)
+- Partial `action-buttons.php` e helper `ActionButton.php`
 - Dark/light: ajustes de contraste no topbar e componentes
 
 ### Menu e sidebar
@@ -58,14 +59,19 @@ Documentação da refatoração visual e de experiência do Mini ERP de Vendas.
 | Sidebar | `app/Views/components/sidebar.php` |
 | Cabeçalho de página | `app/Views/components/page-header.php` |
 | Card KPI | `app/Views/components/kpi-card.php` |
+| Botões de ação | `app/Views/components/action-buttons.php` |
 | Menu (helper) | `app/Helpers/NavigationMenu.php` |
+| Classes de botão | `app/Helpers/ActionButton.php` |
 
 ## Telas refatoradas
 
 - Layout global (`layouts/main.php`)
 - Dashboard (`dashboard/index.php`)
 - Perfil (`profile/show.php`)
-- Clientes — lista e formulário (`customers/index.php`, `customers/form.php`)
+- Clientes, produtos, serviços, categorias — listas e formulários
+- Usuários, empresas, vínculos — listagens administrativas
+- Vendas, estoque, notificações, financeiro (principais)
+- Dashboard (atalhos), relatórios (filtros + export)
 - Exportação de relatórios (serviço PDF/Excel)
 
 ## Menus reorganizados
@@ -99,7 +105,8 @@ Documentação da refatoração visual e de experiência do Mini ERP de Vendas.
 
 ## Pendências sugeridas (próximas iterações)
 
-- Aplicar `page-header` e `btn-danger-soft` em todas as listagens/CRUDs restantes
+- Aplicar `page-header` nas listagens que ainda usam `<h1>` manual
+- Adotar partial `filter` em todos os painéis de filtro
 - Upload de avatar (requer coluna/migration em `users`)
 - Skeleton loading em carregamentos AJAX
 - Autosave em formulários longos

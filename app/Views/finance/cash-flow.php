@@ -25,7 +25,7 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
         <h1 class="h3 mb-1">Fluxo de caixa</h1>
         <div class="text-muted">Entradas geradas por recebimentos e demais movimentações</div>
     </div>
-    <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">
+    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">
         <i class="bi bi-speedometer2"></i> Dashboard financeiro
     </a>
 </div>
@@ -55,7 +55,7 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
         </div>
         <div class="col-12 col-md-3 d-flex flex-wrap gap-2">
             <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
+            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
         </div>
     </form>
 </div>

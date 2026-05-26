@@ -30,19 +30,19 @@ $canReceive = Permission::can('financeiro', 'criar');
         <div class="text-muted">Contas a receber, recebimentos e fluxo de caixa</div>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') ?>">
             <i class="bi bi-wallet2"></i> Contas a receber
         </a>
-        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/cash-flow'), ENT_QUOTES, 'UTF-8') ?>">
             <i class="bi bi-arrow-left-right"></i> Fluxo de caixa
         </a>
-        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/installments/overdue'), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/installments/overdue'), ENT_QUOTES, 'UTF-8') ?>">
             <i class="bi bi-exclamation-triangle"></i> Vencidas
         </a>
-        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">
             <i class="bi bi-calendar2-check"></i> Parcelas abertas
         </a>
-        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/installments/history'), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/installments/history'), ENT_QUOTES, 'UTF-8') ?>">
             <i class="bi bi-clock-history"></i> Histórico
         </a>
     </div>

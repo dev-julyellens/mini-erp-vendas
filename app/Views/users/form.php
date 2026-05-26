@@ -53,6 +53,10 @@ $old = $old ?? [];
                 <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
             </div>
         <?php endif; ?>
-        <button type="submit" class="btn btn-primary">Salvar</button>
+        <?php
+        $mode = 'form-footer';
+        $cancelHref = $url('admin/users');
+        require dirname(__DIR__) . '/components/action-buttons.php';
+        ?>
     </form>
 </div>

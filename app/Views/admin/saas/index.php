@@ -12,7 +12,7 @@ declare(strict_types=1);
         <h1 class="h3 mb-1">Administração SaaS</h1>
         <div class="text-muted">Planos, assinaturas e indicadores da plataforma</div>
     </div>
-    <a class="btn btn-outline-primary" href="<?= htmlspecialchars($url('admin/saas/subscriptions'), ENT_QUOTES, 'UTF-8') ?>">
+    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('admin/saas/subscriptions'), ENT_QUOTES, 'UTF-8') ?>">
         Assinaturas por empresa
     </a>
 </div>

@@ -26,7 +26,7 @@ $receiptUrl = $url('finance/pix/receipt?id=' . $charge->id);
             <?php endif; ?>
         </div>
     </div>
-    <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
+    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
 </div>
 
 <div class="row g-3 justify-content-center">
@@ -56,7 +56,7 @@ $receiptUrl = $url('finance/pix/receipt?id=' . $charge->id);
                         <div class="input-group">
                             <input type="text" class="form-control font-monospace" id="pix-copy"
                                 value="<?= htmlspecialchars($charge->qr_payload, ENT_QUOTES, 'UTF-8') ?>" readonly>
-                            <button type="button" class="btn btn-outline-primary" id="pix-copy-btn">Copiar</button>
+                            <button type="button" class="btn btn-outline" id="pix-copy-btn">Copiar</button>
                         </div>
                         <div class="form-text">
                             Cole este código no app do seu banco, ou escaneie o QR Code.
@@ -75,7 +75,7 @@ $receiptUrl = $url('finance/pix/receipt?id=' . $charge->id);
                     <form method="post" action="<?= htmlspecialchars($url('finance/pix/simulate-pay'), ENT_QUOTES, 'UTF-8') ?>" class="mt-3 mx-auto" style="max-width: 860px;">
                         <?php require dirname(__DIR__, 2) . '/partials/csrf.php'; ?>
                         <input type="hidden" name="charge_id" value="<?= (int) $charge->id ?>">
-                        <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
+                        <button type="submit" class="btn btn-secondary btn-sm w-100">
                             Simular pagamento (testes)
                         </button>
                     </form>

@@ -62,7 +62,7 @@ if ($filters['date_to'] !== '')
             <input class="form-control" type="date" name="date_to" value="<?= htmlspecialchars($filters['date_to'], ENT_QUOTES, 'UTF-8') ?>">
         </div>
         <div class="col-md-2 d-grid">
-            <button class="btn btn-outline-primary" type="submit">Filtrar</button>
+            <button class="btn btn-primary btn-md" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
         </div>
     </form>
 </div>
@@ -93,7 +93,7 @@ if ($filters['date_to'] !== '')
                         </td>
                         <td class="text-muted small"><?= htmlspecialchars(DateHelper::toBrDateTime($o->created_at), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-primary" href="<?= htmlspecialchars($url('orders/show?id=' . $o->id), ENT_QUOTES, 'UTF-8') ?>">Detalhes</a>
+                            <a class="btn btn-sm btn-ghost" href="<?= htmlspecialchars($url('orders/show?id=' . $o->id), ENT_QUOTES, 'UTF-8') ?>">Detalhes</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>

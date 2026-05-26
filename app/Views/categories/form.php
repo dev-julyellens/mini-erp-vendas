@@ -51,9 +51,10 @@ $description = $old['description'] ?? ($category ? (string) ($category->descript
             <textarea class="form-control" name="description" rows="3"><?= htmlspecialchars((string) $description, ENT_QUOTES, 'UTF-8') ?></textarea>
         </div>
 
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary" type="submit">Salvar</button>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('categories'), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
-        </div>
+        <?php
+        $mode = 'form-footer';
+        $cancelHref = $url('categories');
+        require dirname(__DIR__) . '/components/action-buttons.php';
+        ?>
     </form>
 </div>

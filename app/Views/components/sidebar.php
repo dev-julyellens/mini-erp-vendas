@@ -23,7 +23,8 @@ $menuGroups = NavigationMenu::groups($currentPath, $url, $notificationUnreadCoun
         </div>
         <button type="button" class="btn btn-sm btn-sidebar-collapse d-none d-lg-inline-flex"
             data-sidebar-collapse aria-label="Recolher menu" title="Recolher menu">
-            <i class="bi bi-layout-sidebar-inset"></i>
+            <i class="bi bi-layout-sidebar-inset sidebar-collapse-icon" aria-hidden="true"></i>
+            <i class="bi bi-layout-sidebar-inset-reverse sidebar-expand-icon" aria-hidden="true"></i>
         </button>
     </div>
     <nav class="sidebar-nav" aria-label="Navegação">

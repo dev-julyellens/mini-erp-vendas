@@ -65,7 +65,7 @@ $displayEntity = in_array($filters['entity'], $entities, true) ? $filters['entit
             <button type="submit" class="btn btn-primary">
                 <i class="bi bi-funnel"></i> Filtrar
             </button>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('audit-logs'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
+            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('audit-logs'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
         </div>
     </form>
 </div>
@@ -108,7 +108,7 @@ $displayEntity = in_array($filters['entity'], $entities, true) ? $filters['entit
                         <td><?= $log->entity_id !== null ? (int) $log->entity_id : '—' ?></td>
                         <td class="d-none d-lg-table-cell small text-muted"><?= htmlspecialchars((string) ($log->ip_address ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-end">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                            <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal"
                                 data-bs-target="#<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>">
                                 Ver
                             </button>

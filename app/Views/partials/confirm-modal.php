@@ -19,7 +19,7 @@ declare(strict_types=1);
                 </div>
             </div>
             <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-danger" id="confirmModalSubmit">
                     <i class="bi bi-check-lg"></i> Confirmar
                 </button>

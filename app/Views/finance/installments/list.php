@@ -35,7 +35,7 @@ $currentPath = $routes[$listType] ?? 'finance/installments/open';
         <h1 class="h3 mb-1"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></h1>
         <div class="text-muted"><?= htmlspecialchars($subtitle, ENT_QUOTES, 'UTF-8') ?></div>
     </div>
-    <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">
+    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">
         <i class="bi bi-speedometer2"></i> Dashboard
     </a>
 </div>
@@ -81,7 +81,7 @@ $currentPath = $routes[$listType] ?? 'finance/installments/open';
         </div>
         <div class="col-12 col-md-2 d-grid d-md-flex gap-2">
             <button class="btn btn-primary" type="submit">Filtrar</button>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url($currentPath), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
+            <a class="btn btn-secondary" href="<?= htmlspecialchars($url($currentPath), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
         </div>
     </form>
 </div>
@@ -140,7 +140,7 @@ $currentPath = $routes[$listType] ?? 'finance/installments/open';
                                         Baixar
                                     </a>
                                 <?php else: ?>
-                                    <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('orders/show?id=' . $inst->order_id), ENT_QUOTES, 'UTF-8') ?>">
+                                    <a class="btn btn-sm btn-ghost" href="<?= htmlspecialchars($url('orders/show?id=' . $inst->order_id), ENT_QUOTES, 'UTF-8') ?>">
                                         Venda
                                     </a>
                                 <?php endif; ?>

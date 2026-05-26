@@ -150,19 +150,19 @@ require dirname(__DIR__) . '/components/page-header.php';
                     <div class="fw-semibold mb-2">Atalhos rápidos</div>
                     <div class="d-flex flex-wrap gap-2">
                         <?php if (Permission::can('clientes', 'criar')): ?>
-                            <a class="btn btn-outline-primary btn-sm" href="<?= htmlspecialchars($url('customers/create'), ENT_QUOTES, 'UTF-8') ?>">Novo cliente</a>
+                            <a class="btn btn-primary btn-sm" href="<?= htmlspecialchars($url('customers/create'), ENT_QUOTES, 'UTF-8') ?>">Novo cliente</a>
                         <?php endif; ?>
                         <?php if (Permission::can('produtos', 'criar')): ?>
-                            <a class="btn btn-outline-primary btn-sm" href="<?= htmlspecialchars($url('products/create'), ENT_QUOTES, 'UTF-8') ?>">Novo produto</a>
+                            <a class="btn btn-primary btn-sm" href="<?= htmlspecialchars($url('products/create'), ENT_QUOTES, 'UTF-8') ?>">Novo produto</a>
                         <?php endif; ?>
                         <?php if ($canVendas): ?>
-                            <a class="btn btn-outline-secondary btn-sm" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">Vendas</a>
+                            <a class="btn btn-secondary btn-sm" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">Vendas</a>
                         <?php endif; ?>
                         <?php if ($canFinanceiro): ?>
-                            <a class="btn btn-outline-secondary btn-sm" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">Financeiro</a>
+                            <a class="btn btn-secondary btn-sm" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">Financeiro</a>
                         <?php endif; ?>
                         <?php if ($canVendas || $canEstoque || $canFinanceiro): ?>
-                            <a class="btn btn-outline-secondary btn-sm" href="<?= htmlspecialchars($url('reports'), ENT_QUOTES, 'UTF-8') ?>">Relatórios</a>
+                            <a class="btn btn-secondary btn-sm" href="<?= htmlspecialchars($url('reports'), ENT_QUOTES, 'UTF-8') ?>">Relatórios</a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -222,7 +222,7 @@ require dirname(__DIR__) . '/components/page-header.php';
                                     <div class="fw-semibold">Faturamento diário</div>
                                     <div class="text-muted small">Últimos <?= count($dailySeries) ?> dias</div>
                                 </div>
-                                <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('reports/sales-period'), ENT_QUOTES, 'UTF-8') ?>">Relatório</a>
+                                <a class="btn btn-sm btn-ghost" href="<?= htmlspecialchars($url('reports/sales-period'), ENT_QUOTES, 'UTF-8') ?>">Relatório</a>
                             </div>
                             <div class="dashboard-chart-wrap">
                                 <canvas id="chartDailyRevenue" aria-label="Faturamento diário"></canvas>

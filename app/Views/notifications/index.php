@@ -25,7 +25,7 @@ $displayType = in_array($filters['type'], $types, true) ? $filters['type'] : '';
     </div>
     <form method="post" action="<?= htmlspecialchars($url('notifications/read-all'), ENT_QUOTES, 'UTF-8') ?>" class="m-0">
         <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-        <button type="submit" class="btn btn-outline-secondary btn-sm">
+        <button type="submit" class="btn btn-secondary btn-sm">
             <i class="bi bi-check2-all"></i> Marcar todas como lidas
         </button>
     </form>
@@ -53,7 +53,7 @@ $displayType = in_array($filters['type'], $types, true) ? $filters['type'] : '';
         </div>
         <div class="col-12 col-md-5 d-flex flex-wrap gap-2">
             <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('notifications'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
+            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('notifications'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
         </div>
     </form>
 </div>
@@ -99,7 +99,7 @@ $displayType = in_array($filters['type'], $types, true) ? $filters['type'] : '';
                         ?>
                         <div class="d-flex flex-wrap gap-2 flex-shrink-0">
                             <?php
-                            $buttonClass = 'btn btn-sm btn-outline-primary';
+                            $buttonClass = 'btn btn-sm btn-ghost';
                             ob_start();
                             ?>Ver detalhes<?php
                                             $buttonInnerHtml = ob_get_clean();
@@ -109,7 +109,7 @@ $displayType = in_array($filters['type'], $types, true) ? $filters['type'] : '';
                                 <form method="post" action="<?= htmlspecialchars($url('notifications/read'), ENT_QUOTES, 'UTF-8') ?>" class="m-0">
                                     <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                                     <input type="hidden" name="id" value="<?= (int) $n->id ?>">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Marcar como lida</button>
+                                    <button type="submit" class="btn btn-sm btn-outline">Marcar como lida</button>
                                 </form>
                             <?php endif; ?>
                         </div>

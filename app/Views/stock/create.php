@@ -20,7 +20,7 @@ $notes = $old['notes'] ?? '';
         <h1 class="h3 mb-1">Nova movimentação</h1>
         <div class="text-muted">Entrada, saída, ajuste, perda ou inventário</div>
     </div>
-    <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('stock-movements'), ENT_QUOTES, 'UTF-8') ?>">
+    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('stock-movements'), ENT_QUOTES, 'UTF-8') ?>">
         <i class="bi bi-arrow-left"></i> Voltar
     </a>
 </div>

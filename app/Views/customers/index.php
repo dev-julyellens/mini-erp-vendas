@@ -47,18 +47,17 @@ require dirname(__DIR__) . '/components/page-header.php';
                         <td><?= htmlspecialchars($maskSensitive ? DataMask::phone($c->phone) : (string) ($c->phone ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-muted small"><?= htmlspecialchars(DateHelper::toBrDateTime($c->created_at), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-end">
-                            <?php if (\App\Helpers\Permission::can('clientes', 'editar')): ?>
-                                <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('customers/edit?id=' . $c->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
-                            <?php endif; ?>
-                            <?php if (\App\Helpers\Permission::can('clientes', 'excluir')): ?>
-                                <form class="d-inline" method="post" action="<?= htmlspecialchars($url('customers/delete'), ENT_QUOTES, 'UTF-8') ?>"
-                                    data-confirm="Remover este cliente? Esta ação não pode ser desfeita."
-                                    data-confirm-title="Excluir cliente">
-                                    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                                    <input type="hidden" name="id" value="<?= (int) $c->id ?>">
-                                    <button class="btn btn-sm btn-danger-soft" type="submit">Excluir</button>
-                                </form>
-                            <?php endif; ?>
+                            <?php
+                            $mode = 'table-row';
+                            $editHref = $url('customers/edit?id=' . $c->id);
+                            $deleteAction = $url('customers/delete');
+                            $deleteId = (int) $c->id;
+                            $deleteConfirm = 'Remover este cliente? Esta ação não pode ser desfeita.';
+                            $deleteTitle = 'Excluir cliente';
+                            $canEdit = \App\Helpers\Permission::can('clientes', 'editar');
+                            $canDelete = \App\Helpers\Permission::can('clientes', 'excluir');
+                            require dirname(__DIR__) . '/components/action-buttons.php';
+                            ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>

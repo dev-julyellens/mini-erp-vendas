@@ -76,7 +76,7 @@ require dirname(__DIR__) . '/components/page-header.php';
                 </div>
                 <div class="d-flex flex-wrap gap-2">
                     <button type="submit" class="btn btn-primary" data-loading-text="Salvando...">Salvar perfil</button>
-                    <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('profile/password'), ENT_QUOTES, 'UTF-8') ?>">
+                    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('profile/password'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-shield-lock"></i> Alterar senha
                     </a>
                 </div>
@@ -125,7 +125,7 @@ require dirname(__DIR__) . '/components/page-header.php';
                     <dd><span class="badge text-bg-primary badge-status"><?= htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8') ?></span></dd>
                 <?php endif; ?>
             </dl>
-            <a class="btn btn-sm btn-outline-primary mt-3 w-100" href="<?= htmlspecialchars($url('select-company'), ENT_QUOTES, 'UTF-8') ?>">
+            <a class="btn btn-sm btn-secondary mt-3 w-100" href="<?= htmlspecialchars($url('select-company'), ENT_QUOTES, 'UTF-8') ?>">
                 <i class="bi bi-building"></i> Trocar empresa
             </a>
         </div>

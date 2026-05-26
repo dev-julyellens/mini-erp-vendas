@@ -27,7 +27,7 @@ $displayStatus = in_array($filters['status'], $statuses, true) ? $filters['statu
         <h1 class="h3 mb-1">Contas a receber</h1>
         <div class="text-muted">Geradas automaticamente a cada venda aprovada</div>
     </div>
-    <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">
+    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance'), ENT_QUOTES, 'UTF-8') ?>">
         <i class="bi bi-speedometer2"></i> Dashboard
     </a>
 </div>
@@ -75,7 +75,7 @@ $displayStatus = in_array($filters['status'], $statuses, true) ? $filters['statu
         </div>
         <div class="col-12 col-md-12 d-flex flex-wrap gap-2">
             <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
+            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
         </div>
     </form>
 </div>
@@ -127,7 +127,7 @@ $displayStatus = in_array($filters['status'], $statuses, true) ? $filters['statu
                             </td>
                             <td class="text-end">
                                 <div class="d-flex flex-wrap gap-1 justify-content-end">
-                                    <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $ar->id), ENT_QUOTES, 'UTF-8') ?>">
+                                    <a class="btn btn-sm btn-ghost" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $ar->id), ENT_QUOTES, 'UTF-8') ?>">
                                         Detalhes
                                     </a>
                                     <?php if ($canReceive && $ar->canReceive()): ?>

@@ -149,10 +149,11 @@ $markupDisplay = $margins['markup'] ?? '—';
             </div>
         </div>
 
-        <div class="d-flex gap-2 mt-4 pt-3 border-top">
-            <button class="btn btn-primary" type="submit">Salvar</button>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
-        </div>
+        <?php
+        $mode = 'form-footer';
+        $cancelHref = $url('services');
+        require dirname(__DIR__) . '/components/action-buttons.php';
+        ?>
     </form>
 </div>
 

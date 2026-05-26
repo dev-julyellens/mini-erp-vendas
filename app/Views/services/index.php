@@ -22,7 +22,7 @@ $filterQuery = array_filter([
         <div class="text-muted">Cadastro de serviços com valor padrão e tempo estimado — sem controle de estoque</div>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">
             <i class="bi bi-box-seam"></i> Produtos
         </a>
         <?php if (\App\Helpers\Permission::can('produtos', 'criar')): ?>
@@ -54,7 +54,7 @@ $filterQuery = array_filter([
         <div class="col-12 col-md-3 d-flex gap-2">
             <button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
             <?php if ($filterQuery !== []): ?>
-                <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
+                <a class="btn btn-secondary" href="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
             <?php endif; ?>
         </div>
     </form>
@@ -91,8 +91,9 @@ $filterQuery = array_filter([
                             <?= htmlspecialchars($s->estimatedTimeLabel(), ENT_QUOTES, 'UTF-8') ?>
                         </td>
                         <td class="text-end">
+                            <div class="table-actions">
                             <?php if (\App\Helpers\Permission::can('produtos', 'editar')): ?>
-                                <a class="btn btn-sm btn-outline-secondary"
+                                <a class="btn btn-sm btn-outline"
                                     href="<?= htmlspecialchars($url('services/edit?id=' . $s->id), ENT_QUOTES, 'UTF-8') ?>">
                                     Editar
                                 </a>
@@ -104,9 +105,10 @@ $filterQuery = array_filter([
                                     data-confirm-title="Excluir serviço">
                                     <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                                     <input type="hidden" name="id" value="<?= (int) $s->id ?>">
-                                    <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+                                    <button class="btn btn-sm btn-destructive" type="submit">Excluir</button>
                                 </form>
                             <?php endif; ?>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>

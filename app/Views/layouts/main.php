@@ -46,22 +46,19 @@ $url = static function (string $path = '') use ($baseUrl): string
         <div class="content">
             <header class="topbar">
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-secondary d-lg-none" data-sidebar-toggle aria-label="Abrir menu">
+                    <button type="button" class="btn btn-sm btn-secondary d-lg-none" data-sidebar-toggle aria-label="Abrir menu">
                         <i class="bi bi-list"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary d-none d-lg-inline-flex" data-sidebar-collapse aria-label="Recolher menu" title="Recolher menu">
-                        <i class="bi bi-layout-sidebar-inset"></i>
                     </button>
                 </div>
                 <div class="d-flex align-items-center gap-2 gap-md-3 flex-wrap justify-content-end">
-                    <button type="button" class="btn btn-sm btn-outline-secondary theme-toggle-btn" data-theme-toggle aria-label="Modo escuro" title="Modo escuro">
+                    <button type="button" class="btn btn-sm btn-secondary theme-toggle-btn" data-theme-toggle aria-label="Modo escuro" title="Modo escuro">
                         <i class="bi bi-moon-stars"></i>
                     </button>
                     <?php require dirname(__DIR__) . '/partials/notifications-bell.php'; ?>
                     <?php $authUser = \App\Helpers\Auth::sessionSnapshot(); ?>
                     <?php if ($authUser !== null): ?>
                         <?php if (!empty($authUser['company_name'])): ?>
-                            <a class="btn btn-sm btn-outline-primary text-nowrap d-inline-flex align-items-center"
+                            <a class="btn btn-sm btn-primary text-nowrap d-inline-flex align-items-center"
                                 href="<?= htmlspecialchars($url('select-company'), ENT_QUOTES, 'UTF-8') ?>"
                                 title="Trocar empresa: <?= htmlspecialchars((string) $authUser['company_name'], ENT_QUOTES, 'UTF-8') ?>">
                                 <i class="bi bi-building me-1"></i>
@@ -83,7 +80,7 @@ $url = static function (string $path = '') use ($baseUrl): string
                         </a>
                         <form method="post" action="<?= htmlspecialchars($url('logout'), ENT_QUOTES, 'UTF-8') ?>" class="m-0" data-global-loading="false">
                             <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                            <button type="submit" class="btn btn-sm btn-outline-secondary text-nowrap">
+                            <button type="submit" class="btn btn-sm btn-secondary text-nowrap">
                                 <i class="bi bi-box-arrow-right"></i><span class="d-none d-sm-inline"> Sair</span>
                             </button>
                         </form>

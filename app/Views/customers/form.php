@@ -54,8 +54,12 @@ $phone = $old['phone'] ?? ($customer ? (string) ($customer->phone ?? '') : '');
         </div>
 
         <div class="d-flex gap-2">
-            <button class="btn btn-primary" type="submit" data-loading-text="Salvando...">Salvar</button>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('customers'), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
+            <?php
+            $mode = 'form-footer';
+            $cancelHref = $url('customers');
+            $saveLoadingText = 'Salvando...';
+            require dirname(__DIR__) . '/components/action-buttons.php';
+            ?>
         </div>
     </form>
 </div>

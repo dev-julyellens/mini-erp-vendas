@@ -26,10 +26,10 @@ $filterQuery = array_filter([
     </div>
     <div class="d-flex flex-wrap gap-2">
         <?php if (\App\Helpers\Permission::can('produtos', 'visualizar')): ?>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>">
+            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('services'), ENT_QUOTES, 'UTF-8') ?>">
                 <i class="bi bi-tools"></i> Serviços
             </a>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('categories'), ENT_QUOTES, 'UTF-8') ?>">
+            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('categories'), ENT_QUOTES, 'UTF-8') ?>">
                 <i class="bi bi-tags"></i> Categorias
             </a>
         <?php endif; ?>
@@ -78,7 +78,7 @@ $filterQuery = array_filter([
             </div>
             <button class="btn btn-primary flex-grow-1 flex-sm-grow-0" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
             <?php if ($filterQuery !== []): ?>
-                <a class="btn btn-outline-secondary flex-grow-1 flex-sm-grow-0" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
+                <a class="btn btn-secondary flex-grow-1 flex-sm-grow-0" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
             <?php endif; ?>
         </div>
     </form>
@@ -133,22 +133,17 @@ $filterQuery = array_filter([
                             <?php endif; ?>
                         </td>
                         <td class="text-end">
-                            <?php if (\App\Helpers\Permission::can('produtos', 'editar')): ?>
-                                <a class="btn btn-sm btn-outline-secondary"
-                                    href="<?= htmlspecialchars($url('products/edit?id=' . $p->id), ENT_QUOTES, 'UTF-8') ?>">
-                                    Editar
-                                </a>
-                            <?php endif; ?>
-                            <?php if (\App\Helpers\Permission::can('produtos', 'excluir')): ?>
-                                <form class="d-inline" method="post"
-                                    action="<?= htmlspecialchars($url('products/delete'), ENT_QUOTES, 'UTF-8') ?>"
-                                    data-confirm="Remover este produto? Esta ação não pode ser desfeita."
-                                    data-confirm-title="Excluir produto">
-                                    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                                    <input type="hidden" name="id" value="<?= (int) $p->id ?>">
-                                    <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
-                                </form>
-                            <?php endif; ?>
+                            <?php
+                            $mode = 'table-row';
+                            $editHref = $url('products/edit?id=' . $p->id);
+                            $deleteAction = $url('products/delete');
+                            $deleteId = (int) $p->id;
+                            $deleteConfirm = 'Remover este produto? Esta ação não pode ser desfeita.';
+                            $deleteTitle = 'Excluir produto';
+                            $canEdit = \App\Helpers\Permission::can('produtos', 'editar');
+                            $canDelete = \App\Helpers\Permission::can('produtos', 'excluir');
+                            require dirname(__DIR__) . '/components/action-buttons.php';
+                            ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>

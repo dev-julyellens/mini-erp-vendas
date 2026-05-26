@@ -56,7 +56,7 @@ $roleService = new CompanyRoleService();
             </select>
         </div>
     <?php endif; ?>
-    <div class="col-auto"><button class="btn btn-outline-secondary" type="submit">Filtrar</button></div>
+    <div class="col-auto"><button class="btn btn-primary btn-md" type="submit"><i class="bi bi-funnel"></i> Filtrar</button></div>
 </form>
 
 <div class="card-soft p-3 p-md-4">
@@ -82,6 +82,7 @@ $roleService = new CompanyRoleService();
                         <td><span class="badge text-bg-primary"><?= htmlspecialchars($link->roleLabel(), ENT_QUOTES, 'UTF-8') ?></span></td>
                         <td><?= $link->active ? '<span class="badge text-bg-success">Ativo</span>' : '<span class="badge text-bg-secondary">Inativo</span>' ?></td>
                         <td class="text-end">
+                            <div class="table-actions">
                             <form class="d-inline" method="post" action="<?= htmlspecialchars($url('user-companies/update-role'), ENT_QUOTES, 'UTF-8') ?>">
                                 <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                                 <input type="hidden" name="user_id" value="<?= (int) $link->user_id ?>">
@@ -97,15 +98,16 @@ $roleService = new CompanyRoleService();
                                 <input type="hidden" name="user_id" value="<?= (int) $link->user_id ?>">
                                 <input type="hidden" name="company_id" value="<?= (int) $link->company_id ?>">
                                 <input type="hidden" name="active" value="<?= $link->active ? '0' : '1' ?>">
-                                <button class="btn btn-sm btn-outline-warning" type="submit"><?= $link->active ? 'Desativar' : 'Ativar' ?></button>
+                                <button class="btn btn-sm btn-warning" type="submit"><?= $link->active ? 'Desativar' : 'Ativar' ?></button>
                             </form>
                             <form class="d-inline" method="post" action="<?= htmlspecialchars($url('user-companies/detach'), ENT_QUOTES, 'UTF-8') ?>"
                                 data-confirm="Remover este vínculo?">
                                 <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                                 <input type="hidden" name="user_id" value="<?= (int) $link->user_id ?>">
                                 <input type="hidden" name="company_id" value="<?= (int) $link->company_id ?>">
-                                <button class="btn btn-sm btn-outline-danger" type="submit">Remover</button>
+                                <button class="btn btn-sm btn-destructive" type="submit">Remover</button>
                             </form>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -147,7 +149,7 @@ $roleService = new CompanyRoleService();
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Vincular</button>
             </div>
         </form>

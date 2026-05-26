@@ -23,11 +23,11 @@ $statusBadge = Order::statusBadge($order->status);
     </div>
     <div class="d-flex flex-wrap gap-2">
         <?php if ($order->canCancel() && \App\Helpers\Permission::can('vendas', 'excluir')): ?>
-            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancel-order-modal">
+            <button type="button" class="btn btn-destructive" data-bs-toggle="modal" data-bs-target="#cancel-order-modal">
                 <i class="bi bi-x-circle"></i> Cancelar venda
             </button>
         <?php endif; ?>
-        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
+        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
     </div>
 </div>
 
@@ -106,7 +106,7 @@ $statusBadge = Order::statusBadge($order->status);
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
             <div class="fw-semibold">Parcelamento</div>
             <?php if (Permission::can('financeiro', 'visualizar')): ?>
-                <a class="btn btn-sm btn-outline-primary" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">
+                <a class="btn btn-sm btn-ghost" href="<?= htmlspecialchars($url('finance/installments/open'), ENT_QUOTES, 'UTF-8') ?>">
                     Ver parcelas abertas
                 </a>
             <?php endif; ?>
@@ -162,7 +162,7 @@ $statusBadge = Order::statusBadge($order->status);
                         </ul>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Voltar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
                         <button type="submit" class="btn btn-danger">Confirmar cancelamento</button>
                     </div>
                 </form>

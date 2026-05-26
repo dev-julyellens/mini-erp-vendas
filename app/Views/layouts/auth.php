@@ -36,7 +36,7 @@ $url = static function (string $path = '') use ($baseUrl): string
 
 <body class="auth-page" data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES, 'UTF-8') ?>">
     <div class="auth-toolbar">
-        <button type="button" class="btn btn-sm btn-outline-secondary theme-toggle-btn" data-theme-toggle aria-label="Modo escuro" title="Modo escuro">
+        <button type="button" class="btn btn-sm btn-secondary theme-toggle-btn" data-theme-toggle aria-label="Modo escuro" title="Modo escuro">
             <i class="bi bi-moon-stars"></i>
         </button>
     </div>

@@ -12,7 +12,7 @@ declare(strict_types=1);
         <div class="text-muted">Organize o catálogo de produtos e serviços</div>
     </div>
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('products'), ENT_QUOTES, 'UTF-8') ?>">
             <i class="bi bi-arrow-left"></i> Produtos
         </a>
         <?php if (\App\Helpers\Permission::can('produtos', 'criar')): ?>
@@ -43,8 +43,9 @@ declare(strict_types=1);
                                 : '—' ?>
                         </td>
                         <td class="text-end">
+                            <div class="table-actions">
                             <?php if (\App\Helpers\Permission::can('produtos', 'editar')): ?>
-                                <a class="btn btn-sm btn-outline-secondary"
+                                <a class="btn btn-sm btn-outline"
                                     href="<?= htmlspecialchars($url('categories/edit?id=' . $c->id), ENT_QUOTES, 'UTF-8') ?>">
                                     Editar
                                 </a>
@@ -56,9 +57,10 @@ declare(strict_types=1);
                                     data-confirm-title="Excluir categoria">
                                     <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                                     <input type="hidden" name="id" value="<?= (int) $c->id ?>">
-                                    <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+                                    <button class="btn btn-sm btn-destructive" type="submit">Excluir</button>
                                 </form>
                             <?php endif; ?>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>

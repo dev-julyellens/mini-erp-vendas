@@ -323,6 +323,13 @@
             }
         }
 
+        function syncSidebarCollapseButton(btn) {
+            var collapsed = document.body.classList.contains("sidebar-collapsed");
+            var label = collapsed ? "Expandir menu" : "Recolher menu";
+            btn.setAttribute("aria-label", label);
+            btn.setAttribute("title", label);
+        }
+
         function toggleCollapsed() {
             var collapsed = document.body.classList.toggle("sidebar-collapsed");
             try {
@@ -330,9 +337,11 @@
             } catch (e) {
                 /* ignore */
             }
+            document.querySelectorAll("[data-sidebar-collapse]").forEach(syncSidebarCollapseButton);
         }
 
         document.querySelectorAll("[data-sidebar-collapse]").forEach(function (btn) {
+            syncSidebarCollapseButton(btn);
             btn.addEventListener("click", toggleCollapsed);
         });
     }

@@ -49,7 +49,7 @@ foreach ($products as $p)
                 <div class="form-text">A partir de 2x o valor é dividido automaticamente.</div>
             </div>
             <div class="col-md-4 d-flex align-items-end justify-content-md-end gap-2">
-                <button class="btn btn-outline-primary" type="button" id="btnAddLine">
+                <button class="btn btn-outline" type="button" id="btnAddLine">
                     <i class="bi bi-plus-circle"></i> Adicionar item
                 </button>
             </div>
@@ -69,7 +69,7 @@ foreach ($products as $p)
                 Total: <span class="fw-bold" id="orderTotal">R$ 0,00</span>
             </div>
             <div class="d-flex gap-2">
-                <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
+                <a class="btn btn-secondary" href="<?= htmlspecialchars($url('orders'), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
                 <button class="btn btn-primary" type="submit" id="btnSubmit">
                     <span class="submit-label">Registrar venda</span>
                     <span class="spinner-border spinner-border-sm d-none" id="btnSpinner" role="status" aria-hidden="true"></span>
@@ -110,7 +110,7 @@ foreach ($products as $p)
                 <div class="form-control bg-light unit-price" data-unit-price>R$ —</div>
             </div>
             <div class="col-md-1 d-grid">
-                <button class="btn btn-outline-danger" type="button" data-remove-line title="Remover">
+                <button class="btn btn-destructive" type="button" data-remove-line title="Remover">
                     <i class="bi bi-trash"></i>
                 </button>
             </div>

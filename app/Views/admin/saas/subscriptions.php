@@ -18,7 +18,7 @@ declare(strict_types=1);
     <div class="col-md-6">
         <input type="search" name="q" class="form-control" placeholder="Empresa ou plano" value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
     </div>
-    <div class="col-auto"><button class="btn btn-outline-secondary" type="submit">Buscar</button></div>
+    <div class="col-auto"><button class="btn btn-secondary" type="submit">Buscar</button></div>
 </form>
 
 <div class="card-soft p-3 p-md-4 mb-4">

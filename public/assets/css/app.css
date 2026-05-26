@@ -294,21 +294,6 @@ body {
     border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, #0ea5e9, #6366f1);
-    border: none;
-}
-
-.btn-primary:hover {
-    filter: brightness(1.05);
-}
-
-.btn-primary:disabled,
-.btn-primary.is-loading {
-    filter: none;
-    opacity: 0.85;
-}
-
 .form-label {
     font-weight: 500;
     font-size: 0.9rem;

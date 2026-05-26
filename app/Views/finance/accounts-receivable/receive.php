@@ -20,7 +20,7 @@ $remaining = $account->remaining_amount ?? $account->amount;
         <h1 class="h3 mb-1">Registrar recebimento</h1>
         <div class="text-muted">Conta #<?= (int) $account->id ?> · restante R$ <?= htmlspecialchars($fmt($remaining), ENT_QUOTES, 'UTF-8') ?></div>
     </div>
-    <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $account->id), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
+    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $account->id), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
 </div>
 
 <?php
@@ -108,7 +108,7 @@ $pendingPix = $pendingPix ?? null;
 
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">Confirmar recebimento</button>
-                    <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $account->id), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
+                    <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $account->id), ENT_QUOTES, 'UTF-8') ?>">Cancelar</a>
                 </div>
             </form>
         </div>

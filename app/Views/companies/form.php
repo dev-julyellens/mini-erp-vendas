@@ -40,6 +40,10 @@ $slug = (string) ($old['slug'] ?? ($company->slug ?? ''));
             <input class="form-control <?= isset($errors['tax_id']) ? 'is-invalid' : '' ?>" id="tax_id" name="tax_id" value="<?= htmlspecialchars($taxId, ENT_QUOTES, 'UTF-8') ?>">
             <?php if (isset($errors['tax_id'])): ?><div class="invalid-feedback"><?= htmlspecialchars($errors['tax_id'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
         </div>
-        <button type="submit" class="btn btn-primary">Salvar</button>
+        <?php
+        $mode = 'form-footer';
+        $cancelHref = $url('admin/companies');
+        require dirname(__DIR__) . '/components/action-buttons.php';
+        ?>
     </form>
 </div>

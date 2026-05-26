@@ -43,7 +43,7 @@ $canPayInstallments = Permission::can('financeiro', 'criar')
                 <i class="bi bi-calendar2-check"></i> Baixar parcelas
             </a>
         <?php endif; ?>
-        <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
+        <a class="btn btn-secondary" href="<?= htmlspecialchars($url('finance/accounts-receivable'), ENT_QUOTES, 'UTF-8') ?>">Voltar</a>
     </div>
 </div>
 

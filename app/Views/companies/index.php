@@ -34,7 +34,7 @@ declare(strict_types=1);
         </select>
     </div>
     <div class="col-auto">
-        <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i> Filtrar</button>
+        <button type="submit" class="btn btn-primary btn-md"><i class="bi bi-funnel"></i> Filtrar</button>
     </div>
 </form>
 
@@ -66,16 +66,18 @@ declare(strict_types=1);
                         </td>
                         <td class="text-muted small"><?= htmlspecialchars(substr($c->created_at, 0, 16), ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-end text-nowrap">
-                            <a class="btn btn-sm btn-outline-secondary" href="<?= htmlspecialchars($url('admin/companies/edit?id=' . $c->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
-                            <form class="d-inline" method="post" action="<?= htmlspecialchars($url('admin/companies/toggle-active'), ENT_QUOTES, 'UTF-8') ?>"
-                                data-confirm="<?= $c->active ? 'Desativar esta empresa?' : 'Ativar esta empresa?' ?>">
-                                <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
-                                <input type="hidden" name="id" value="<?= (int) $c->id ?>">
-                                <input type="hidden" name="active" value="<?= $c->active ? '0' : '1' ?>">
-                                <button type="submit" class="btn btn-sm btn-outline-<?= $c->active ? 'warning' : 'success' ?>">
-                                    <?= $c->active ? 'Desativar' : 'Ativar' ?>
-                                </button>
-                            </form>
+                            <div class="table-actions">
+                                <a class="btn btn-sm btn-outline" href="<?= htmlspecialchars($url('admin/companies/edit?id=' . $c->id), ENT_QUOTES, 'UTF-8') ?>">Editar</a>
+                                <form class="d-inline" method="post" action="<?= htmlspecialchars($url('admin/companies/toggle-active'), ENT_QUOTES, 'UTF-8') ?>"
+                                    data-confirm="<?= $c->active ? 'Desativar esta empresa?' : 'Ativar esta empresa?' ?>">
+                                    <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
+                                    <input type="hidden" name="id" value="<?= (int) $c->id ?>">
+                                    <input type="hidden" name="active" value="<?= $c->active ? '0' : '1' ?>">
+                                    <button type="submit" class="btn btn-sm <?= $c->active ? 'btn-warning' : 'btn-outline' ?>">
+                                        <?= $c->active ? 'Desativar' : 'Ativar' ?>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>

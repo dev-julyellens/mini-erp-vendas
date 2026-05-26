@@ -70,7 +70,7 @@ $canCreate = Permission::can('estoque', 'criar');
             <button type="submit" class="btn btn-primary">
                 <i class="bi bi-funnel"></i> Filtrar
             </button>
-            <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($url('stock-movements'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
+            <a class="btn btn-secondary" href="<?= htmlspecialchars($url('stock-movements'), ENT_QUOTES, 'UTF-8') ?>">Limpar</a>
         </div>
     </form>
 </div>

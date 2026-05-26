@@ -18,11 +18,11 @@ $fmt = static fn(string $v): string => number_format((float) $v, 2, ',', '.');
     </div>
     <div class="d-flex gap-2">
         <?php if ($charge->payment_id !== null): ?>
-            <a class="btn btn-outline-primary" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $charge->accounts_receivable_id), ENT_QUOTES, 'UTF-8') ?>">
+            <a class="btn btn-ghost" href="<?= htmlspecialchars($url('finance/accounts-receivable/show?id=' . $charge->accounts_receivable_id), ENT_QUOTES, 'UTF-8') ?>">
                 Ver conta a receber
             </a>
         <?php endif; ?>
-        <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+        <button type="button" class="btn btn-secondary" onclick="window.print()">
             <i class="bi bi-printer"></i> Imprimir
         </button>
     </div>
