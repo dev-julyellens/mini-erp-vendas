@@ -345,8 +345,9 @@ body {
 
 .toast-container {
     position: fixed;
+    top: 1rem;
     right: 1rem;
-    bottom: 1rem;
+    bottom: auto;
     z-index: 1080;
     max-width: min(360px, calc(100vw - 2rem));
 }
@@ -534,4 +535,64 @@ div.dt-container div.dt-layout-row {
     top: 1rem;
     right: 1rem;
     z-index: 10;
+}
+
+.notification-badge {
+    font-size: 0.65rem;
+    min-width: 1.1rem;
+}
+
+.notification-menu {
+    width: min(22rem, 92vw);
+    max-height: 24rem;
+    overflow: hidden;
+}
+
+.notification-menu-list {
+    max-height: 16rem;
+    overflow-y: auto;
+}
+
+.notification-item-link {
+    cursor: pointer;
+    display: block;
+}
+
+.notification-open-form button.notification-item-link:hover .h6 {
+    color: var(--accent);
+}
+
+.notification-open-form .dropdown-item {
+    white-space: normal;
+}
+
+.notification-menu-item {
+    cursor: pointer;
+}
+
+.notification-menu-item-unread,
+.notification-item-unread {
+    background: rgba(56, 189, 248, 0.08);
+}
+
+.notification-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+}
+
+.notification-type-badge {
+    font-size: 0.65rem;
+}
+
+.notification-history .notification-item + .notification-item {
+    border-top: 1px solid var(--border);
+}
+
+.notification-history .notification-item-link,
+.notification-menu-list .text-truncate {
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
