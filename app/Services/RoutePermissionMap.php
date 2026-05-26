@@ -88,6 +88,13 @@ final class RoutePermissionMap
         'GET /finance/installments/pay' => ['financeiro', 'criar'],
         'POST /finance/installments/pay' => ['financeiro', 'criar'],
 
+        'GET /finance/pix/charge' => ['financeiro', 'visualizar'],
+        'GET /finance/pix/receipt' => ['financeiro', 'visualizar'],
+        'GET /finance/pix/status' => ['financeiro', 'visualizar'],
+        'POST /finance/pix/create-account' => ['financeiro', 'criar'],
+        'POST /finance/pix/create-installment' => ['financeiro', 'criar'],
+        'POST /finance/pix/simulate-pay' => ['financeiro', 'criar'],
+
         'GET /stock-movements' => ['estoque', 'visualizar'],
         'GET /stock-movements/create' => ['estoque', 'criar'],
         'POST /stock-movements/store' => ['estoque', 'criar'],
