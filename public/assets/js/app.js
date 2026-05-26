@@ -60,14 +60,16 @@
             return;
         }
 
-        var bg =
-            variant === "success"
-                ? "text-bg-success"
-                : variant === "danger"
-                  ? "text-bg-danger"
-                  : variant === "warning"
-                    ? "text-bg-warning"
-                    : "text-bg-primary";
+        var bg = "text-bg-primary";
+        if (variant === "success") {
+            bg = "text-bg-success";
+        } else if (variant === "danger") {
+            bg = "text-bg-danger";
+        } else if (variant === "warning") {
+            bg = "text-bg-warning";
+        } else if (variant === "info" || variant === "primary") {
+            bg = "text-bg-primary";
+        }
         var id = "toast-" + Date.now();
         var html =
             '<div id="' +
@@ -95,6 +97,18 @@
                 node.remove();
             });
         }
+    }
+
+    function initNotificationToasts() {
+        document.querySelectorAll("[data-notification-toast]").forEach(function (el) {
+            var title = el.getAttribute("data-toast-title") || "Notificação";
+            var message = el.getAttribute("data-toast-message") || "";
+            var variant = el.getAttribute("data-toast-variant") || "warning";
+            if (message) {
+                showToast(title, message, variant);
+            }
+            el.remove();
+        });
     }
 
     function initFlashToasts() {
@@ -325,6 +339,7 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         initThemeToggle();
+        initNotificationToasts();
         initFlashToasts();
         initFormLoading();
         initConfirmModal();
