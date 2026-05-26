@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Middleware;
 
 use App\Core\ApiException;
-use App\Core\ValidationException;
-use App\Helpers\ApiResponse;
 use App\Helpers\AppConfig;
+use App\Helpers\ApiResponse;
+use App\Core\ValidationException;
 
 final class ApiErrorHandlerMiddleware
 {
@@ -35,6 +35,17 @@ final class ApiErrorHandlerMiddleware
             }
 
             error_log('API unhandled exception: ' . $e->getMessage());
+
+            try
+            {
+                (new \App\Services\NotificationService())->notifyCriticalError(
+                    $e->getMessage(),
+                    'API'
+                );
+            }
+            catch (\Throwable $ignored)
+            {
+            }
 
             $message = AppConfig::isDebug() ? $e->getMessage() : 'Erro interno do servidor.';
             ApiResponse::error($message, 500);

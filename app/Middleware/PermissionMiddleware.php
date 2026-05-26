@@ -22,6 +22,10 @@ final class PermissionMiddleware
         'POST /reset-password',
         'POST /logout',
         'GET /',
+        'GET /notifications',
+        'POST /notifications/open',
+        'POST /notifications/read',
+        'POST /notifications/read-all',
     ];
 
     public static function handle(?string $method = null, ?string $path = null): void
