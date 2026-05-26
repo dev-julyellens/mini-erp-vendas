@@ -89,7 +89,7 @@ Browser → AuthMiddleware (sessão/CSRF/timeout)
 ## 9. Pontos críticos
 
 - `JWT_SECRET` padrão em dev — **alterar em produção** (`config/app.php`).
-- Reset de senha **não envia e-mail**; link só visível em debug.
+- Reset de senha via `MailService` (`MAIL_DRIVER=log|smtp|mail`); link na tela só em `APP_DEBUG`.
 - Rotas públicas definidas em `AuthMiddleware::PUBLIC_ROUTES` (login, webhooks PIX mock, API login).
 - API aceita sessão web **ou** JWT na mesma rota protegida.
 
@@ -101,7 +101,7 @@ Browser → AuthMiddleware (sessão/CSRF/timeout)
 
 ## 11. Possíveis melhorias futuras
 
-- Integração com SMTP para reset de senha.
+- Refinar templates de e-mail e fila assíncrona para alto volume.
 - Refresh token para API.
 - 2FA para perfis administrativos.
 - Rate limit no login web (hoje só API login tem limite dedicado).

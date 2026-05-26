@@ -25,6 +25,10 @@
 # Backups
 /storage/backups/*.sql
 
+# Uploads de perfil
+/storage/avatars/*
+!/storage/avatars/.gitkeep
+
 # Scripts
 scripts/
 

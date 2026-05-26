@@ -1,89 +1,147 @@
 # Mini ERP de Vendas
 
-Sistema web em **PHP (>=7.4)**, arquitetura **MVC**, com **Repositories**, **Services** (regras de negócio) e **PostgreSQL** (PDO).
+Sistema web em **PHP 8.0+**, arquitetura **MVC**, com **Repositories**, **Services** (regras de negócio) e **PostgreSQL** (PDO). Painel multiempresa com controle de permissões, financeiro, relatórios e API REST.
+
+Documentação técnica completa: [docs/README.md](docs/README.md)
 
 ## Requisitos
 
-- PHP 7.4+ com extensões: `pdo`, `pdo_pgsql`, `json`, `mbstring`
-- Composer
-- PostgreSQL 12+ (recomendado)
-- Apache com `mod_rewrite` (XAMPP) **ou** outro servidor apontando o *document root* para a pasta `public/`
+- PHP **8.0+** (recomendado 8.2+) com extensões: `pdo`, `pdo_pgsql`, `json`, `mbstring`, `gd`
+- [Composer](https://getcomposer.org/)
+- PostgreSQL 12+
+- Apache com `mod_rewrite` (XAMPP) **ou** servidor com *document root* em `public/`
 
-> **Autenticação:** login obrigatório para o painel e APIs. Usuário padrão após instalação: `admin@mini-erp.local` / `Admin@123` (altere após o primeiro acesso).
+## Instalação rápida
 
-## Instalação
-
-### 1) Banco de dados
-
-1. Crie o banco (exemplo):
-
-```sql
-CREATE DATABASE mini_erp_vendas;
-```
-
-2. Importe o script:
-
-```bash
-psql -U postgres -d mini_erp_vendas -f database/database.sql
-```
-
-O arquivo cria tabelas, constraints, índices e **dados iniciais** (usuário admin, clientes e produtos).
-
-Se o banco já existia antes da autenticação ou permissões, aplique as migrations:
-
-```bash
-php database/run_migration.php
-```
-
-(O script executa todos os arquivos em `database/migrations/` em ordem.)
-
-### 2) Configuração
-
-Edite `config/app.php` **ou** defina variáveis de ambiente:
-
-- `DB_HOST` (padrão: `127.0.0.1`)
-- `DB_PORT` (padrão: `5432`)
-- `DB_NAME` (padrão: `mini_erp_vendas`)
-- `DB_USER` (padrão: `postgres`)
-- `DB_PASSWORD` (padrão: `postgres`)
-- `APP_BASE_URL` (ex.: `http://localhost/mini-erp-vendas/public`)
-- `APP_DEBUG` (`true` em desenvolvimento: exibe dica de login e link de reset de senha na tela)
-
-### 3) Composer
-
-Na raiz do projeto:
+### 1) Dependências
 
 ```bash
 composer install
 ```
 
+O repositório inclui `composer.lock` para builds reproduzíveis.
+
+### 2) Configuração
+
+```bash
+cp config/.env.example config/.env
+```
+
+Edite `config/.env` — principalmente banco, `APP_BASE_URL`, `JWT_SECRET` e e-mail (`MAIL_*`).
+
+| Variável | Descrição |
+|----------|-----------|
+| `DB_*` | Conexão PostgreSQL |
+| `APP_BASE_URL` | URL pública (ex.: `http://localhost/mini-erp-vendas/public`) |
+| `APP_DEBUG` | `true` em desenvolvimento |
+| `APP_ENV` | `local` ou `production` (com `APP_DEBUG=false` em produção) |
+| `JWT_SECRET` | Obrigatório com `APP_DEBUG=false` (mín. 32 caracteres) |
+| `MAIL_DRIVER` | `log` (dev), `smtp` ou `mail` — ver [autenticação](docs/arquitetura/autenticacao.md) |
+
+### 3) Banco de dados
+
+**Instalação nova** (schema completo):
+
+```bash
+psql -U postgres -d mini_erp_vendas -f database/database.sql
+php database/run_migration.php
+```
+
+**Banco existente** — apenas migrations pendentes:
+
+```bash
+php database/run_migration.php
+# ou
+php bin/migrate
+```
+
 ### 4) Apache (XAMPP)
 
-Aponte o virtual host (ou acesse) para:
+Acesse: `http://localhost/mini-erp-vendas/public/`
 
-`http://localhost/mini-erp-vendas/public/`
+Ajuste `RewriteBase` em `public/.htaccess` se o caminho do projeto for diferente.
 
-Ajuste o `RewriteBase` em `public/.htaccess` se o caminho do projeto for diferente.
+### Credenciais padrão
 
-## Funcionalidades
+Após instalação: `admin@mini-erp.local` / `Admin@123` — **altere no primeiro acesso**.
 
-- **Autenticação:** login, logout, sessão segura, CSRF, recuperação de senha, perfis (`admin`, `vendedor`, `financeiro`, `estoque`)
-- **Permissões (ACL):** controle por módulo e ação (`visualizar`, `criar`, `editar`, `excluir`); `admin` com acesso total; middleware + menus condicionais
-- **Clientes:** CRUD com e-mail único
-- **Produtos:** CRUD com `price > 0` e `stock >= 0`
-- **Vendas:** múltiplos itens, total automático, bloqueio de estoque insuficiente, baixa de estoque transacional
-- **Consulta de vendas:** listagem com filtros (cliente e período) + detalhe com itens
-- **Dashboard:** totais + alerta de estoque baixo (< 5)
-- **API REST básica:**
-  - `GET /api/products`
-  - `GET /api/orders` (aceita `customer_id`, `date_from`, `date_to`, `page`, `per_page`)
-  - `POST /api/orders` (JSON: `customer_id`, `items: [{product_id, quantity}]`)
+---
+
+## Desenvolvimento
+
+### Qualidade de código
+
+```bash
+composer check
+```
+
+Executa, em sequência: verificação UTF-8 sem BOM, PHPStan (nível 5) e PHPUnit.
+
+Comandos individuais:
+
+```bash
+composer encoding   # bin/check-encoding.php
+composer analyse    # PHPStan
+composer test       # PHPUnit
+```
+
+### Migrations
+
+```bash
+php bin/migrate
+```
+
+Ver [docs/arquitetura/banco.md](docs/arquitetura/banco.md) e [docs/arquitetura/devops.md](docs/arquitetura/devops.md).
+
+### CI
+
+GitHub Actions (`.github/workflows/quality.yml`) roda `composer check` em push/PR para `main`/`master`.
+
+---
+
+## Módulos do sistema
+
+| Área | Funcionalidades |
+|------|-----------------|
+| **Autenticação** | Login, logout, sessão segura, CSRF, recuperação de senha (PHPMailer), seleção de empresa |
+| **Permissões** | ACL por módulo/ação; papéis `admin`, `vendedor`, `financeiro`, `estoque` |
+| **Cadastros** | Clientes, produtos, serviços, categorias |
+| **Comercial** | Vendas com múltiplos itens, cancelamento, histórico de preço em `order_items` |
+| **Estoque** | Movimentações, alertas de estoque baixo |
+| **Financeiro** | Contas a receber, recebimentos, parcelas, fluxo de caixa |
+| **PIX** | Cobranças (gateway mock em dev), webhook, conciliação |
+| **Relatórios** | Vendas, estoque, fluxo; export PDF/Excel; gráficos na tela |
+| **Dashboard** | KPIs por abas (visão geral, comercial, financeiro, operacional) |
+| **Multiempresa** | Empresas, vínculos usuário–empresa, troca de contexto |
+| **SaaS** | Planos, assinaturas, onboarding, tela de assinatura |
+| **Operação** | Notificações, backup/restore, auditoria, logs de acesso |
+| **LGPD** | Consentimento e mascaramento de dados sensíveis |
+| **Perfil** | Avatar, preferências de UI (tema, sidebar) |
+| **API REST** | JWT, produtos, pedidos, rate limit — ver [docs/arquitetura/api.md](docs/arquitetura/api.md) |
+
+---
+
+## API REST (resumo)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/auth/login` | Obter token JWT |
+| `GET` | `/api/products` | Listar produtos |
+| `GET` | `/api/orders` | Listar pedidos (filtros, paginação) |
+| `POST` | `/api/orders` | Criar pedido |
+| `POST` | `/api/orders/cancel` | Cancelar pedido |
+
+Autenticação: header `Authorization: Bearer <token>` ou sessão web.
+
+---
 
 ## Regra de negócio importante (histórico de preço)
 
-Na finalização da venda, o sistema grava em `order_items.unit_price` o preço vigente do produto **no momento da venda**, preservando histórico mesmo se o cadastro do produto mudar depois. Isso está documentado no `App\Services\OrderService`.
+Na finalização da venda, o sistema grava em `order_items.unit_price` o preço vigente do produto **no momento da venda**, preservando histórico mesmo se o cadastro mudar depois. Documentado em `App\Services\OrderService`.
 
-## Estrutura
+---
+
+## Estrutura do projeto
 
 ```
 /app
@@ -94,16 +152,32 @@ Na finalização da venda, o sistema grava em `order_items.unit_price` o preço 
   /Repositories
   /Services
   /Views
-/config
-/database
-/public
+/bin              # Scripts utilitários (encoding, migrate)
+/config           # app.php, .env
+/database         # database.sql, migrations/
+/docs             # Documentação técnica
+/public           # Document root (index.php, assets)
+/storage          # logs, backups, avatars
+/tests            # PHPUnit
 ```
 
-## Observações de UX
+---
 
-- Layout responsivo (Bootstrap 5) com painel (sidebar + topo)
-- Registro de venda na tela **Nova venda** usa `fetch` (AJAX) + feedback via *toast*
+## UI e acessibilidade
+
+- Design system em `public/assets/css/design-system.css`
+- Componentes reutilizáveis: `page-header`, `action-buttons`, `filter-panel`, `kpi-card`
+- Checklist de migração UI: [docs/implementacoes/checklist-refatoracao-ui.md](docs/implementacoes/checklist-refatoracao-ui.md)
+- Acessibilidade: [docs/implementacoes/acessibilidade.md](docs/implementacoes/acessibilidade.md)
+
+---
+
+## Melhorias e roadmap
+
+Checklist priorizada de evolução: [docs/implementacoes/checklist-melhorias-projeto.md](docs/implementacoes/checklist-melhorias-projeto.md)
+
+---
 
 ## Formato de valores
 
-Nos formulários web de produto, use **ponto** como separador decimal (ex.: `19.90`).
+Nos formulários web de produto, use **ponto** como separador decimal (ex.: `19.90`). Máscaras de moeda disponíveis via `data-mask-money` e `input-masks.js`.

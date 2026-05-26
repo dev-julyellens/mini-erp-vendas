@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\Database;
+use App\Core\Logger;
 use App\Core\ValidationException;
 use App\Helpers\AppConfig;
 use App\Helpers\Audit;
@@ -19,16 +20,19 @@ final class AuthService
     private UserRepository $users;
     private CompanyAuthService $companyAuth;
     private PasswordPolicyService $passwordPolicy;
+    private MailService $mail;
 
     public function __construct(
         ?UserRepository $users = null,
         ?CompanyAuthService $companyAuth = null,
-        ?PasswordPolicyService $passwordPolicy = null
+        ?PasswordPolicyService $passwordPolicy = null,
+        ?MailService $mail = null
     )
     {
         $this->users = $users ?? new UserRepository();
         $this->companyAuth = $companyAuth ?? new CompanyAuthService();
         $this->passwordPolicy = $passwordPolicy ?? new PasswordPolicyService();
+        $this->mail = $mail ?? new MailService();
     }
 
     /**
@@ -173,6 +177,15 @@ final class AuthService
         $config = require dirname(__DIR__, 2) . '/config/app.php';
         $base = rtrim((string) $config['base_url'], '/');
         $resetUrl = $base . '/reset-password?token=' . urlencode($token);
+
+        $sent = $this->mail->sendPasswordReset($user->email, $user->name, $resetUrl);
+        if (!$sent)
+        {
+            Logger::warning('Não foi possível enviar e-mail de redefinição de senha.', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+        }
 
         $result = ['message' => $message];
         if (AppConfig::isDebug())

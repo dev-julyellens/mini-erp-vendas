@@ -6,6 +6,7 @@ namespace App\Middleware;
 
 use App\Helpers\ApiRequest;
 use App\Helpers\ApiResponse;
+use App\Helpers\AppConfig;
 use App\Helpers\Auth;
 use App\Helpers\CompanyContext;
 use App\Helpers\Csrf;
@@ -26,7 +27,6 @@ final class AuthMiddleware
         'GET /select-company',
         'POST /select-company',
         'POST /api/auth/login',
-        'POST /webhooks/pix/mock',
     ];
 
     /** @var list<string> */
@@ -49,7 +49,7 @@ final class AuthMiddleware
             self::denyInvalidCsrf($path);
         }
 
-        if (in_array($routeKey, self::PUBLIC_ROUTES, true))
+        if (self::isPublicRoute($routeKey))
         {
             if (Auth::check() && in_array($routeKey, ['GET /login', 'GET /forgot-password'], true))
             {
@@ -97,6 +97,16 @@ final class AuthMiddleware
         {
             ApiMiddleware::attachUserToLog($user->id);
         }
+    }
+
+    private static function isPublicRoute(string $routeKey): bool
+    {
+        if ($routeKey === 'POST /webhooks/pix/mock')
+        {
+            return AppConfig::allowsMockPixWebhook();
+        }
+
+        return in_array($routeKey, self::PUBLIC_ROUTES, true);
     }
 
     private static function isApiPath(string $path): bool

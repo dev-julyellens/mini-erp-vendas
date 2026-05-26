@@ -90,12 +90,17 @@ final class MockPixGateway implements PaymentGatewayInterface
         $secret = PixConfig::webhookSecret();
         if ($secret === '')
         {
-            return AppConfig::isDebug();
+            return AppConfig::allowsMockPixWebhook();
+        }
+
+        if (!is_string($signatureHeader) || $signatureHeader === '')
+        {
+            return false;
         }
 
         $expected = hash_hmac('sha256', $rawBody, $secret);
 
-        return is_string($signatureHeader) && hash_equals($expected, $signatureHeader);
+        return hash_equals($expected, $signatureHeader);
     }
 
     private function buildCopyPastePayload(PixChargeRequest $request): string

@@ -4,90 +4,122 @@
  * Application configuration.
  * Values are read from environment (e.g. config/.env loaded in app/bootstrap.php).
  */
-$dbHost = getenv('DB_HOST');
-$dbPort = getenv('DB_PORT');
-$dbName = getenv('DB_NAME');
-$dbUser = getenv('DB_USER');
-$dbPass = getenv('DB_PASSWORD');
-$base = getenv('APP_BASE_URL');
-$timezone = getenv('APP_TIMEZONE');
 
-$debug = getenv('APP_DEBUG');
-$jwtSecret = getenv('JWT_SECRET');
-$jwtTtl = getenv('JWT_TTL');
-$apiRateLimit = getenv('API_RATE_LIMIT');
-$apiRateLimitWindow = getenv('API_RATE_LIMIT_WINDOW');
-$apiLoginRateLimit = getenv('API_LOGIN_RATE_LIMIT');
-$backupPath = getenv('BACKUP_PATH');
-$backupRetentionDays = getenv('BACKUP_RETENTION_DAYS');
-$pgDumpPath = getenv('PG_DUMP_PATH');
-$psqlPath = getenv('PSQL_PATH');
-$sessionIdleTimeout = getenv('SESSION_IDLE_TIMEOUT');
-$sessionAbsoluteTimeout = getenv('SESSION_ABSOLUTE_TIMEOUT');
-$passwordMinLength = getenv('PASSWORD_MIN_LENGTH');
-$passwordRequireComplexity = getenv('PASSWORD_REQUIRE_COMPLEXITY');
-$lgpdPolicyVersion = getenv('LGPD_POLICY_VERSION');
-$maskSensitiveData = getenv('MASK_SENSITIVE_DATA');
-$pixEnabled = getenv('PIX_ENABLED');
-$pixGateway = getenv('PIX_DEFAULT_GATEWAY');
-$pixTtl = getenv('PIX_CHARGE_TTL_SECONDS');
-$pixWebhookSecret = getenv('PIX_WEBHOOK_SECRET');
-$pixMerchantName = getenv('PIX_MERCHANT_NAME');
-$pixMerchantCity = getenv('PIX_MERCHANT_CITY');
-$logPath = getenv('LOG_PATH');
-$logLevel = getenv('LOG_LEVEL');
+use App\Core\Env;
+
+$env = static fn(string $key): ?string => Env::get($key);
+
+$dbHost = $env('DB_HOST');
+$dbPort = $env('DB_PORT');
+$dbName = $env('DB_NAME');
+$dbUser = $env('DB_USER');
+$dbPass = $env('DB_PASSWORD');
+$base = $env('APP_BASE_URL');
+$timezone = $env('APP_TIMEZONE');
+
+$debug = $env('APP_DEBUG');
+$appEnv = $env('APP_ENV');
+$mailDriver = $env('MAIL_DRIVER');
+$mailFromAddress = $env('MAIL_FROM_ADDRESS');
+$mailFromName = $env('MAIL_FROM_NAME');
+$mailSmtpHost = $env('MAIL_SMTP_HOST');
+$mailSmtpPort = $env('MAIL_SMTP_PORT');
+$mailSmtpUser = $env('MAIL_SMTP_USER');
+$mailSmtpPassword = $env('MAIL_SMTP_PASSWORD');
+$mailSmtpEncryption = $env('MAIL_SMTP_ENCRYPTION');
+$mailSmtpAuth = $env('MAIL_SMTP_AUTH');
+$mailSmtpDebug = $env('MAIL_SMTP_DEBUG');
+$jwtTtl = $env('JWT_TTL');
+$apiRateLimit = $env('API_RATE_LIMIT');
+$apiRateLimitWindow = $env('API_RATE_LIMIT_WINDOW');
+$apiLoginRateLimit = $env('API_LOGIN_RATE_LIMIT');
+$backupPath = $env('BACKUP_PATH');
+$backupRetentionDays = $env('BACKUP_RETENTION_DAYS');
+$pgDumpPath = $env('PG_DUMP_PATH');
+$psqlPath = $env('PSQL_PATH');
+$sessionIdleTimeout = $env('SESSION_IDLE_TIMEOUT');
+$sessionAbsoluteTimeout = $env('SESSION_ABSOLUTE_TIMEOUT');
+$passwordMinLength = $env('PASSWORD_MIN_LENGTH');
+$passwordRequireComplexity = $env('PASSWORD_REQUIRE_COMPLEXITY');
+$lgpdPolicyVersion = $env('LGPD_POLICY_VERSION');
+$maskSensitiveData = $env('MASK_SENSITIVE_DATA');
+$pixEnabled = $env('PIX_ENABLED');
+$pixGateway = $env('PIX_DEFAULT_GATEWAY');
+$pixTtl = $env('PIX_CHARGE_TTL_SECONDS');
+$pixWebhookSecret = $env('PIX_WEBHOOK_SECRET');
+$pixMerchantName = $env('PIX_MERCHANT_NAME');
+$pixMerchantCity = $env('PIX_MERCHANT_CITY');
+$logPath = $env('LOG_PATH');
+$logLevel = $env('LOG_LEVEL');
 
 return [
     'app_name' => 'Mini ERP de Vendas',
-    'base_url' => ($base !== false && $base !== '') ? $base : 'http://localhost/mini-erp-vendas/public',
-    'timezone' => ($timezone !== false && $timezone !== '') ? $timezone : 'America/Sao_Paulo',
-    'debug' => ($debug !== false && $debug !== '') ? filter_var($debug, FILTER_VALIDATE_BOOLEAN) : false,
+    'base_url' => ($base !== null && $base !== '') ? $base : 'http://localhost/mini-erp-vendas/public',
+    'timezone' => ($timezone !== null && $timezone !== '') ? $timezone : 'America/Sao_Paulo',
+    'debug' => ($debug !== null && $debug !== '') ? filter_var($debug, FILTER_VALIDATE_BOOLEAN) : false,
+    'env' => ($appEnv !== null && $appEnv !== '') ? strtolower(trim($appEnv)) : 'local',
     'jwt' => [
-        'secret' => ($jwtSecret !== false && $jwtSecret !== '') ? $jwtSecret : 'mini-erp-dev-jwt-secret-change-in-production',
-        'ttl' => ($jwtTtl !== false && $jwtTtl !== '') ? max(60, (int) $jwtTtl) : 3600,
+        'secret' => \App\Helpers\AppConfig::jwtSecret(),
+        'ttl' => ($jwtTtl !== null && $jwtTtl !== '') ? max(60, (int) $jwtTtl) : 3600,
+    ],
+    'mail' => [
+        'driver' => ($mailDriver !== null && $mailDriver !== '') ? strtolower(trim($mailDriver)) : 'log',
+        'from_address' => ($mailFromAddress !== null && $mailFromAddress !== '') ? $mailFromAddress : 'noreply@localhost',
+        'from_name' => ($mailFromName !== null && $mailFromName !== '') ? $mailFromName : 'Mini ERP de Vendas',
+        'smtp_host' => ($mailSmtpHost !== null && $mailSmtpHost !== '') ? $mailSmtpHost : '',
+        'smtp_port' => ($mailSmtpPort !== null && $mailSmtpPort !== '') ? max(1, (int) $mailSmtpPort) : 587,
+        'smtp_user' => ($mailSmtpUser !== null && $mailSmtpUser !== '') ? $mailSmtpUser : '',
+        'smtp_password' => ($mailSmtpPassword !== null && $mailSmtpPassword !== '') ? $mailSmtpPassword : '',
+        'smtp_encryption' => ($mailSmtpEncryption !== null && $mailSmtpEncryption !== '') ? strtolower(trim($mailSmtpEncryption)) : 'tls',
+        'smtp_auth' => ($mailSmtpAuth !== null && $mailSmtpAuth !== '')
+            ? filter_var($mailSmtpAuth, FILTER_VALIDATE_BOOLEAN)
+            : true,
+        'smtp_debug' => ($mailSmtpDebug !== null && $mailSmtpDebug !== '')
+            ? filter_var($mailSmtpDebug, FILTER_VALIDATE_BOOLEAN)
+            : false,
     ],
     'api' => [
-        'rate_limit' => ($apiRateLimit !== false && $apiRateLimit !== '') ? max(1, (int) $apiRateLimit) : 60,
-        'rate_limit_window' => ($apiRateLimitWindow !== false && $apiRateLimitWindow !== '') ? max(1, (int) $apiRateLimitWindow) : 60,
-        'login_rate_limit' => ($apiLoginRateLimit !== false && $apiLoginRateLimit !== '') ? max(1, (int) $apiLoginRateLimit) : 10,
+        'rate_limit' => ($apiRateLimit !== null && $apiRateLimit !== '') ? max(1, (int) $apiRateLimit) : 60,
+        'rate_limit_window' => ($apiRateLimitWindow !== null && $apiRateLimitWindow !== '') ? max(1, (int) $apiRateLimitWindow) : 60,
+        'login_rate_limit' => ($apiLoginRateLimit !== null && $apiLoginRateLimit !== '') ? max(1, (int) $apiLoginRateLimit) : 10,
     ],
     'database' => [
-        'host' => ($dbHost !== false && $dbHost !== '') ? $dbHost : '127.0.0.1',
-        'port' => ($dbPort !== false && $dbPort !== '') ? $dbPort : '5432',
-        'database' => ($dbName !== false && $dbName !== '') ? $dbName : 'mini_erp_vendas',
-        'username' => ($dbUser !== false && $dbUser !== '') ? $dbUser : 'postgres',
-        'password' => ($dbPass !== false && $dbPass !== '') ? $dbPass : 'postgres',
+        'host' => ($dbHost !== null && $dbHost !== '') ? $dbHost : '127.0.0.1',
+        'port' => ($dbPort !== null && $dbPort !== '') ? $dbPort : '5432',
+        'database' => ($dbName !== null && $dbName !== '') ? $dbName : 'mini_erp_vendas',
+        'username' => ($dbUser !== null && $dbUser !== '') ? $dbUser : 'postgres',
+        'password' => ($dbPass !== null && $dbPass !== '') ? $dbPass : 'postgres',
     ],
     'backup' => [
-        'storage_path' => ($backupPath !== false && $backupPath !== '') ? $backupPath : dirname(__DIR__) . '/storage/backups',
-        'retention_days' => ($backupRetentionDays !== false && $backupRetentionDays !== '') ? max(1, (int) $backupRetentionDays) : 30,
-        'pg_dump_path' => ($pgDumpPath !== false && $pgDumpPath !== '') ? $pgDumpPath : '',
-        'psql_path' => ($psqlPath !== false && $psqlPath !== '') ? $psqlPath : '',
+        'storage_path' => ($backupPath !== null && $backupPath !== '') ? $backupPath : dirname(__DIR__) . '/storage/backups',
+        'retention_days' => ($backupRetentionDays !== null && $backupRetentionDays !== '') ? max(1, (int) $backupRetentionDays) : 30,
+        'pg_dump_path' => ($pgDumpPath !== null && $pgDumpPath !== '') ? $pgDumpPath : '',
+        'psql_path' => ($psqlPath !== null && $psqlPath !== '') ? $psqlPath : '',
     ],
     'security' => [
-        'session_idle_timeout' => ($sessionIdleTimeout !== false && $sessionIdleTimeout !== '') ? (int) $sessionIdleTimeout : 1800,
-        'session_absolute_timeout' => ($sessionAbsoluteTimeout !== false && $sessionAbsoluteTimeout !== '') ? (int) $sessionAbsoluteTimeout : 28800,
-        'password_min_length' => ($passwordMinLength !== false && $passwordMinLength !== '') ? (int) $passwordMinLength : 8,
-        'password_require_complexity' => ($passwordRequireComplexity !== false && $passwordRequireComplexity !== '')
+        'session_idle_timeout' => ($sessionIdleTimeout !== null && $sessionIdleTimeout !== '') ? (int) $sessionIdleTimeout : 1800,
+        'session_absolute_timeout' => ($sessionAbsoluteTimeout !== null && $sessionAbsoluteTimeout !== '') ? (int) $sessionAbsoluteTimeout : 28800,
+        'password_min_length' => ($passwordMinLength !== null && $passwordMinLength !== '') ? (int) $passwordMinLength : 8,
+        'password_require_complexity' => ($passwordRequireComplexity !== null && $passwordRequireComplexity !== '')
             ? filter_var($passwordRequireComplexity, FILTER_VALIDATE_BOOLEAN)
             : true,
-        'lgpd_policy_version' => ($lgpdPolicyVersion !== false && $lgpdPolicyVersion !== '') ? $lgpdPolicyVersion : '2026-05-01',
-        'mask_sensitive_data' => ($maskSensitiveData !== false && $maskSensitiveData !== '')
+        'lgpd_policy_version' => ($lgpdPolicyVersion !== null && $lgpdPolicyVersion !== '') ? $lgpdPolicyVersion : '2026-05-01',
+        'mask_sensitive_data' => ($maskSensitiveData !== null && $maskSensitiveData !== '')
             ? filter_var($maskSensitiveData, FILTER_VALIDATE_BOOLEAN)
             : true,
     ],
     'log' => [
-        'path' => ($logPath !== false && $logPath !== '') ? $logPath : dirname(__DIR__) . '/storage/logs/app.log',
-        'level' => ($logLevel !== false && $logLevel !== '') ? $logLevel : 'warning',
+        'path' => ($logPath !== null && $logPath !== '') ? $logPath : dirname(__DIR__) . '/storage/logs/app.log',
+        'level' => ($logLevel !== null && $logLevel !== '') ? $logLevel : 'warning',
     ],
     'pix' => [
-        'enabled' => ($pixEnabled !== false && $pixEnabled !== '')
+        'enabled' => ($pixEnabled !== null && $pixEnabled !== '')
             ? filter_var($pixEnabled, FILTER_VALIDATE_BOOLEAN)
             : true,
-        'default_gateway' => ($pixGateway !== false && $pixGateway !== '') ? $pixGateway : 'mock',
-        'charge_ttl_seconds' => ($pixTtl !== false && $pixTtl !== '') ? max(300, (int) $pixTtl) : 3600,
-        'webhook_secret' => ($pixWebhookSecret !== false && $pixWebhookSecret !== '') ? $pixWebhookSecret : '',
-        'merchant_name' => ($pixMerchantName !== false && $pixMerchantName !== '') ? $pixMerchantName : 'Mini ERP',
-        'merchant_city' => ($pixMerchantCity !== false && $pixMerchantCity !== '') ? $pixMerchantCity : 'Sao Paulo',
+        'default_gateway' => ($pixGateway !== null && $pixGateway !== '') ? $pixGateway : 'mock',
+        'charge_ttl_seconds' => ($pixTtl !== null && $pixTtl !== '') ? max(300, (int) $pixTtl) : 3600,
+        'webhook_secret' => ($pixWebhookSecret !== null && $pixWebhookSecret !== '') ? $pixWebhookSecret : '',
+        'merchant_name' => ($pixMerchantName !== null && $pixMerchantName !== '') ? $pixMerchantName : 'Mini ERP',
+        'merchant_city' => ($pixMerchantCity !== null && $pixMerchantCity !== '') ? $pixMerchantCity : 'Sao Paulo',
     ],
 ];

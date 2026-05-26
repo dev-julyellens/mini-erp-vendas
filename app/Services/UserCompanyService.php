@@ -17,21 +17,18 @@ final class UserCompanyService
     private UserCompanyRepository $links;
     private UserRepository $users;
     private CompanyRepository $companies;
-    private CompanyRoleService $roles;
     private PlatformAdminService $platformAdmin;
 
     public function __construct(
         ?UserCompanyRepository $links = null,
         ?UserRepository $users = null,
         ?CompanyRepository $companies = null,
-        ?CompanyRoleService $roles = null,
         ?PlatformAdminService $platformAdmin = null
     )
     {
         $this->links = $links ?? new UserCompanyRepository();
         $this->users = $users ?? new UserRepository();
         $this->companies = $companies ?? new CompanyRepository();
-        $this->roles = $roles ?? new CompanyRoleService();
         $this->platformAdmin = $platformAdmin ?? new PlatformAdminService();
     }
 

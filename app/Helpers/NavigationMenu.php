@@ -16,7 +16,7 @@ use App\Services\PlatformAdminService;
  *   active: bool,
  *   badge?: int|string,
  *   external?: bool,
- *   children?: list<NavItem>
+ *   children?: list<array<string, mixed>>
  * }
  * @phpstan-type NavGroup array{ id: string, label: string, items: list<NavItem> }
  */

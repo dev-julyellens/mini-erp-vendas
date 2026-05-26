@@ -107,6 +107,9 @@ function bootstrapAppliedMigrations(PDO $db): void
         '015_lgpd_and_security.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'lgpd_consents'",
         '016_create_pix_charges.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pix_charges'",
         '017_create_saas.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'plans'",
+        '018_sync_audit_constraints.sql' => migration018IsComplete($db) ? 'SELECT 1' : 'SELECT 0',
+        '019_user_companies_roles.sql' => "SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'user_companies' AND column_name = 'role'",
+        '020_profile_avatar_and_preferences.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_preferences'",
     ];
 
     $bootstrapped = 0;
@@ -154,4 +157,25 @@ function migration005IsComplete(PDO $db): bool
     )->fetchColumn();
 
     return is_string($def) && str_contains($def, 'cancelamento_venda');
+}
+
+function migration018IsComplete(PDO $db): bool
+{
+    $hasAudit = (bool) $db->query(
+        "SELECT 1 FROM information_schema.tables
+         WHERE table_schema = 'public' AND table_name = 'audit_logs'"
+    )->fetchColumn();
+
+    if (!$hasAudit)
+    {
+        return false;
+    }
+
+    $def = $db->query(
+        "SELECT pg_get_constraintdef(c.oid)
+         FROM pg_constraint c
+         WHERE c.conname = 'audit_logs_action_check'"
+    )->fetchColumn();
+
+    return is_string($def) && str_contains($def, 'pix_cobranca');
 }

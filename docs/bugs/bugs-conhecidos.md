@@ -12,9 +12,9 @@ Lista baseada no código e comportamento observável. Não inclui issues externa
 
 | Item | Descrição |
 |------|-----------|
-| JWT secret padrão | `mini-erp-dev-jwt-secret-change-in-production` se `JWT_SECRET` não definido. |
-| Webhook PIX mock público | `POST /webhooks/pix/mock` em rotas públicas — aceitável só em dev; expor em produção sem validação forte é risco. |
-| Reset de senha | Token gerado, mas **e-mail não enviado**; link só em `APP_DEBUG`. Usuário em produção sem debug não recebe instruções automáticas. |
+| JWT secret padrão | Mitigado (mai/2026): boot falha se `APP_DEBUG=false` e `JWT_SECRET` ausente/fraco; fallback só em debug. |
+| Webhook PIX mock público | Mitigado (mai/2026): rota só com `APP_DEBUG=true` ou `PIX_MOCK_WEBHOOK_ENABLED=true`; assinatura obrigatória se `PIX_WEBHOOK_SECRET` definido. |
+| Reset de senha | Mitigado (mai/2026): `MailService` envia e-mail (`MAIL_DRIVER`); link na tela permanece só em `APP_DEBUG`. |
 
 ## ACL
 

@@ -28,6 +28,7 @@ docs/
 | [multiempresa.md](arquitetura/multiempresa.md) | Tenant, troca de empresa, vínculos |
 | [usuarios.md](arquitetura/usuarios.md) | Gestão de usuários e perfil |
 | [saas.md](arquitetura/saas.md) | Administração SaaS da plataforma |
+| [devops.md](arquitetura/devops.md) | CI, `.env`, deploy, migrations |
 
 Cada documento segue: visão geral, fluxo, banco, services, repositories, controllers, regras, fluxo de dados, pontos críticos, dependências, melhorias.
 
@@ -39,6 +40,13 @@ Cada documento segue: visão geral, fluxo, banco, services, repositories, contro
 - [permissoes.md](regras-negocio/permissoes.md)
 - [cancelamentos.md](regras-negocio/cancelamentos.md)
 - [auditoria.md](regras-negocio/auditoria.md)
+
+## Checklists de evolução (`docs/implementacoes/`)
+
+| Arquivo | Conteúdo |
+|---------|----------|
+| [checklist-refatoracao-ui.md](implementacoes/checklist-refatoracao-ui.md) | UI/UX — telas, componentes, design system |
+| [checklist-melhorias-projeto.md](implementacoes/checklist-melhorias-projeto.md) | Melhorias globais — segurança, backend, API, testes, CI, a11y |
 
 ## Bugs e qualidade (`docs/bugs/`)
 

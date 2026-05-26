@@ -6,12 +6,20 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\ValidationException;
+use App\Helpers\AppConfig;
 use App\Services\PixChargeService;
 
 final class PixWebhookController extends Controller
 {
     public function mock(): void
     {
+        if (!AppConfig::allowsMockPixWebhook())
+        {
+            $this->json(['success' => false, 'message' => 'Webhook não disponível neste ambiente.'], 404);
+
+            return;
+        }
+
         $this->handle('mock');
     }
 

@@ -6,7 +6,7 @@
 - **Sem NF-e / fiscal** — não há emissão de documentos fiscais eletrônicos.
 - **Um depósito de estoque** — sem multi-armazém ou lote/série.
 - **PIX mock** — QR e conciliação simulados; sem PSP real.
-- **E-mail transacional** — reset de senha e notificações críticas não usam SMTP integrado.
+- **E-mail transacional** — reset de senha via PHPMailer (`MAIL_DRIVER`); notificações críticas ainda sem fila assíncrona.
 - **Usuários** — CRUD de usuários não exposto como módulo completo na UI (gestão limitada ao seed/admin).
 - **Moeda única** — sem multi-moeda ou câmbio.
 

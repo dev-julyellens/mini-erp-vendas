@@ -306,7 +306,15 @@ final class PixChargeService
             'receipt_reference' => 'SIM-' . $charge->external_id,
         ];
 
-        $this->handleWebhook('mock', $payload, json_encode($payload) ?: '{}', null);
+        $rawBody = json_encode($payload, JSON_UNESCAPED_UNICODE) ?: '{}';
+        $signature = null;
+        $secret = \App\Helpers\PixConfig::webhookSecret();
+        if ($secret !== '')
+        {
+            $signature = hash_hmac('sha256', $rawBody, $secret);
+        }
+
+        $this->handleWebhook('mock', $payload, $rawBody, $signature);
     }
 
     public function reconcile(int $chargeId): int

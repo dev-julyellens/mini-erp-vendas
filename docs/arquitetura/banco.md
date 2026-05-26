@@ -55,7 +55,17 @@ Multi-tenant: a maioria das tabelas de negócio possui `company_id` (migration `
 
 ### Migrations (ordem)
 
-`001` users → `002` permissions → `003` audit → `004` stock → `005` order status → `006` financial → `007` installments → `008` categories → `009` services → `010` indexes → `011` API → `012` backup → `013` companies → `014` notifications → `015` LGPD → `016` PIX → `017` SaaS → `018` audit constraints.
+`001` users → … → `017` SaaS → `018` audit constraints → `019` user_companies roles → `020` avatar e user_preferences.
+
+### 12. Sincronização `database.sql`
+
+- **`database/database.sql`**: snapshot para instalação nova; pode ficar atrás das migrations mais recentes.
+- **`database/migrations/*.sql`**: fonte da verdade para evolução incremental.
+- **Processo recomendado** após criar migration:
+  1. Aplicar em banco de teste: `php bin/migrate`
+  2. Validar schema
+  3. (Opcional) Regenerar `database.sql` via `pg_dump --schema-only` + dados seed, ou documentar que novas instalações devem rodar `run_migration.php` após o dump
+- **Bancos legados** sem `schema_migrations`: o runner executa `bootstrapAppliedMigrations()` na primeira vez e marca 001–020 já presentes antes de aplicar pendentes.
 
 ## 4. Services envolvidos
 

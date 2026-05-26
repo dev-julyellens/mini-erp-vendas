@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
+use App\Helpers\AppConfig;
 use App\Helpers\Auth;
 use App\Helpers\CompanyContext;
 use App\Helpers\PathHelper;
@@ -25,7 +26,6 @@ final class TenantContextMiddleware
         'GET /select-company',
         'POST /select-company',
         'POST /api/auth/login',
-        'POST /webhooks/pix/mock',
     ];
 
     public static function handle(?string $method = null, ?string $path = null): void
@@ -34,7 +34,7 @@ final class TenantContextMiddleware
         $path = $path ?? PathHelper::requestPath();
         $routeKey = $method . ' ' . $path;
 
-        if (in_array($routeKey, self::SKIP_ROUTES, true) || !Auth::check())
+        if (self::shouldSkip($routeKey) || !Auth::check())
         {
             return;
         }
@@ -45,5 +45,15 @@ final class TenantContextMiddleware
         }
 
         (new TenantContextService())->refreshCompanyRoleInSession();
+    }
+
+    private static function shouldSkip(string $routeKey): bool
+    {
+        if ($routeKey === 'POST /webhooks/pix/mock')
+        {
+            return AppConfig::allowsMockPixWebhook();
+        }
+
+        return in_array($routeKey, self::SKIP_ROUTES, true);
     }
 }

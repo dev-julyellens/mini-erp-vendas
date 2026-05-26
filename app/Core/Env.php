@@ -10,8 +10,34 @@ use Dotenv\Exception\ExceptionInterface;
 final class Env
 {
     /**
+     * Lê variável carregada do .env (ordem: $_ENV, $_SERVER, getenv).
+     * Use após {@see load()}.
+     */
+    public static function get(string $key, ?string $default = null): ?string
+    {
+        if (array_key_exists($key, $_ENV))
+        {
+            return (string) $_ENV[$key];
+        }
+
+        if (array_key_exists($key, $_SERVER))
+        {
+            return (string) $_SERVER[$key];
+        }
+
+        $value = getenv($key);
+        if ($value !== false)
+        {
+            return $value;
+        }
+
+        return $default;
+    }
+
+    /**
      * Carrega variáveis de ambiente via vlucas/phpdotenv.
-     * Em caso de .env com sintaxe legada (ex.: valores com espaço sem aspas), usa fallback.
+     * Usa load() (não safeLoad) para o .env prevalecer sobre defaults do Apache/XAMPP.
+     * Em caso de sintaxe inválida, usa parser legado.
      */
     public static function load(string $path): void
     {
@@ -27,7 +53,7 @@ final class Env
         {
             try
             {
-                Dotenv::createImmutable($directory, $filename)->safeLoad();
+                Dotenv::createImmutable($directory, $filename)->load();
 
                 return;
             }
@@ -45,11 +71,18 @@ final class Env
      */
     private static function loadLegacy(string $path): void
     {
-        $lines = file($path, FILE_IGNORE_NEW_LINES);
-        if ($lines === false)
+        $raw = file_get_contents($path);
+        if ($raw === false)
         {
             return;
         }
+
+        if (str_starts_with($raw, "\xEF\xBB\xBF"))
+        {
+            $raw = substr($raw, 3);
+        }
+
+        $lines = preg_split('/\R/', $raw) ?: [];
 
         foreach ($lines as $line)
         {

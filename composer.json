@@ -10,6 +10,7 @@
         "dompdf/dompdf": "^3.1",
         "endroid/qr-code": "^6.0",
         "monolog/monolog": "^3.0",
+        "phpmailer/phpmailer": "6.9",
         "phpoffice/phpspreadsheet": "^5.7",
         "vlucas/phpdotenv": "^5.6"
     },
@@ -35,7 +36,8 @@
             "@analyse",
             "@test"
         ],
-        "encoding": "php bin/check-encoding.php"
+        "encoding": "php bin/check-encoding.php",
+        "migrate": "php bin/migrate"
     },
     "config": {
         "sort-packages": true

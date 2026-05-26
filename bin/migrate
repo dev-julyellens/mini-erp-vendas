@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Aplica migrations pendentes (wrapper de database/run_migration.php).
+ *
+ * Uso: php bin/migrate
+ */
+
+$script = dirname(__DIR__) . '/database/run_migration.php';
+
+if (!is_file($script))
+{
+    fwrite(STDERR, "Migration runner not found: {$script}\n");
+    exit(1);
+}
+
+require $script;

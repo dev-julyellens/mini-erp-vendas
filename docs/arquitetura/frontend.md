@@ -65,23 +65,55 @@ Browser → public/index.php → Controller@action
 
 `APP_BASE_URL` em `.env` afeta links absolutos (`PathHelper`).
 
-## 9. Pontos críticos
+## 9. Design system e componentes
+
+Implementado em `public/assets/css/design-system.css` + `app.css` (tokens, tema claro/escuro).
+
+| Componente | Arquivo |
+|------------|---------|
+| Cabeçalho de página | `app/Views/components/page-header.php` |
+| Botões de ação | `app/Views/components/action-buttons.php` |
+| Painel de filtros | `app/Views/components/filter-panel.php` |
+| KPI | `app/Views/components/kpi-card.php` |
+| Auth (título) | `app/Views/components/auth-form-header.php` |
+
+Documentação de botões: [../implementacoes/botoes-padrao.md](../implementacoes/botoes-padrao.md). Checklist de migração: [../implementacoes/checklist-refatoracao-ui.md](../implementacoes/checklist-refatoracao-ui.md).
+
+## 10. JavaScript por tela
+
+| Arquivo | Uso |
+|---------|-----|
+| `app.js` | Sidebar, tema, DataTables, toasts, prefs |
+| `a11y.js` | Skip link, título dinâmico, abas, live regions |
+| `input-masks.js` | Máscaras globais (telefone, CEP, moeda) |
+| `order_create.js` / `autosave.js` | Nova venda |
+| `product_form.js` / `service_form.js` | Margens e preço |
+| `dashboard.js` / `reports-charts.js` | Chart.js |
+
+Layouts: `layouts/main.php` (painel), `layouts/auth.php` (login/reset).
+
+## 11. Acessibilidade
+
+- Skip link, `#mainContent`, `lang="pt-BR"`
+- ARIA em abas do dashboard e modais
+- Checklist e auditoria: [../implementacoes/acessibilidade.md](../implementacoes/acessibilidade.md)
+
+## 12. Pontos críticos
 
 - Sem build step (Webpack/Vite) — JS vanilla por arquivo.
-- `order_create.js` — lógica de itens e totais na venda.
-- `dashboard.js` — gráficos/métricas do painel.
-- Layout `main.php` concentra menu de navegação filtrado por permissões.
+- jQuery + DataTables carregados globalmente no layout principal (melhoria pendente: carregar só onde há tabela).
+- `APP_BASE_URL` em `.env` afeta links (`PathHelper`).
 
-## 10. Dependências
+## 13. Dependências
 
 - `public/.htaccess` — rewrite para `index.php`
-- Middleware `SecurityHeadersMiddleware` (CSP, etc.)
-- Bibliotecas server-side para PDF/Excel (Dompdf, PhpSpreadsheet) — export não é frontend
+- `SecurityHeadersMiddleware` (CSP, etc.)
+- Dompdf / PhpSpreadsheet — export server-side
 
-## 11. Possíveis melhorias futuras
+## 14. Melhorias futuras (pendentes)
 
-- Componentização parcial (HTMX/Alpine) sem SPA completa.
-- Design system unificado (tokens CSS).
-- i18n formal para mensagens de backend.
-- Bundle e minificação de assets.
-- Acessibilidade (ARIA) em modais e tabelas.
+- DataTables/jQuery condicionais; `auth-lite.js` no layout auth
+- Cache-busting em assets (`?v=`)
+- Unificar `product_form.js` e `service_form.js`
+- i18n formal para mensagens de backend em inglês
+- Auditoria axe automatizada na CI
