@@ -23,9 +23,9 @@ $tagClose = $href !== null && $href !== '' ? '</a>' : '</div>';
 
 echo $tagOpen;
 ?>
-    <div class="kpi-label text-white-50 small"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></div>
-    <h3 class="kpi-value mb-0"><?= $value ?></h3>
-    <?php if ($hint !== null && $hint !== ''): ?>
-        <div class="kpi-hint small text-white-50"><?= htmlspecialchars($hint, ENT_QUOTES, 'UTF-8') ?></div>
-    <?php endif; ?>
+<div class="kpi-label small"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></div>
+<h3 class="kpi-value mb-0"><?= $value ?></h3>
+<?php if ($hint !== null && $hint !== ''): ?>
+    <div class="kpi-hint small"><?= htmlspecialchars($hint, ENT_QUOTES, 'UTF-8') ?></div>
+<?php endif; ?>
 <?= $tagClose ?>
