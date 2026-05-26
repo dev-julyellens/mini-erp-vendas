@@ -79,6 +79,12 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
                 <a class="nav-link <?= $navActive('/') ?>" href="<?= htmlspecialchars($url(''), ENT_QUOTES, 'UTF-8') ?>">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
+                <a class="nav-link <?= $navPrefix('/notifications') ?>" href="<?= htmlspecialchars($url('notifications'), ENT_QUOTES, 'UTF-8') ?>">
+                    <i class="bi bi-bell"></i> Notificações
+                    <?php if (!empty($notificationUnreadCount) && (int) $notificationUnreadCount > 0): ?>
+                        <span class="badge rounded-pill text-bg-danger ms-1"><?= (int) $notificationUnreadCount > 99 ? '99+' : (int) $notificationUnreadCount ?></span>
+                    <?php endif; ?>
+                </a>
                 <?php if ($canClientes): ?>
                     <a class="nav-link <?= $navPrefix('/customers') ?>" href="<?= htmlspecialchars($url('customers'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-people"></i> Clientes
@@ -152,6 +158,7 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
                     <button type="button" class="btn btn-sm btn-outline-secondary theme-toggle-btn" data-theme-toggle aria-label="Modo escuro" title="Modo escuro">
                         <i class="bi bi-moon-stars"></i>
                     </button>
+                    <?php require dirname(__DIR__) . '/partials/notifications-bell.php'; ?>
                     <?php $authUser = \App\Helpers\Auth::sessionSnapshot(); ?>
                     <?php if ($authUser !== null): ?>
                         <?php if (!empty($authUser['company_name'])): ?>
