@@ -34,6 +34,8 @@ $pixTtl = getenv('PIX_CHARGE_TTL_SECONDS');
 $pixWebhookSecret = getenv('PIX_WEBHOOK_SECRET');
 $pixMerchantName = getenv('PIX_MERCHANT_NAME');
 $pixMerchantCity = getenv('PIX_MERCHANT_CITY');
+$logPath = getenv('LOG_PATH');
+$logLevel = getenv('LOG_LEVEL');
 
 return [
     'app_name' => 'Mini ERP de Vendas',
@@ -73,6 +75,10 @@ return [
         'mask_sensitive_data' => ($maskSensitiveData !== false && $maskSensitiveData !== '')
             ? filter_var($maskSensitiveData, FILTER_VALIDATE_BOOLEAN)
             : true,
+    ],
+    'log' => [
+        'path' => ($logPath !== false && $logPath !== '') ? $logPath : dirname(__DIR__) . '/storage/logs/app.log',
+        'level' => ($logLevel !== false && $logLevel !== '') ? $logLevel : 'warning',
     ],
     'pix' => [
         'enabled' => ($pixEnabled !== false && $pixEnabled !== '')

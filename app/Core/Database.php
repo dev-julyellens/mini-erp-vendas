@@ -41,6 +41,42 @@ final class Database
         return self::$instance;
     }
 
+    /**
+     * Executa callback dentro de transação (commit/rollback automático).
+     *
+     * @template T
+     * @param callable(PDO): T $callback
+     * @return T
+     */
+    public static function transaction(callable $callback): mixed
+    {
+        $pdo = self::getConnection();
+
+        if ($pdo->inTransaction())
+        {
+            return $callback($pdo);
+        }
+
+        $pdo->beginTransaction();
+
+        try
+        {
+            $result = $callback($pdo);
+            $pdo->commit();
+
+            return $result;
+        }
+        catch (\Throwable $e)
+        {
+            if ($pdo->inTransaction())
+            {
+                $pdo->rollBack();
+            }
+
+            throw $e;
+        }
+    }
+
     public static function resetForTesting(): void
     {
         self::$instance = null;

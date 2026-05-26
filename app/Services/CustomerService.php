@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Core\ValidationException;
 use App\Helpers\Audit;
 use App\Helpers\InputSanitizer;
+use App\Helpers\Validator;
 use App\Repositories\CustomerRepository;
 
 final class CustomerService
@@ -19,22 +20,15 @@ final class CustomerService
     }
 
     /**
-     * @return array<string, string>
+     * @return array{errors: array<string, string>, name: string, email: string, phone: ?string}
      */
     private function validate(string $name, string $email, ?string $phone, ?int $excludeId = null): array
     {
-        $errors = [];
-        $name = InputSanitizer::string($name, 255);
-        if ($name === '')
-        {
-            $errors['name'] = 'Name is required.';
-        }
-
-        $email = InputSanitizer::email($email);
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL))
-        {
-            $errors['email'] = 'Valid email is required.';
-        }
+        $nameResult = Validator::requiredString($name, 'name', 'Name is required.');
+        $emailResult = Validator::email($email);
+        $errors = Validator::mergeErrors($nameResult['errors'], $emailResult['errors']);
+        $name = $nameResult['value'];
+        $email = $emailResult['value'];
 
         if ($email !== '' && $excludeId === null && $this->customers->findByEmail($email) !== null)
         {

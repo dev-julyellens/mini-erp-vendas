@@ -7,6 +7,8 @@
 
 # Logs
 *.log
+/storage/logs/*.log
+!/storage/logs/.gitkeep
 
 # Environment variables
 .env
@@ -17,11 +19,11 @@
 .cursorrules
 .gitmessage
 
-# Composer
-composer.lock
-
 # Backups
 /storage/backups/*.sql
 
 # Scripts
 scripts/
+
+# PHPUnit
+.phpunit.cache/

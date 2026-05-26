@@ -4,21 +4,13 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Core\Database;
 use App\Models\Customer;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class CustomerRepository
+final class CustomerRepository extends BaseRepository
 {
     use CompanyScope;
-
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function findById(int $id): ?Customer
     {

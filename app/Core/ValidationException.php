@@ -6,7 +6,7 @@ namespace App\Core;
 
 use RuntimeException;
 
-final class ValidationException extends RuntimeException
+class ValidationException extends RuntimeException
 {
     /** @var array<string, string> */
     private array $errors;

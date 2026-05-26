@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Core;
 
+use Dotenv\Dotenv;
+use Dotenv\Exception\ExceptionInterface;
+
 final class Env
 {
     /**
-     * Loads KEY=value pairs from a .env file into putenv() / $_ENV / $_SERVER.
-     * Supports optional spaces around '=' and lines like: DB_HOST = 127.0.0.1
+     * Carrega variáveis de ambiente via vlucas/phpdotenv.
+     * Em caso de .env com sintaxe legada (ex.: valores com espaço sem aspas), usa fallback.
      */
     public static function load(string $path): void
     {
@@ -17,6 +20,31 @@ final class Env
             return;
         }
 
+        $directory = dirname($path);
+        $filename = basename($path);
+
+        if (class_exists(Dotenv::class))
+        {
+            try
+            {
+                Dotenv::createImmutable($directory, $filename)->safeLoad();
+
+                return;
+            }
+            catch (ExceptionInterface)
+            {
+                // .env legado: delega ao parser anterior
+            }
+        }
+
+        self::loadLegacy($path);
+    }
+
+    /**
+     * @deprecated Mantido apenas como fallback sem Composer.
+     */
+    private static function loadLegacy(string $path): void
+    {
         $lines = file($path, FILE_IGNORE_NEW_LINES);
         if ($lines === false)
         {

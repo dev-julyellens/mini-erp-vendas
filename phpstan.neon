@@ -1,0 +1,30 @@
+parameters:
+    level: 5
+    paths:
+        - app
+    excludePaths:
+        - app/Views/*
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        -
+            message: '#^If condition is always false\.#'
+            path: app/Core/Database.php
+        -
+            message: '#^Variable .* might not be defined\.#'
+            path: app/Controllers/*
+        -
+            message: '#^Parameter \#1 \$array of function reset#'
+            path: app/Controllers/PixChargeController.php
+        -
+            message: '#^Strict comparison using === between non-falsy-string#'
+            path: app/Helpers/PathHelper.php
+        -
+            message: '#^Else branch is unreachable#'
+        -
+            message: '#^Strict comparison using === between array\{.*\} and array\{\}#'
+            path: app/Repositories/ReportRepository.php
+        -
+            message: '#^Strict comparison using === between mixed and null#'
+            path: app/Services/*
+        -
+            message: '#^Call to an undefined method App\\Repositories\\SubscriptionRepository::markPastDue\(\)\.#'

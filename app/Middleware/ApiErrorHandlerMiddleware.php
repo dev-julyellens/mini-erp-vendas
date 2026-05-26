@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Middleware;
 
 use App\Core\ApiException;
-use App\Helpers\AppConfig;
-use App\Helpers\ApiResponse;
+use App\Core\Logger;
 use App\Core\ValidationException;
+use App\Helpers\ApiResponse;
+use App\Helpers\AppConfig;
 
 final class ApiErrorHandlerMiddleware
 {
@@ -34,7 +35,7 @@ final class ApiErrorHandlerMiddleware
                 ApiResponse::error($e->getMessage(), $e->getStatusCode(), $e->getErrors());
             }
 
-            error_log('API unhandled exception: ' . $e->getMessage());
+            Logger::exception($e, 'API unhandled exception');
 
             try
             {
