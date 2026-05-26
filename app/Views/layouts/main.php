@@ -122,6 +122,9 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
                     <a class="nav-link <?= $navPrefix('/audit-logs') ?>" href="<?= htmlspecialchars($url('audit-logs'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-journal-text"></i> Auditoria
                     </a>
+                    <a class="nav-link <?= $navPrefix('/access-logs') ?>" href="<?= htmlspecialchars($url('access-logs'), ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="bi bi-door-open"></i> Logs de acesso
+                    </a>
                     <a class="nav-link <?= $navPrefix('/backups') ?>" href="<?= htmlspecialchars($url('backups'), ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-hdd-stack"></i> Backup
                     </a>
@@ -187,7 +190,7 @@ $canRelatorios = $canVendas || $canEstoque || $canFinanceiro;
                         </form>
                     <?php endif; ?>
                     <div class="text-muted small text-nowrap">
-                        <?= date('d/m/Y H:i') ?>
+                        <?= htmlspecialchars(\App\Helpers\DateHelper::nowBr(), ENT_QUOTES, 'UTF-8') ?>
                     </div>
                 </div>
             </header>
