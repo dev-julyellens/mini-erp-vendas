@@ -150,7 +150,20 @@
                 }),
             })
                 .then(function (res) {
-                    return res.json().then(function (body) {
+                    return res.text().then(function (text) {
+                        var body = null;
+                        if (text) {
+                            try {
+                                body = JSON.parse(text);
+                            } catch (parseErr) {
+                                return {
+                                    ok: false,
+                                    status: res.status,
+                                    body: null,
+                                    raw: text,
+                                };
+                            }
+                        }
                         return { ok: res.ok, status: res.status, body: body };
                     });
                 })
@@ -172,6 +185,10 @@
                         msg = Object.values(result.body.errors).join(" ");
                     } else if (result.body && result.body.message) {
                         msg = result.body.message;
+                    } else if (result.raw) {
+                        msg = result.raw.trim().slice(0, 200);
+                    } else if (result.status === 403) {
+                        msg = "Acesso negado. Atualize a página e tente novamente.";
                     }
 
                     if (window.MiniErp && window.MiniErp.toast) {
