@@ -12,8 +12,8 @@ final class NotFoundException extends ValidationException
     public function __construct(string $entity, string $field = 'id')
     {
         parent::__construct(
-            [$field => sprintf('%s not found.', $entity)],
-            sprintf('%s not found.', $entity)
+            [$field => sprintf('%s não encontrado(a).', $entity)],
+            sprintf('%s não encontrado(a).', $entity)
         );
     }
 }

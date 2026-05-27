@@ -18,14 +18,14 @@ final class View
         if (!is_file($file))
         {
             http_response_code(500);
-            echo 'View not found: ' . htmlspecialchars($template, ENT_QUOTES, 'UTF-8');
+            echo 'View não encontrada: ' . htmlspecialchars($template, ENT_QUOTES, 'UTF-8');
             exit;
         }
 
         if (!is_file($layoutFile))
         {
             http_response_code(500);
-            echo 'Layout not found: ' . htmlspecialchars($layout, ENT_QUOTES, 'UTF-8');
+            echo 'Layout não encontrado: ' . htmlspecialchars($layout, ENT_QUOTES, 'UTF-8');
             exit;
         }
 

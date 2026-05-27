@@ -29,16 +29,16 @@ final class ReportController extends Controller
 
     public function index(): void
     {
-        $canSales = Permission::canView('vendas');
-        $canStock = Permission::canView('estoque');
-        $canFinance = Permission::canView('financeiro');
-
-        if (!$canSales && !$canStock && !$canFinance)
+        if (!Permission::canAccessReportsHub())
         {
             http_response_code(403);
             echo '403 - Você não tem permissão para acessar relatórios.';
             exit;
         }
+
+        $canSales = Permission::canView('vendas');
+        $canStock = Permission::canView('estoque');
+        $canFinance = Permission::canView('financeiro');
 
         $this->view('reports/index', [
             'canSales' => $canSales,

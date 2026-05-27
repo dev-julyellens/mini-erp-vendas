@@ -26,7 +26,7 @@ Checklist para deploy, revisão de PR e uso do Cursor Agent.
 
 - [ ] Cancelamento: validar AR/parcelas pagas antes de permitir na UI.
 - [ ] Parcelado: orientar operadores a receber via tela de parcelas, não AR.
-- [ ] Status `paid` na criação — relatórios financeiros devem considerar AR `pending` separadamente.
+- [x] Status do pedido na criação — pedido `pending`, AR `pending`; pedido vira `paid` ao quitar a conta.
 
 ## Desenvolvimento assistido por IA
 

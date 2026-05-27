@@ -88,7 +88,7 @@ foreach (array_keys($routes) as $key)
     }
     if ($key === 'GET /reports')
     {
-        $intentionalOpen[] = $key . ' (ACL no ReportController)';
+        $intentionalOpen[] = $key . ' (ACL OR em PermissionService::canAccessReportsHub)';
 
         continue;
     }

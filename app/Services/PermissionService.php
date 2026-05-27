@@ -42,6 +42,19 @@ final class PermissionService
         return $this->can($role, $module, 'visualizar');
     }
 
+    /** Hub de relatórios: exige visualizar vendas, estoque ou financeiro. */
+    public function canAccessReportsHub(string $role): bool
+    {
+        if ($this->isAdminRole($role))
+        {
+            return true;
+        }
+
+        return $this->canViewModule($role, 'vendas')
+            || $this->canViewModule($role, 'estoque')
+            || $this->canViewModule($role, 'financeiro');
+    }
+
     /**
      * @return list<string>
      */
@@ -65,6 +78,11 @@ final class PermissionService
         if ($this->isAdminRole($role))
         {
             return true;
+        }
+
+        if ($method === 'GET' && $path === '/reports')
+        {
+            return $this->canAccessReportsHub($role);
         }
 
         $required = RoutePermissionMap::resolve($method, $path);

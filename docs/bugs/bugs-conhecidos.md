@@ -20,7 +20,7 @@ Lista baseada no código e comportamento observável. Não inclui issues externa
 
 | Item | Descrição |
 |------|-----------|
-| Hub de relatórios aberto | `GET /reports` sem entrada em `RoutePermissionMap` — qualquer usuário autenticado acessa o índice; sub-rotas exigem permissão. |
+| Hub de relatórios | **Corrigido (mai/2026):** `PermissionService::canAccessReportsHub()` — exige `vendas`, `estoque` ou `financeiro` (visualizar); aplicado no middleware e em `ReportController`. |
 
 ## Integrações
 
@@ -38,7 +38,7 @@ Lista baseada no código e comportamento observável. Não inclui issues externa
 
 | Item | Descrição |
 |------|-----------|
-| Idioma misto | Services/API retornam mensagens em inglês; UI em português — inconsistência para o usuário final em erros expostos na web. |
+| Idioma misto | **Corrigido (mai/2026):** mensagens de estoque e controllers web principais em português (`StockService`, `OrderController`, `StockMovementController`). Revisar pontualmente novos services. |
 
 ---
 

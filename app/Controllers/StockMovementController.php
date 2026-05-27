@@ -87,7 +87,7 @@ final class StockMovementController extends Controller
 
         if (!is_numeric($quantityRaw) || (int) $quantityRaw != $quantityRaw)
         {
-            $errors['quantity'] = 'Quantity must be an integer.';
+            $errors['quantity'] = 'A quantidade deve ser um número inteiro.';
         }
 
         $quantity = (int) $quantityRaw;

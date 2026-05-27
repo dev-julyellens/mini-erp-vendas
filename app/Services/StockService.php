@@ -83,7 +83,7 @@ final class StockService
             $product = $this->products->findById($productId, $lockProduct);
             if ($product === null)
             {
-                throw new ValidationException(['product_id' => 'Product not found.']);
+                throw new ValidationException(['product_id' => 'Produto não encontrado.']);
             }
 
             if ($product->isService())
@@ -97,7 +97,7 @@ final class StockService
             {
                 throw new ValidationException([
                     'quantity' => sprintf(
-                        'Insufficient stock for "%s". Available: %d.',
+                        'Estoque insuficiente para "%s". Disponível: %d.',
                         $product->name,
                         $product->stock
                     ),
@@ -149,13 +149,13 @@ final class StockService
     {
         if ($targetStock < 0)
         {
-            throw new ValidationException(['stock' => 'Stock cannot be negative.']);
+            throw new ValidationException(['stock' => 'O estoque não pode ser negativo.']);
         }
 
         $product = $this->products->findById($productId, false);
         if ($product === null)
         {
-            throw new ValidationException(['product_id' => 'Product not found.']);
+            throw new ValidationException(['product_id' => 'Produto não encontrado.']);
         }
 
         if ($product->isService())
@@ -347,12 +347,12 @@ final class StockService
     {
         if ($quantity === 0)
         {
-            throw new ValidationException(['quantity' => 'Quantity cannot be zero.']);
+            throw new ValidationException(['quantity' => 'A quantidade não pode ser zero.']);
         }
 
         if (in_array($type, self::POSITIVE_QUANTITY_TYPES, true) && $quantity < 0)
         {
-            throw new ValidationException(['quantity' => 'Quantity must be positive for this movement type.']);
+            throw new ValidationException(['quantity' => 'A quantidade deve ser positiva para este tipo de movimentação.']);
         }
     }
 

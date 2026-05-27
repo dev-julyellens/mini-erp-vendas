@@ -28,6 +28,18 @@ final class Permission
         return self::can($module, 'visualizar');
     }
 
+    public static function canAccessReportsHub(): bool
+    {
+        if (!Auth::check())
+        {
+            return false;
+        }
+
+        $role = self::effectiveRole();
+
+        return $role !== '' && self::service()->canAccessReportsHub($role);
+    }
+
     private static function service(): PermissionService
     {
         if (self::$service === null)

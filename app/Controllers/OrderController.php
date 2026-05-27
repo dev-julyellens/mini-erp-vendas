@@ -60,7 +60,7 @@ final class OrderController extends Controller
         $order = $orders->findById($id);
         if ($order === null)
         {
-            Flash::error('Order not found.');
+            Flash::error('Venda não encontrada.');
             $this->redirect('/orders');
         }
 
