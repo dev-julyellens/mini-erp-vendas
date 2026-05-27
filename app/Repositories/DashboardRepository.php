@@ -8,16 +8,9 @@ use App\Core\Database;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class DashboardRepository
+final class DashboardRepository extends BaseRepository
 {
     use CompanyScope;
-
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     /**
      * @return array{

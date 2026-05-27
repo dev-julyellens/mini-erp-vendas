@@ -8,15 +8,8 @@ use App\Core\Database;
 use App\Models\BackupSettings;
 use PDO;
 
-final class BackupSettingsRepository
+final class BackupSettingsRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     public function get(): BackupSettings
     {
         $stmt = $this->db->query(

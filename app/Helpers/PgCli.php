@@ -7,6 +7,7 @@ namespace App\Helpers;
 final class PgCli
 {
     /**
+     * @param list<string> $args
      * @param array<string, string> $env
      * @return array{exitCode: int, output: string}
      */

@@ -133,7 +133,7 @@ flowchart LR
 
 ---
 
-## Fase 3 — Qualidade (testes + PHPStan)
+## Fase 3 — Qualidade (testes + PHPStan) ✅ (mai/2026)
 
 **Objetivo:** detectar regressões cedo e subir barreira estática.
 
@@ -167,7 +167,7 @@ flowchart LR
 
 ---
 
-## Fase 4 — `BaseRepository` (repositórios restantes)
+## Fase 4 — `BaseRepository` (repositórios restantes) ✅ (mai/2026)
 
 **Objetivo:** completar padronização (~20 repositórios restantes).
 

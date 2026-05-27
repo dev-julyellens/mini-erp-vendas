@@ -122,7 +122,8 @@ final class ReportFilterService
     }
 
     /**
-     * @return array<string, string>
+     * @param list<string> $keys
+     * @return array<string, int|string|null>
      */
     public function filtersForView(ReportFilter $filter, array $keys): array
     {
@@ -139,6 +140,9 @@ final class ReportFilterService
         ];
     }
 
+    /**
+     * @param array<string, mixed> $query
+     */
     private function optionalDate(array $query, string $key): ?string
     {
         if (!isset($query[$key]))

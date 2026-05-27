@@ -119,6 +119,7 @@ final class ReportChartImageService
     }
 
     /**
+     * @param list<string> $labels
      * @param array{label: string, data: list<float|int>, color?: string} $dataset
      */
     private function drawHorizontalBars(
@@ -152,6 +153,7 @@ final class ReportChartImageService
     }
 
     /**
+     * @param list<string> $labels
      * @param list<array{label: string, data: list<float|int>, color?: string}> $datasets
      */
     private function drawStackedBars(
@@ -203,6 +205,7 @@ final class ReportChartImageService
     }
 
     /**
+     * @param list<string> $labels
      * @param array{label: string, data: list<float|int>} $dataset
      */
     private function drawLineChart(

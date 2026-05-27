@@ -8,15 +8,8 @@ use App\Core\Database;
 use App\Models\BackupLog;
 use PDO;
 
-final class BackupLogRepository
+final class BackupLogRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     public function insert(
         string $operation,
         string $triggerType,

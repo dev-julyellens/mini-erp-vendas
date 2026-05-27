@@ -11,6 +11,10 @@ use PDO;
 final class InventoryCountLineRepository extends BaseRepository
 {
     use CompanyScope;
+
+    /**
+     * @param list<array{product_id: int, system_qty: int, counted_qty: int|null}> $lines
+     */
     public function insertBatch(int $inventoryCountId, array $lines): void
     {
         $stmt = $this->db->prepare(

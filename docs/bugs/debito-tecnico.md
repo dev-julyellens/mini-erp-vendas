@@ -12,10 +12,10 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 
 | Status | Detalhe |
 |--------|---------|
-| 🟡 | **13 de 33** repositórios estendem `BaseRepository` (PDO injetável): núcleo venda/estoque/financeiro (`Product`, `Order`, `OrderItem`, `Payment`, `AccountsReceivable`, `PixCharge`, `StockMovement`) + orçamentos/inventário/clientes. |
-| ⬜ | **~20** repositórios administrativos ainda instanciam `Database::getConnection()` diretamente (`User`, `Company`, `Category`, `Report`, etc.). |
+| ✅ | **33/33** repositórios estendem `BaseRepository` (PDO injetável via construtor da base). |
+| ✅ | Nenhum construtor duplicado com `Database::getConnection()` nos filhos (mai/2026). |
 
-**Impacto:** duplicação de construtor/PDO e maior dificuldade para testes com banco em memória ou mock.
+**Impacto:** padrão único para testes com `$pdo` mockado ou transação compartilhada.
 
 ---
 
@@ -45,9 +45,9 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 
 | Status | Detalhe |
 |--------|---------|
-| 🟡 | ~23 arquivos em `tests/` (Unit + Integration): Helpers, Core, `OrderService`, `QuoteService`, API auth, tenant, Mercado Pago PIX. |
-| ⬜ | Cobertura ainda concentrada — poucos services com PDO mock; não há suíte ampla de integração por módulo. |
-| ⬜ | PHPStan permanece no **nível 5** (`phpstan.neon`); subir para 6 exige corrigir ~14 avisos de `array` sem tipo de valor (ver checklist 5.7). |
+| 🟡 | ~26 arquivos em `tests/` (Unit + Integration): financeiro (`PaymentService`), estoque (`StockService`), cancelamento (`OrderCancelService`), vendas, tenant, PIX. |
+| ⬜ | Cobertura ainda concentrada — poucos services com PDO mock; inventário físico sem teste de integração dedicado. |
+| ✅ | PHPStan no **nível 6** (`phpstan.neon`); PHPDoc de iteráveis corrigidos em mai/2026. |
 
 **Comandos:** `composer test` · `composer analyse` · `composer check`
 
@@ -85,9 +85,6 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 
 | Prioridade | Tarefa | Esforço estimado |
 |------------|--------|------------------|
-| P2 | Ampliar testes de integração (financeiro, estoque, cancelamento) | Médio |
-| P2 | PHPStan 5 → 6 (corrigir arrays sem value-type) | Médio |
-| P3 | Migrar repositórios administrativos restantes para `BaseRepository` | Alto |
 | P3 | Avaliar `company_id` em `stock_movements` (migration + impacto) | Alto |
 | P3 | Remover `Env::loadLegacy` após validar deploy só com Composer | Baixo |
 

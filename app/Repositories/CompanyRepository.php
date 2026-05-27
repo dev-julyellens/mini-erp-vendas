@@ -8,15 +8,8 @@ use App\Core\Database;
 use App\Models\Company;
 use PDO;
 
-final class CompanyRepository
+final class CompanyRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     public function findById(int $id, bool $activeOnly = true): ?Company
     {
         $sql = 'SELECT id, name, tax_id, slug, owner_user_id,

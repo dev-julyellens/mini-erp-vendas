@@ -7,15 +7,8 @@ namespace App\Repositories;
 use App\Core\Database;
 use PDO;
 
-final class LgpdConsentRepository
+final class LgpdConsentRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     public function hasAcceptedVersion(int $userId, string $policyVersion): bool
     {
         $stmt = $this->db->prepare(

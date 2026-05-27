@@ -9,20 +9,13 @@ use App\Core\Database;
 use App\Models\Notification;
 use App\Repositories\Concerns\CompanyScope;
 
-final class NotificationRepository
+final class NotificationRepository extends BaseRepository
 {
     use CompanyScope;
 
     private const SELECT_COLUMNS = '
         id, company_id, type, title, message, entity_type, entity_id,
         level, link_url, dedupe_key, read_at, created_at';
-
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function getConnection(): PDO
     {

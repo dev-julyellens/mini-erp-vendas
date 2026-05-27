@@ -13,6 +13,9 @@ abstract class Controller
         Redirect::to($path);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function json(array $data, int $status = 200): void
     {
         http_response_code($status);

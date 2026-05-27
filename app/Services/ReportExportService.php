@@ -223,6 +223,10 @@ final class ReportExportService
         };
     }
 
+    /**
+     * @param list<string> $headers
+     * @param array<int, array<string, mixed>> $rows
+     */
     private function renderPdfHtml(
         string $type,
         string $title,

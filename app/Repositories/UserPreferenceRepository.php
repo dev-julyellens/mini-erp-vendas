@@ -7,15 +7,8 @@ namespace App\Repositories;
 use App\Core\Database;
 use PDO;
 
-final class UserPreferenceRepository
+final class UserPreferenceRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     /**
      * @return array{
      *   theme: string,

@@ -8,16 +8,9 @@ use App\Core\Database;
 use App\Models\User;
 use PDO;
 
-final class UserRepository
+final class UserRepository extends BaseRepository
 {
     private const USER_COLUMNS = 'id, name, email, password_hash, role, active, avatar_path, created_at, updated_at';
-
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function findById(int $id): ?User
     {

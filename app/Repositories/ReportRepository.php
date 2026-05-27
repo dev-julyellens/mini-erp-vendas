@@ -10,16 +10,9 @@ use App\Models\ReportFilter;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class ReportRepository
+final class ReportRepository extends BaseRepository
 {
     use CompanyScope;
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     /**
      * @return array{items: list<array<string, mixed>>, total: int, summary: array{order_count: int, total_amount: string}}
      */

@@ -9,15 +9,8 @@ use App\Helpers\CompanyContext;
 use App\Models\AuditLog;
 use PDO;
 
-final class AuditRepository
+final class AuditRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     /**
      * @param array<string, mixed>|null $oldValues
      * @param array<string, mixed>|null $newValues

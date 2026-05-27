@@ -8,15 +8,8 @@ use App\Core\Database;
 use App\Models\Subscription;
 use PDO;
 
-final class SubscriptionRepository
+final class SubscriptionRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     public function findByCompanyId(int $companyId): ?Subscription
     {
         $stmt = $this->db->prepare(

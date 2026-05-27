@@ -187,6 +187,9 @@ final class AuditService
         return self::ENTITY_LABELS[$entity] ?? $entity;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function productSnapshot(Product $product): array
     {
         return [
@@ -208,6 +211,9 @@ final class AuditService
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function customerSnapshot(Customer $customer): array
     {
         return [
@@ -218,6 +224,9 @@ final class AuditService
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function userSnapshot(User $user): array
     {
         return [

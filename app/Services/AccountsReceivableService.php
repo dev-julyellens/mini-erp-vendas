@@ -120,6 +120,9 @@ final class AccountsReceivableService
         );
     }
 
+    /**
+     * @return array{account: \App\Models\AccountsReceivable, payments: list<\App\Models\Payment>}|null
+     */
     public function findDetail(int $id): ?array
     {
         $ar = $this->accounts->findById($id);

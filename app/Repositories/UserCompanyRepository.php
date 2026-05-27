@@ -8,15 +8,8 @@ use App\Core\Database;
 use App\Models\UserCompany;
 use PDO;
 
-final class UserCompanyRepository
+final class UserCompanyRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     public function find(int $userId, int $companyId): ?UserCompany
     {
         $stmt = $this->db->prepare(

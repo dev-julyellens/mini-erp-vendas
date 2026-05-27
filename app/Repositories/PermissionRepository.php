@@ -7,15 +7,8 @@ namespace App\Repositories;
 use App\Core\Database;
 use PDO;
 
-final class PermissionRepository
+final class PermissionRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     /**
      * @return list<string> chaves "modulo.acao"
      */

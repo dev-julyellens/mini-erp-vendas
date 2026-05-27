@@ -9,16 +9,9 @@ use App\Models\CashFlow;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class CashFlowRepository
+final class CashFlowRepository extends BaseRepository
 {
     use CompanyScope;
-
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function insert(
         string $type,

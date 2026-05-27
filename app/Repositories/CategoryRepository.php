@@ -9,16 +9,9 @@ use App\Models\Category;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class CategoryRepository
+final class CategoryRepository extends BaseRepository
 {
     use CompanyScope;
-
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function findById(int $id): ?Category
     {

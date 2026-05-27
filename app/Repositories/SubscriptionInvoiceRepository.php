@@ -8,15 +8,8 @@ use App\Core\Database;
 use App\Models\SubscriptionInvoice;
 use PDO;
 
-final class SubscriptionInvoiceRepository
+final class SubscriptionInvoiceRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     public function create(
         int $subscriptionId,
         int $companyId,

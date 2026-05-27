@@ -8,15 +8,8 @@ use App\Core\Database;
 use App\Models\Plan;
 use PDO;
 
-final class PlanRepository
+final class PlanRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     public function findById(int $id): ?Plan
     {
         $stmt = $this->db->prepare(

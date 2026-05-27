@@ -10,6 +10,7 @@ final class FileUploadValidator
 {
     /**
      * @param list<string> $allowedExtensions extensões sem ponto, ex: ['csv', 'sql']
+     * @param list<string> $allowedMimeTypes
      * @return array{tmp_name: string, name: string, size: int, type: string}
      */
     public static function validateUploadedFile(

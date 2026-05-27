@@ -7,15 +7,8 @@ namespace App\Repositories;
 use App\Core\Database;
 use PDO;
 
-final class ApiLogRepository
+final class ApiLogRepository extends BaseRepository
 {
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
-
     /**
      * @param array<string, mixed>|null $payload
      */
