@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\Database;
+use App\Core\Logger;
 use App\Core\ValidationException;
 use App\Helpers\Audit;
 use App\Helpers\Auth;
@@ -44,115 +45,123 @@ final class PaymentService
 
         $paidAtNormalized = $paidAt ?? (new \DateTimeImmutable())->format('Y-m-d H:i:s');
 
-        $pdo = Database::getConnection();
-        $pdo->beginTransaction();
-
         try
         {
-            $accountRepo = new AccountsReceivableRepository($pdo);
-            $paymentRepo = new PaymentRepository($pdo);
-            $cashRepo = new CashFlowRepository($pdo);
-
-            $ar = $accountRepo->findByIdForUpdate($accountsReceivableId);
-            if ($ar === null)
-            {
-                throw new ValidationException(['accounts_receivable_id' => 'Conta a receber não encontrada.']);
-            }
-
-            if (!$ar->canReceive())
-            {
-                throw new ValidationException(['status' => 'Esta conta não aceita novos recebimentos.']);
-            }
-
-            $installmentRepo = new InstallmentRepository($pdo);
-            if ($installmentRepo->countByOrderId($ar->order_id) > 0)
-            {
-                throw new ValidationException([
-                    'finance' => 'Esta venda possui parcelamento. Registre o recebimento pela baixa de cada parcela.',
-                ]);
-            }
-
-            $paidTotal = $paymentRepo->sumByAccountsReceivableId($accountsReceivableId);
-            $remaining = Money::sub($ar->amount, $paidTotal);
-
-            if (Money::compare($amount, '0.00') <= 0)
-            {
-                throw new ValidationException(['amount' => 'O valor deve ser maior que zero.']);
-            }
-
-            if (Money::compare($amount, $remaining) > 0)
-            {
-                throw new ValidationException([
-                    'amount' => sprintf('Valor excede o saldo restante (R$ %s).', $remaining),
-                ]);
-            }
-
-            $paymentId = $paymentRepo->insert(
+            $tx = Database::transaction(function (PDO $pdo) use (
                 $accountsReceivableId,
                 $amount,
                 $paymentMethod,
                 $paidAtNormalized,
                 $userId,
                 $notes
-            );
+            ): array
+            {
+                $accountRepo = new AccountsReceivableRepository($pdo);
+                $paymentRepo = new PaymentRepository($pdo);
+                $cashRepo = new CashFlowRepository($pdo);
 
-            $newPaidTotal = Money::add($paidTotal, $amount);
-            $newStatus = Money::compare($newPaidTotal, $ar->amount) >= 0 ? 'paid' : 'partial';
-            $accountRepo->updateStatus($accountsReceivableId, $newStatus);
+                $ar = $accountRepo->findByIdForUpdate($accountsReceivableId);
+                if ($ar === null)
+                {
+                    throw new ValidationException(['accounts_receivable_id' => 'Conta a receber não encontrada.']);
+                }
 
-            $cashRepo->insert(
-                'entrada',
-                $amount,
-                $paymentMethod,
-                'payment',
-                $paymentId,
-                sprintf('Recebimento conta #%d (venda #%d)', $accountsReceivableId, $ar->order_id),
-                $paidAtNormalized,
-                $userId
-            );
+                if (!$ar->canReceive())
+                {
+                    throw new ValidationException(['status' => 'Esta conta não aceita novos recebimentos.']);
+                }
 
-            $pdo->commit();
+                $installmentRepo = new InstallmentRepository($pdo);
+                if ($installmentRepo->countByOrderId($ar->order_id) > 0)
+                {
+                    throw new ValidationException([
+                        'finance' => 'Esta venda possui parcelamento. Registre o recebimento pela baixa de cada parcela.',
+                    ]);
+                }
+
+                $paidTotal = $paymentRepo->sumByAccountsReceivableId($accountsReceivableId);
+                $remaining = Money::sub($ar->amount, $paidTotal);
+
+                if (Money::compare($amount, '0.00') <= 0)
+                {
+                    throw new ValidationException(['amount' => 'O valor deve ser maior que zero.']);
+                }
+
+                if (Money::compare($amount, $remaining) > 0)
+                {
+                    throw new ValidationException([
+                        'amount' => sprintf('Valor excede o saldo restante (R$ %s).', $remaining),
+                    ]);
+                }
+
+                $paymentId = $paymentRepo->insert(
+                    $accountsReceivableId,
+                    $amount,
+                    $paymentMethod,
+                    $paidAtNormalized,
+                    $userId,
+                    $notes
+                );
+
+                $newPaidTotal = Money::add($paidTotal, $amount);
+                $newStatus = Money::compare($newPaidTotal, $ar->amount) >= 0 ? 'paid' : 'partial';
+                $accountRepo->updateStatus($accountsReceivableId, $newStatus);
+
+                $cashRepo->insert(
+                    'entrada',
+                    $amount,
+                    $paymentMethod,
+                    'payment',
+                    $paymentId,
+                    sprintf('Recebimento conta #%d (venda #%d)', $accountsReceivableId, $ar->order_id),
+                    $paidAtNormalized,
+                    $userId
+                );
+
+                return [
+                    'payment_id' => $paymentId,
+                    'order_id' => $ar->order_id,
+                    'old_status' => $ar->status,
+                    'paid_total' => $paidTotal,
+                    'new_status' => $newStatus,
+                ];
+            });
+
+            $paymentId = $tx['payment_id'];
 
             Audit::record(
                 'recebimento',
                 'financeiro',
                 $paymentId,
-                ['status' => $ar->status, 'paid_total' => $paidTotal],
+                ['status' => $tx['old_status'], 'paid_total' => $tx['paid_total']],
                 [
                     'accounts_receivable_id' => $accountsReceivableId,
-                    'order_id' => $ar->order_id,
+                    'order_id' => $tx['order_id'],
                     'amount' => $amount,
                     'payment_method' => $paymentMethod,
                     'paid_at' => $paidAtNormalized,
-                    'new_status' => $newStatus,
+                    'new_status' => $tx['new_status'],
                 ],
                 $userId
             );
 
+            Logger::info('Recebimento registrado.', [
+                'payment_id' => $paymentId,
+                'accounts_receivable_id' => $accountsReceivableId,
+                'amount' => $amount,
+            ]);
+
             return $paymentId;
-        }
-        catch (ValidationException $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
-        catch (PDOException $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
         }
         catch (\Throwable $e)
         {
-            if ($pdo->inTransaction())
+            if (!$e instanceof ValidationException)
             {
-                $pdo->rollBack();
+                Logger::exception($e, 'Falha ao registrar recebimento.', [
+                    'accounts_receivable_id' => $accountsReceivableId,
+                ]);
             }
+
             throw $e;
         }
     }

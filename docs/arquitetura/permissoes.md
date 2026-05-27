@@ -86,6 +86,18 @@ UI: `App\Helpers\Permission` espelha `can()` para esconder botões.
 - API usa o **mesmo mapa** que a web.
 - Alterar ACL exige migration ou script SQL + possível atualização do mapa de rotas novas.
 
+### Política de rotas novas (opt-in)
+
+1. Toda rota que altera dados ou expõe dados sensíveis **deve** ter entrada em `RoutePermissionMap`.
+2. Rotas públicas de leitura genérica (hub, home) podem ficar sem mapa — documentar exceção no PR.
+3. No checklist de PR: *“Rota nova mapeada em `RoutePermissionMap`?”* (sim/não + justificativa).
+
+## 9.1 Checklist de PR — permissões
+
+- [ ] `RoutePermissionMap` atualizado para rotas novas que exigem ACL
+- [ ] Botões/links na UI usam `Permission::can()` quando aplicável
+- [ ] API: mesmo módulo/ação da rota web equivalente
+
 ## 10. Dependências
 
 - Autenticação (`AuthMiddleware`) obrigatória antes

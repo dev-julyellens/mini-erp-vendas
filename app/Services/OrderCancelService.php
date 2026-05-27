@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use PDO;
-use PDOException;
+use App\Core\Database;
+use App\Core\Logger;
+use App\Core\ValidationException;
+use App\Helpers\Audit;
 use App\Helpers\Auth;
 use App\Models\Order;
-use App\Core\Database;
-use App\Helpers\Audit;
-use App\Core\ValidationException;
+use PDO;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\OrderItemRepository;
@@ -26,79 +26,99 @@ final class OrderCancelService
             throw new ValidationException(['auth' => 'É necessário estar autenticado para cancelar a venda.']);
         }
 
-        $pdo = Database::getConnection();
-        $pdo->beginTransaction();
-
         try
         {
-            $orderRepo = new OrderRepository($pdo);
-            $itemRepo = new OrderItemRepository($pdo);
-            $productRepo = new ProductRepository($pdo);
-            $stockService = new StockService(
-                new StockMovementRepository($pdo),
-                $productRepo,
-                $pdo
-            );
-
-            $order = $orderRepo->findByIdForUpdate($orderId);
-            if ($order === null)
+            /** @var array{
+             *     order: Order,
+             *     items: list<\App\Models\OrderItem>,
+             *     stockAudit: list<array{product_id: int, quantity: int, stock_before: int}>,
+             *     installmentsCanceled: array{count: int}|null,
+             *     arCanceled: array{ar_id: int, old_status: string}|null
+             * } $tx
+             */
+            $tx = Database::transaction(function (PDO $pdo) use ($orderId, $userId): array
             {
-                throw new ValidationException(['order_id' => 'Pedido não encontrado.']);
-            }
+                $orderRepo = new OrderRepository($pdo);
+                $itemRepo = new OrderItemRepository($pdo);
+                $productRepo = new ProductRepository($pdo);
+                $stockService = new StockService(
+                    new StockMovementRepository($pdo),
+                    $productRepo,
+                    $pdo
+                );
 
-            $this->assertCancelable($order);
-
-            $items = $itemRepo->findByOrderId($orderId);
-            if ($items === [])
-            {
-                throw new ValidationException(['order_id' => 'O pedido não possui itens.']);
-            }
-
-            /** @var list<array{product_id: int, quantity: int, stock_before: int}> $stockAudit */
-            $stockAudit = [];
-
-            foreach ($items as $line)
-            {
-                $productId = $line->product_id;
-                $quantity = $line->quantity;
-
-                $product = $productRepo->findById($productId, false);
-                $stockBefore = $product !== null ? $product->stock : 0;
-
-                if ($product !== null && !$product->isService())
+                $order = $orderRepo->findByIdForUpdate($orderId);
+                if ($order === null)
                 {
-                    $stockService->registerReturn(
-                        $productId,
-                        $quantity,
-                        $orderId,
-                        'Devolução por cancelamento da venda #' . $orderId,
-                        false,
-                        $pdo
-                    );
-
-                    $stockAudit[] = [
-                        'product_id' => $productId,
-                        'quantity' => $quantity,
-                        'stock_before' => $stockBefore,
-                    ];
+                    throw new ValidationException(['order_id' => 'Pedido não encontrado.']);
                 }
-            }
 
-            $orderRepo->markCanceled($orderId, $userId);
+                $this->assertCancelable($order);
 
-            $installmentService = new InstallmentService();
-            $installmentsCanceled = $installmentService->cancelByOrderId($orderId, $pdo);
+                $items = $itemRepo->findByOrderId($orderId);
+                if ($items === [])
+                {
+                    throw new ValidationException(['order_id' => 'O pedido não possui itens.']);
+                }
 
-            $arService = new AccountsReceivableService();
-            $arCanceled = $arService->cancelByOrderId($orderId, $pdo);
+                /** @var list<array{product_id: int, quantity: int, stock_before: int}> $stockAudit */
+                $stockAudit = [];
 
-            $pdo->commit();
+                foreach ($items as $line)
+                {
+                    $productId = $line->product_id;
+                    $quantity = $line->quantity;
+
+                    $product = $productRepo->findById($productId, false);
+                    $stockBefore = $product !== null ? $product->stock : 0;
+
+                    if ($product !== null && !$product->isService())
+                    {
+                        $stockService->registerReturn(
+                            $productId,
+                            $quantity,
+                            $orderId,
+                            'Devolução por cancelamento da venda #' . $orderId,
+                            false,
+                            $pdo
+                        );
+
+                        $stockAudit[] = [
+                            'product_id' => $productId,
+                            'quantity' => $quantity,
+                            'stock_before' => $stockBefore,
+                        ];
+                    }
+                }
+
+                $orderRepo->markCanceled($orderId, $userId);
+
+                $installmentService = new InstallmentService();
+                $installmentsCanceled = $installmentService->cancelByOrderId($orderId, $pdo);
+
+                $arService = new AccountsReceivableService();
+                $arCanceled = $arService->cancelByOrderId($orderId, $pdo);
+
+                return [
+                    'order' => $order,
+                    'items' => $items,
+                    'stockAudit' => $stockAudit,
+                    'installmentsCanceled' => $installmentsCanceled,
+                    'arCanceled' => $arCanceled,
+                ];
+            });
+
+            $order = $tx['order'];
+            $items = $tx['items'];
+            $stockAudit = $tx['stockAudit'];
+            $installmentsCanceled = $tx['installmentsCanceled'];
+            $arCanceled = $tx['arCanceled'];
 
             $this->recordAudit($order, $orderId, $userId, $items, $stockAudit);
 
             try
             {
-                (new \App\Services\NotificationService(null, $pdo))->notifyOrderCanceled($order);
+                (new \App\Services\NotificationService())->notifyOrderCanceled($order);
             }
             catch (\Throwable $ignored)
             {
@@ -127,29 +147,16 @@ final class OrderCancelService
                     $userId
                 );
             }
-        }
-        catch (ValidationException $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
-        catch (PDOException $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
+
+            Logger::info('Venda cancelada.', ['order_id' => $orderId, 'user_id' => $userId]);
         }
         catch (\Throwable $e)
         {
-            if ($pdo->inTransaction())
+            if (!$e instanceof ValidationException)
             {
-                $pdo->rollBack();
+                Logger::exception($e, 'Falha ao cancelar venda.', ['order_id' => $orderId]);
             }
+
             throw $e;
         }
     }

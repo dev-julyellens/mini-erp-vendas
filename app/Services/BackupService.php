@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\BackupException;
+use App\Core\Logger;
 use App\Helpers\PgCli;
 use App\Models\BackupSettings;
 use App\Repositories\BackupLogRepository;
@@ -164,6 +165,12 @@ final class BackupService
 
             $this->cleanupOldBackups($role, $userId, false);
 
+            Logger::info('Backup concluído.', [
+                'filename' => $filename,
+                'size' => $size,
+                'trigger' => $trigger,
+            ]);
+
             return [
                 'filename' => $filename,
                 'size' => $size,
@@ -176,6 +183,8 @@ final class BackupService
             {
                 @unlink($path);
             }
+
+            Logger::exception($e, 'Falha ao criar backup.', ['trigger' => $trigger]);
 
             $durationMs = (int) round((microtime(true) - $started) * 1000);
             $this->logs->insert(
@@ -216,9 +225,13 @@ final class BackupService
                 $userId,
                 $durationMs
             );
+
+            Logger::warning('Backup restaurado.', ['filename' => $filename, 'user_id' => $userId]);
         }
         catch (\Throwable $e)
         {
+            Logger::exception($e, 'Falha ao restaurar backup.', ['filename' => $filename]);
+
             $durationMs = (int) round((microtime(true) - $started) * 1000);
             $this->logs->insert(
                 'restore',

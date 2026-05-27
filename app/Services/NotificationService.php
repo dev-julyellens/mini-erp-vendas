@@ -318,6 +318,7 @@ final class NotificationService
     private function syncOverdueInstallmentAlerts(): void
     {
         $installmentsRepo = new InstallmentRepository($this->notifications->getConnection());
+        $installmentsRepo->refreshOverdueStatuses();
         $page = $installmentsRepo->paginateFiltered(1, 100, 'overdue', null, null, null);
 
         foreach ($page['items'] as $installment)

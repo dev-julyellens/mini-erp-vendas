@@ -119,14 +119,14 @@ Fazer **antes** de expor o sistema a usuários reais fora de ambiente controlado
 |---|--------|-------|--------|----------------|
 | 3.1 | Padronizar mensagens de domínio em **português** (ou camada i18n) | BE | 🟡 | Pedidos, clientes, cancelamento, API; outros services pendentes |
 | 3.2 | Alinhar status de pedido (`pending` vs `paid` na criação) | BE | ✅ | `OrderService::STATUS_PAID`; doc em `bugs-conhecidos.md` |
-| 3.3 | Adotar `Database::transaction()` nos services com transação manual | BE | ⬜ | `OrderService`, `PaymentService`, `PixChargeService`, … |
-| 3.4 | Remover side-effect em leitura: `refreshOverdueStatuses()` no `paginateFiltered` | BE | ⬜ | `InstallmentRepository` |
-| 3.5 | Migrar repositórios para `BaseRepository` + PDO injetável | BE | ⬜ | Só `CustomerRepository` hoje — ver débito técnico |
+| 3.3 | Adotar `Database::transaction()` nos services com transação manual | BE | ✅ | `OrderService`, `PaymentService`, `OrderCancelService`, `InstallmentService::pay`, `PixChargeService::reconcile` |
+| 3.4 | Remover side-effect em leitura: `refreshOverdueStatuses()` no `paginateFiltered` | BE | ✅ | Chamada explícita em `InstallmentService::search` e notificações |
+| 3.5 | Migrar repositórios para `BaseRepository` + PDO injetável | BE | 🟡 | `InstallmentRepository` migrado; demais pendentes |
 | 3.6 | Reduzir duplicação Product / Service / Category controllers | BE | P2 | Controllers CRUD similares |
-| 3.7 | Política ACL documentada: opt-in no `RoutePermissionMap` vs default deny | BE | ⬜ | `RoutePermissionMap.php`, `docs/arquitetura/permissoes.md` |
+| 3.7 | Política ACL documentada: opt-in no `RoutePermissionMap` vs default deny | BE | ✅ | `docs/arquitetura/permissoes.md` §9 + checklist PR |
 | 3.8 | Auditar **toda** rota nova no mapa de permissões | BE | ⬜ | Checklist em PR |
 | 3.9 | Hub `/reports` — decidir se índice exige permissão ou mantém filtro por card | BE | 🟡 | `ReportController`, bugs conhecidos |
-| 3.10 | Logging estruturado em operações críticas (não só exceções globais) | BE | ⬜ | `Logger` + services (PIX, backup, pedidos) |
+| 3.10 | Logging estruturado em operações críticas (não só exceções globais) | BE | ✅ | Vendas, recebimentos, parcelas, PIX webhook, backup |
 | 3.11 | Router com parâmetros `{id}` e métodos HTTP adicionais (futuro) | BE | P3 | `app/Core/Router.php` |
 
 ---
@@ -155,8 +155,8 @@ Fazer **antes** de expor o sistema a usuários reais fora de ambiente controlado
 | 5.3 | Testes de isolamento multi-tenant | TST | ✅ | `TenantIsolationTest` |
 | 5.4 | Testes de API auth + permissões | TST | ✅ | `JwtServiceTest`, `ApiAuthServiceTest`, `ApiAuthServiceIntegrationTest` |
 | 5.5 | Testes de `AuthService` / reset de senha | TST | ⬜ | Após e-mail implementado |
-| 5.6 | Reduzir `ignoreErrors` no PHPStan (controllers) | TST | ⬜ | `phpstan.neon` |
-| 5.7 | Subir nível PHPStan gradualmente (5 → 6) | TST | P2 | `composer analyse` |
+| 5.6 | Reduzir `ignoreErrors` no PHPStan (controllers) | TST | ✅ | Removido ignore `SubscriptionRepository::markPastDue` |
+| 5.7 | Subir nível PHPStan gradualmente (5 → 6) | TST | 🟡 | Nível 6: 14 avisos de `array` sem value-type — corrigir em lote |
 | 5.8 | Opcional: PHP-CS-Fixer PSR-12 | TST | P3 | `require-dev` |
 | 5.9 | Atualizar PHP mínimo para **8.2+** (8.0 EOL) | OPS | P2 | `composer.json` |
 
@@ -184,8 +184,8 @@ Fazer **antes** de expor o sistema a usuários reais fora de ambiente controlado
 | # | Tarefa | Sigla | Status | Arquivo / ação |
 |---|--------|-------|--------|----------------|
 | 7.1 | Headers base (nosniff, X-Frame-Options, Referrer-Policy, CSP) | SEC | ✅ | `SecurityHeadersMiddleware.php` |
-| 7.2 | HSTS condicional em produção HTTPS | SEC | ⬜ | Middleware ou reverse proxy |
-| 7.3 | Plano para remover `'unsafe-inline'` da CSP | SEC | ⬜ | Mover script de tema do `<head>` para arquivo externo |
+| 7.2 | HSTS condicional em produção HTTPS | SEC | ✅ | `SecurityHeadersMiddleware` + `AppConfig::isProduction()` |
+| 7.3 | Plano para remover `'unsafe-inline'` da CSP | SEC | 🟡 | `theme-boot.js` (scripts); `style-src` inline pendente |
 | 7.4 | `upgrade-insecure-requests` em produção | SEC | P2 | CSP |
 | 7.5 | Restringir simulação PIX em produção com gateway real | SEC | 🟡 | `PIX_DEFAULT_GATEWAY`, `MockPixGateway` |
 
@@ -291,12 +291,12 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 2. ~~8.4 — gráficos (tabela resumo + `figure`)~~  
 3. ~~8.5 — DataTables após redraw~~
 
-### Sprint G — Backend qualidade (contínuo) — P2
+### Sprint G — Backend qualidade (contínuo) — P2 ✅
 
-1. 3.3–3.5 — transações, repositórios, installments  
-2. 3.10 — logging  
-3. 5.6–5.7 — PHPStan  
-4. 7.2–7.3 — HSTS e CSP
+1. ~~3.3–3.5 — transações, repositórios, installments~~  
+2. ~~3.10 — logging~~  
+3. ~~5.6 — PHPStan ignore~~ · 5.7 🟡 (nível 6 mapeado)  
+4. ~~7.2 — HSTS~~ · 7.3 🟡 (`theme-boot.js`)
 
 ### Sprint H — Menu e integrações (conforme produto) — P2–P3
 
@@ -315,7 +315,7 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 | Documentação externa (README) | ~90% | README + devops + banco §12 |
 | Testes automatizados | ~45% | 30 testes (unit + integration); CI integration com PostgreSQL |
 | API REST | ~85% | DTO, paginação, N+1, datas; rate limit por token pendente |
-| Backend refatoração | ~50% | Transações, ACL, logging |
+| Backend refatoração | ~65% | Migrar mais repos para `BaseRepository`; PHPStan 6 |
 | Migrations / DB | ~92% | Bootstrap 018–020; índices pendentes (2.4) |
 | Performance JS | ~75% | Unificar form margens (6.3); SRI CDNs (6.5) |
 | Acessibilidade auditada | ~80% | CI axe (11.4); toasts SR (8.6) |
@@ -344,4 +344,4 @@ Atualizar também `docs/bugs/bugs-conhecidos.md` ou `debito-tecnico.md` se for b
 3. Novos bugs → `docs/bugs/bugs-conhecidos.md` + referência cruzada aqui.  
 4. Antes de release: Fase 0 deve estar ✅ ou explicitamente aceita com risco documentado.
 
-**Última atualização:** 26/05/2026 — Sprint F: WCAG checklist, gráficos com tabela SR, DataTables a11y pós-draw.
+**Última atualização:** 26/05/2026 — Sprint G: `Database::transaction`, installments read fix, logging, HSTS, `theme-boot.js`.

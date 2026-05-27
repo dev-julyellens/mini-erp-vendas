@@ -21,14 +21,7 @@ $url = static function (string $path = '') use ($baseUrl): string
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?> — Acesso</title>
-    <script>
-        (function() {
-            try {
-                var t = localStorage.getItem("mini-erp-theme");
-                if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
-            } catch (e) {}
-        })();
-    </script>
+    <script src="<?= htmlspecialchars(Asset::versionedUrl($baseUrl, 'assets/js/theme-boot.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
     <link rel="icon" type="image/svg+xml" href="<?= htmlspecialchars($url('favicon.svg'), ENT_QUOTES, 'UTF-8') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">

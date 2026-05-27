@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
+use App\Helpers\AppConfig;
+
 final class SecurityHeadersMiddleware
 {
     public static function handle(): void
@@ -19,9 +21,20 @@ final class SecurityHeadersMiddleware
         header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
         header('X-XSS-Protection: 0');
 
-        $csp = implode('; ', [
+        if (AppConfig::isProduction() && self::requestIsHttps())
+        {
+            header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+        }
+
+        $scriptSrc = [
+            "'self'",
+            'https://cdn.jsdelivr.net',
+            'https://cdn.datatables.net',
+        ];
+
+        $cspParts = [
             "default-src 'self'",
-            "script-src 'self' https://cdn.jsdelivr.net https://cdn.datatables.net 'unsafe-inline'",
+            'script-src ' . implode(' ', $scriptSrc),
             "style-src 'self' https://cdn.jsdelivr.net https://cdn.datatables.net 'unsafe-inline'",
             "img-src 'self' data:",
             "font-src 'self' https://cdn.jsdelivr.net data:",
@@ -29,7 +42,25 @@ final class SecurityHeadersMiddleware
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "form-action 'self'",
-        ]);
-        header('Content-Security-Policy: ' . $csp);
+        ];
+
+        if (AppConfig::isProduction() && self::requestIsHttps())
+        {
+            $cspParts[] = 'upgrade-insecure-requests';
+        }
+
+        header('Content-Security-Policy: ' . implode('; ', $cspParts));
+    }
+
+    private static function requestIsHttps(): bool
+    {
+        if (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+        {
+            return true;
+        }
+
+        $proto = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+
+        return $proto === 'https';
     }
 }

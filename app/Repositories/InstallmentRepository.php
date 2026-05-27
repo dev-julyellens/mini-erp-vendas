@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Core\Database;
 use App\Models\Installment;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class InstallmentRepository
+final class InstallmentRepository extends BaseRepository
 {
     use CompanyScope;
-    private PDO $db;
 
     private const SELECT_COLUMNS = 'i.id, i.order_id, i.installment_number, i.amount, i.due_date,
         i.paid_at, i.status, i.created_at, i.updated_at,
@@ -21,11 +19,6 @@ final class InstallmentRepository
     private const FROM_JOIN = 'FROM installments i
         INNER JOIN orders o ON o.id = i.order_id AND o.company_id = :company_id
         INNER JOIN customers c ON c.id = o.customer_id AND c.company_id = :company_id';
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     /**
      * @param list<array{installment_number: int, amount: string, due_date: string}> $rows
@@ -187,8 +180,6 @@ final class InstallmentRepository
         ?string $dueTo
     ): array
     {
-        $this->refreshOverdueStatuses();
-
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
 

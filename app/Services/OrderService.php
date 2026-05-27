@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\Database;
+use App\Core\Logger;
 use App\Core\ValidationException;
 use App\Helpers\Audit;
 use App\Helpers\Money;
@@ -37,8 +38,7 @@ final class OrderService
             (new InstallmentService())->assertValidCount($installmentCount);
         }
 
-        $pdo = Database::getConnection();
-        $customerRepo = new CustomerRepository($pdo);
+        $customerRepo = new CustomerRepository();
         if ($customerRepo->findById($customerId) === null)
         {
             throw new ValidationException(['customer_id' => 'Cliente não encontrado.']);
@@ -52,123 +52,153 @@ final class OrderService
             }
         );
 
-        $pdo->beginTransaction();
-
         try
         {
-            $productRepo = new ProductRepository($pdo);
-            $orderRepo = new OrderRepository($pdo);
-            $itemRepo = new OrderItemRepository($pdo);
-            $stockService = new StockService(
-                new StockMovementRepository($pdo),
-                $productRepo,
-                $pdo
-            );
-
-            $prepared = [];
-            /** @var list<array{product_id: int, stock_before: int, quantity: int}> $stockAudit */
-            $stockAudit = [];
-            $total = '0.00';
-
-            foreach ($normalized as $line)
+            /** @var array{
+             *     order_id: int,
+             *     prepared: list<array<string, mixed>>,
+             *     stockAudit: list<array{product_id: int, stock_before: int, quantity: int}>,
+             *     total: string,
+             *     installmentRows: list<array<string, mixed>>,
+             *     installmentCount: int,
+             *     dueDate: string,
+             *     arId: int
+             * } $tx
+             */
+            $tx = Database::transaction(function (PDO $pdo) use ($customerId, $normalized, $installmentCount): array
             {
-                $productId = (int) $line['product_id'];
-                $quantity = (int) $line['quantity'];
+                $productRepo = new ProductRepository($pdo);
+                $orderRepo = new OrderRepository($pdo);
+                $itemRepo = new OrderItemRepository($pdo);
+                $stockService = new StockService(
+                    new StockMovementRepository($pdo),
+                    $productRepo,
+                    $pdo
+                );
 
-                $product = $productRepo->findById($productId, true);
-                if ($product === null)
+                $prepared = [];
+                /** @var list<array{product_id: int, stock_before: int, quantity: int}> $stockAudit */
+                $stockAudit = [];
+                $total = '0.00';
+
+                foreach ($normalized as $line)
                 {
-                    throw new ValidationException(['items' => 'Produto não encontrado: ' . $productId]);
-                }
+                    $productId = (int) $line['product_id'];
+                    $quantity = (int) $line['quantity'];
 
-                if ($quantity <= 0)
-                {
-                    throw new ValidationException(['items' => 'A quantidade deve ser positiva.']);
-                }
+                    $product = $productRepo->findById($productId, true);
+                    if ($product === null)
+                    {
+                        throw new ValidationException(['items' => 'Produto não encontrado: ' . $productId]);
+                    }
 
-                if (!$product->isService() && $product->stock < $quantity)
-                {
-                    throw new ValidationException([
-                        'items' => sprintf(
-                            'Estoque insuficiente para "%s". Disponível: %d, solicitado: %d.',
-                            $product->name,
-                            $product->stock,
-                            $quantity
-                        ),
-                    ]);
-                }
+                    if ($quantity <= 0)
+                    {
+                        throw new ValidationException(['items' => 'A quantidade deve ser positiva.']);
+                    }
 
-                /*
+                    if (!$product->isService() && $product->stock < $quantity)
+                    {
+                        throw new ValidationException([
+                            'items' => sprintf(
+                                'Estoque insuficiente para "%s". Disponível: %d, solicitado: %d.',
+                                $product->name,
+                                $product->stock,
+                                $quantity
+                            ),
+                        ]);
+                    }
+
+                    /*
                  * Historical pricing (audit / sales integrity):
                  * The product catalog price is copied into `order_items.unit_price` at the moment
                  * the sale is finalized. Future catalog price edits must not rewrite past sales;
                  * reports and order details always reflect what was charged when the order was placed.
                  */
-                $unitPriceAtSaleMoment = $product->price;
-                $subtotal = Money::mul($unitPriceAtSaleMoment, $quantity);
-                $total = Money::add($total, $subtotal);
+                    $unitPriceAtSaleMoment = $product->price;
+                    $subtotal = Money::mul($unitPriceAtSaleMoment, $quantity);
+                    $total = Money::add($total, $subtotal);
 
-                $prepared[] = [
-                    'product_id' => $productId,
-                    'quantity' => $quantity,
-                    'unit_price' => $unitPriceAtSaleMoment,
-                    'subtotal' => $subtotal,
-                ];
-                if (!$product->isService())
-                {
-                    $stockAudit[] = [
+                    $prepared[] = [
                         'product_id' => $productId,
-                        'stock_before' => $product->stock,
                         'quantity' => $quantity,
+                        'unit_price' => $unitPriceAtSaleMoment,
+                        'subtotal' => $subtotal,
                     ];
+                    if (!$product->isService())
+                    {
+                        $stockAudit[] = [
+                            'product_id' => $productId,
+                            'stock_before' => $product->stock,
+                            'quantity' => $quantity,
+                        ];
+                    }
                 }
-            }
 
-            $orderId = $orderRepo->insert($customerId, $total, self::STATUS_PAID);
+                $orderId = $orderRepo->insert($customerId, $total, self::STATUS_PAID);
 
-            foreach ($prepared as $row)
-            {
-                $itemRepo->insert(
-                    $orderId,
-                    (int) $row['product_id'],
-                    (int) $row['quantity'],
-                    (string) $row['unit_price'],
-                    (string) $row['subtotal']
-                );
-            }
+                foreach ($prepared as $row)
+                {
+                    $itemRepo->insert(
+                        $orderId,
+                        (int) $row['product_id'],
+                        (int) $row['quantity'],
+                        (string) $row['unit_price'],
+                        (string) $row['subtotal']
+                    );
+                }
 
-            foreach ($stockAudit as $stockLine)
-            {
-                $stockService->apply(
-                    'saida',
-                    (int) $stockLine['product_id'],
-                    (int) $stockLine['quantity'],
-                    'order',
-                    $orderId,
-                    'Saída por venda #' . $orderId,
-                    null,
-                    false,
-                    false
-                );
-            }
+                foreach ($stockAudit as $stockLine)
+                {
+                    $stockService->apply(
+                        'saida',
+                        (int) $stockLine['product_id'],
+                        (int) $stockLine['quantity'],
+                        'order',
+                        $orderId,
+                        'Saída por venda #' . $orderId,
+                        null,
+                        false,
+                        false
+                    );
+                }
 
-            $installmentService = new InstallmentService();
-            $dueDate = (new \DateTimeImmutable('today'))
-                ->modify('+' . AccountsReceivableService::DEFAULT_DUE_DAYS . ' days')
-                ->format('Y-m-d');
-            $installmentRows = [];
+                $installmentService = new InstallmentService();
+                $dueDate = (new \DateTimeImmutable('today'))
+                    ->modify('+' . AccountsReceivableService::DEFAULT_DUE_DAYS . ' days')
+                    ->format('Y-m-d');
+                $installmentRows = [];
 
-            if ($installmentCount >= InstallmentService::MIN_COUNT)
-            {
-                $installmentService->assertValidCount($installmentCount);
-                $installmentRows = $installmentService->generateForOrder($orderId, $total, $installmentCount, $pdo);
-                $dueDate = $installmentService->firstDueDate($installmentCount);
-            }
+                if ($installmentCount >= InstallmentService::MIN_COUNT)
+                {
+                    $installmentService->assertValidCount($installmentCount);
+                    $installmentRows = $installmentService->generateForOrder($orderId, $total, $installmentCount, $pdo);
+                    $dueDate = $installmentService->firstDueDate($installmentCount);
+                }
 
-            $arService = new AccountsReceivableService();
-            $arId = $arService->createFromApprovedOrder($orderId, $customerId, $total, $pdo, $dueDate);
+                $arService = new AccountsReceivableService();
+                $arId = $arService->createFromApprovedOrder($orderId, $customerId, $total, $pdo, $dueDate);
 
-            $pdo->commit();
+                return [
+                    'order_id' => $orderId,
+                    'prepared' => $prepared,
+                    'stockAudit' => $stockAudit,
+                    'total' => $total,
+                    'installmentRows' => $installmentRows,
+                    'installmentCount' => $installmentCount,
+                    'dueDate' => $dueDate,
+                    'arId' => $arId,
+                ];
+            });
+
+            $orderId = $tx['order_id'];
+            $prepared = $tx['prepared'];
+            $stockAudit = $tx['stockAudit'];
+            $total = $tx['total'];
+            $installmentRows = $tx['installmentRows'];
+            $installmentCount = $tx['installmentCount'];
+            $dueDate = $tx['dueDate'];
+            $arId = $tx['arId'];
 
             Audit::record('conta_receber', 'financeiro', $arId, null, [
                 'order_id' => $orderId,
@@ -209,30 +239,21 @@ final class OrderService
                 );
             }
 
+            Logger::info('Venda registrada.', [
+                'order_id' => $orderId,
+                'customer_id' => $customerId,
+                'total' => $total,
+            ]);
+
             return $orderId;
-        }
-        catch (ValidationException $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
-        catch (PDOException $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
         }
         catch (\Throwable $e)
         {
-            if ($pdo->inTransaction())
+            if (!$e instanceof ValidationException)
             {
-                $pdo->rollBack();
+                Logger::exception($e, 'Falha ao registrar venda.', ['customer_id' => $customerId]);
             }
+
             throw $e;
         }
     }

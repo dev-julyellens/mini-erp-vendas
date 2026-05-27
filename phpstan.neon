@@ -26,5 +26,3 @@ parameters:
         -
             message: '#^Strict comparison using === between mixed and null#'
             path: app/Services/*
-        -
-            message: '#^Call to an undefined method App\\Repositories\\SubscriptionRepository::markPastDue\(\)\.#'

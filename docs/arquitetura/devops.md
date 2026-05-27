@@ -81,7 +81,7 @@ Sincronização `database.sql` ↔ migrations: ver seção em [banco.md](banco.m
 5. Document root → `public/` apenas
 6. Permissões de escrita: `storage/logs`, `storage/backups`, `storage/avatars`
 7. HTTPS no reverse proxy
-8. **HSTS** no proxy ou servidor (`Strict-Transport-Security`) — não configurado no PHP hoje
+8. **HSTS** — enviado pelo `SecurityHeadersMiddleware` quando `APP_ENV=production` e HTTPS (ou `X-Forwarded-Proto: https`)
 9. Remover credenciais padrão do admin
 10. `MAIL_DRIVER=smtp` com credenciais reais
 
@@ -89,7 +89,9 @@ Sincronização `database.sql` ↔ migrations: ver seção em [banco.md](banco.m
 
 `App\Middleware\SecurityHeadersMiddleware`: CSP, `X-Frame-Options`, `Referrer-Policy`, etc.
 
-CSP usa `'unsafe-inline'` por scripts de tema no layout — endurecimento futuro: extrair JS inline para arquivo.
+- `script-src` sem `'unsafe-inline'` — tema inicial em `public/assets/js/theme-boot.js`
+- `style-src` ainda permite `'unsafe-inline'` (Bootstrap/componentes)
+- Em produção HTTPS: `upgrade-insecure-requests`
 
 ## 9. Logs
 

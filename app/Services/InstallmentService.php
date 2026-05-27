@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\Database;
+use App\Core\Logger;
 use App\Core\ValidationException;
 use App\Helpers\Audit;
 use App\Helpers\Auth;
@@ -110,128 +111,129 @@ final class InstallmentService
             }
         }
 
-        $pdo = Database::getConnection();
-        $pdo->beginTransaction();
-
         try
         {
-            $installmentRepo = new InstallmentRepository($pdo);
-            $installmentRepo->refreshOverdueStatuses();
-
-            $installment = $installmentRepo->findByIdForUpdate($installmentId);
-            if ($installment === null)
-            {
-                throw new ValidationException(['installment_id' => 'Parcela não encontrada.']);
-            }
-
-            if (!$installment->canPay())
-            {
-                throw new ValidationException(['status' => 'Esta parcela não aceita baixa.']);
-            }
-
-            $accountRepo = new AccountsReceivableRepository($pdo);
-            $paymentRepo = new PaymentRepository($pdo);
-            $cashRepo = new CashFlowRepository($pdo);
-
-            $ar = $accountRepo->findByOrderIdForUpdate($installment->order_id);
-            if ($ar === null)
-            {
-                throw new ValidationException(['order_id' => 'Conta a receber da venda não encontrada.']);
-            }
-
-            if (!$ar->canReceive())
-            {
-                throw new ValidationException(['status' => 'A conta a receber vinculada não aceita recebimentos.']);
-            }
-
-            $paidTotal = $paymentRepo->sumByAccountsReceivableId($ar->id);
-            $remaining = Money::sub($ar->amount, $paidTotal);
-
-            if (Money::compare($installment->amount, $remaining) > 0)
-            {
-                throw new ValidationException([
-                    'amount' => sprintf('Valor da parcela excede o saldo da conta (R$ %s).', $remaining),
-                ]);
-            }
-
-            $paymentId = $paymentRepo->insert(
-                $ar->id,
-                $installment->amount,
+            $tx = Database::transaction(function (PDO $pdo) use (
+                $installmentId,
                 $paymentMethod,
                 $paidAtNormalized,
                 $userId,
-                $notes !== null && $notes !== ''
-                    ? 'Parcela ' . $installment->installment_number . ': ' . $notes
-                    : 'Parcela ' . $installment->installment_number . ' da venda #' . $installment->order_id
-            );
+                $notes
+            ): array
+            {
+                $installmentRepo = new InstallmentRepository($pdo);
+                $installmentRepo->refreshOverdueStatuses();
 
-            $installmentRepo->markPaid($installmentId, $paidAtNormalized);
+                $installment = $installmentRepo->findByIdForUpdate($installmentId);
+                if ($installment === null)
+                {
+                    throw new ValidationException(['installment_id' => 'Parcela não encontrada.']);
+                }
 
-            $newPaidTotal = Money::add($paidTotal, $installment->amount);
-            $newStatus = Money::compare($newPaidTotal, $ar->amount) >= 0 ? 'paid' : 'partial';
-            $accountRepo->updateStatus($ar->id, $newStatus);
+                if (!$installment->canPay())
+                {
+                    throw new ValidationException(['status' => 'Esta parcela não aceita baixa.']);
+                }
 
-            $cashRepo->insert(
-                'entrada',
-                $installment->amount,
-                $paymentMethod,
-                'payment',
-                $paymentId,
-                sprintf(
-                    'Parcela %d/%d venda #%d',
-                    $installment->installment_number,
-                    $installmentRepo->countByOrderId($installment->order_id),
-                    $installment->order_id
-                ),
-                $paidAtNormalized,
-                $userId
-            );
+                $accountRepo = new AccountsReceivableRepository($pdo);
+                $paymentRepo = new PaymentRepository($pdo);
+                $cashRepo = new CashFlowRepository($pdo);
 
-            $pdo->commit();
+                $ar = $accountRepo->findByOrderIdForUpdate($installment->order_id);
+                if ($ar === null)
+                {
+                    throw new ValidationException(['order_id' => 'Conta a receber da venda não encontrada.']);
+                }
+
+                if (!$ar->canReceive())
+                {
+                    throw new ValidationException(['status' => 'A conta a receber vinculada não aceita recebimentos.']);
+                }
+
+                $paidTotal = $paymentRepo->sumByAccountsReceivableId($ar->id);
+                $remaining = Money::sub($ar->amount, $paidTotal);
+
+                if (Money::compare($installment->amount, $remaining) > 0)
+                {
+                    throw new ValidationException([
+                        'amount' => sprintf('Valor da parcela excede o saldo da conta (R$ %s).', $remaining),
+                    ]);
+                }
+
+                $paymentId = $paymentRepo->insert(
+                    $ar->id,
+                    $installment->amount,
+                    $paymentMethod,
+                    $paidAtNormalized,
+                    $userId,
+                    $notes !== null && $notes !== ''
+                        ? 'Parcela ' . $installment->installment_number . ': ' . $notes
+                        : 'Parcela ' . $installment->installment_number . ' da venda #' . $installment->order_id
+                );
+
+                $installmentRepo->markPaid($installmentId, $paidAtNormalized);
+
+                $newPaidTotal = Money::add($paidTotal, $installment->amount);
+                $newStatus = Money::compare($newPaidTotal, $ar->amount) >= 0 ? 'paid' : 'partial';
+                $accountRepo->updateStatus($ar->id, $newStatus);
+
+                $cashRepo->insert(
+                    'entrada',
+                    $installment->amount,
+                    $paymentMethod,
+                    'payment',
+                    $paymentId,
+                    sprintf(
+                        'Parcela %d/%d venda #%d',
+                        $installment->installment_number,
+                        $installmentRepo->countByOrderId($installment->order_id),
+                        $installment->order_id
+                    ),
+                    $paidAtNormalized,
+                    $userId
+                );
+
+                return [
+                    'payment_id' => $paymentId,
+                    'installment' => $installment,
+                    'ar_id' => $ar->id,
+                    'new_status' => $newStatus,
+                ];
+            });
 
             Audit::record(
                 'recebimento_parcela',
                 'financeiro',
                 $installmentId,
-                ['status' => $installment->status, 'order_id' => $installment->order_id],
+                ['status' => $tx['installment']->status, 'order_id' => $tx['installment']->order_id],
                 [
                     'installment_id' => $installmentId,
-                    'order_id' => $installment->order_id,
-                    'installment_number' => $installment->installment_number,
-                    'amount' => $installment->amount,
+                    'order_id' => $tx['installment']->order_id,
+                    'installment_number' => $tx['installment']->installment_number,
+                    'amount' => $tx['installment']->amount,
                     'payment_method' => $paymentMethod,
                     'paid_at' => $paidAtNormalized,
-                    'accounts_receivable_id' => $ar->id,
-                    'new_ar_status' => $newStatus,
-                    'payment_id' => $paymentId,
+                    'accounts_receivable_id' => $tx['ar_id'],
+                    'new_ar_status' => $tx['new_status'],
+                    'payment_id' => $tx['payment_id'],
                 ],
                 $userId
             );
 
-            return $paymentId;
-        }
-        catch (ValidationException $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
-        catch (PDOException $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
+            Logger::info('Parcela recebida.', [
+                'installment_id' => $installmentId,
+                'payment_id' => $tx['payment_id'],
+            ]);
+
+            return $tx['payment_id'];
         }
         catch (\Throwable $e)
         {
-            if ($pdo->inTransaction())
+            if (!$e instanceof ValidationException)
             {
-                $pdo->rollBack();
+                Logger::exception($e, 'Falha ao baixar parcela.', ['installment_id' => $installmentId]);
             }
+
             throw $e;
         }
     }
@@ -283,6 +285,8 @@ final class InstallmentService
             $listType = 'open';
         }
 
+        $this->refreshOverdueStatuses();
+
         return $this->installments->paginateFiltered(
             $page,
             $perPage,
@@ -291,6 +295,11 @@ final class InstallmentService
             $dueFrom,
             $dueTo
         );
+    }
+
+    public function refreshOverdueStatuses(): void
+    {
+        $this->installments->refreshOverdueStatuses();
     }
 
     /**

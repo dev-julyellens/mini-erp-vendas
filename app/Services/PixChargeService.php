@@ -238,6 +238,7 @@ final class PixChargeService
         $gateway = GatewayFactory::make($gatewayName);
         if (!$gateway->verifyWebhookSignature($rawBody, $signature))
         {
+            \App\Core\Logger::warning('Webhook PIX rejeitado: assinatura inválida.', ['gateway' => $gatewayName]);
             throw new ValidationException(['webhook' => 'Assinatura inválida.']);
         }
 
@@ -269,7 +270,12 @@ final class PixChargeService
             CompanyContext::setJwtCompanyId($charge->company_id);
             try
             {
-                $this->reconcile($charge->id);
+                $paymentId = $this->reconcile($charge->id);
+                \App\Core\Logger::info('PIX reconciliado via webhook.', [
+                    'charge_id' => $charge->id,
+                    'payment_id' => $paymentId,
+                    'gateway' => $gatewayName,
+                ]);
             }
             finally
             {
@@ -319,10 +325,7 @@ final class PixChargeService
 
     public function reconcile(int $chargeId): int
     {
-        $pdo = Database::getConnection();
-        $pdo->beginTransaction();
-
-        try
+        $existingPaymentId = Database::transaction(function (\PDO $pdo) use ($chargeId): ?int
         {
             $repo = new PixChargeRepository($pdo);
             $charge = $repo->findByIdForUpdate($chargeId);
@@ -338,20 +341,15 @@ final class PixChargeService
 
             if ($charge->payment_id !== null)
             {
-                $pdo->commit();
-
                 return $charge->payment_id;
             }
 
-            $pdo->commit();
-        }
-        catch (\Throwable $e)
+            return null;
+        });
+
+        if ($existingPaymentId !== null)
         {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
+            return $existingPaymentId;
         }
 
         $charge = (new PixChargeRepository())->findById($chargeId);

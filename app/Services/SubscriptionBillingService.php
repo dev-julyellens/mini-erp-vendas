@@ -127,7 +127,7 @@ final class SubscriptionBillingService
             $periodEnd,
             $dueAt
         );
-        $this->subscriptions->markPastDue($subscription->company_id);
+        $this->subscriptions->updateStatus($subscription->company_id, 'past_due');
 
         return true;
     }
