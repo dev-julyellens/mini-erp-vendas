@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\Logger;
 use App\Models\User;
 use App\Helpers\Auth;
 use App\Models\Product;
@@ -82,13 +83,11 @@ final class AuditService
         }
         catch (\Throwable $e)
         {
-            error_log(sprintf(
-                'Audit log failed [%s/%s entity_id=%s]: %s',
-                $action,
-                $entity,
-                $entityId !== null ? (string) $entityId : 'null',
-                $e->getMessage()
-            ));
+            Logger::exception($e, 'Falha ao registrar auditoria.', [
+                'action' => $action,
+                'entity' => $entity,
+                'entity_id' => $entityId,
+            ]);
         }
     }
 

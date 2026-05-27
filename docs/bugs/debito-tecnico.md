@@ -1,43 +1,102 @@
 # Débito técnico
 
-Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e análise do código.
+Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão do código (mai/2026).
+
+**Relacionados:** [bugs-conhecidos.md](bugs-conhecidos.md) · [plano-implementacao-debito-tecnico.md](plano-implementacao-debito-tecnico.md) · [checklist-melhorias-projeto.md](../implementacoes/checklist-melhorias-projeto.md) · `bin/check-route-permission-map.php`
+
+**Legenda:** ✅ concluído ou mitigado · 🟡 em progresso · ⬜ pendente
+
+---
 
 ## Repositórios
 
-- Apenas `CustomerRepository` estende `BaseRepository` com PDO injetável.
-- Demais repositórios instanciam PDO diretamente — duplicação e dificuldade de teste.
+| Status | Detalhe |
+|--------|---------|
+| 🟡 | **6 de 33** repositórios estendem `BaseRepository` (PDO injetável): `Customer`, `Quote`, `QuoteItem`, `Installment`, `InventoryCount`, `InventoryCountLine`. |
+| ⬜ | **~27** repositórios ainda instanciam `Database::getConnection()` diretamente (`Order`, `Product`, `Payment`, `PixCharge`, `AccountsReceivable`, etc.). |
+
+**Impacto:** duplicação de construtor/PDO e maior dificuldade para testes com banco em memória ou mock.
+
+---
 
 ## Transações
 
-- Vários services usam `beginTransaction` / `commit` / `rollBack` manual repetido.
-- `Database::transaction()` existe na camada Core mas adoção é parcial.
+| Status | Detalhe |
+|--------|---------|
+| 🟡 | `Database::transaction()` já usado nos fluxos críticos: `OrderService`, `OrderCancelService`, `PaymentService`, `InstallmentService`, `QuoteService`, `InventoryCountService`, `PixChargeService`. |
+| ⬜ | Transação manual (`beginTransaction` / `commit` / `rollBack`) permanece em: `AuthService`, `StockService`, `ProductService`, `UserService`, `CompanyService`, `OnboardingService`, `SubscriptionBillingService`. |
+
+**Meta:** eliminar blocos manuais restantes e padronizar rollback via `Database::transaction()`.
+
+---
 
 ## Logging
 
-- `App\Core\Logger` (Monolog) adotado em handlers API; `error_log` pode permanecer em pontos legados.
-- Meta: substituir logs remanescentes por Logger estruturado.
+| Status | Detalhe |
+|--------|---------|
+| ✅ | `App\Core\Logger` (Monolog) adotado nos services; `ApiLogService` e `AuditService` migrados em mai/2026. |
+| ✅ | Nenhum `error_log` em `app/Services/` — falhas de log/auditoria usam `Logger::exception()` com contexto. |
+
+**Meta:** manter padrão em novos services (evitar `error_log` direto).
+
+---
 
 ## Testes e qualidade
 
-- PHPUnit cobre principalmente `tests/Unit` (Helpers, Core).
-- PHPStan nível 5 (`composer analyse`) — subir gradualmente.
-- Poucos testes de integração com banco mockado.
+| Status | Detalhe |
+|--------|---------|
+| 🟡 | ~23 arquivos em `tests/` (Unit + Integration): Helpers, Core, `OrderService`, `QuoteService`, API auth, tenant, Mercado Pago PIX. |
+| ⬜ | Cobertura ainda concentrada — poucos services com PDO mock; não há suíte ampla de integração por módulo. |
+| ⬜ | PHPStan permanece no **nível 5** (`phpstan.neon`); subir para 6 exige corrigir ~14 avisos de `array` sem tipo de valor (ver checklist 5.7). |
+
+**Comandos:** `composer test` · `composer analyse` · `composer check`
+
+---
 
 ## Padrões
 
-- Mensagens de domínio em inglês nos services; padronizar ou i18n.
-- `RoutePermissionMap` estático — toda rota nova precisa entrada manual.
-- `Env::load` marcado legado — manter até remoção planejada.
+| Status | Detalhe |
+|--------|---------|
+| ✅ | Mensagens de domínio nos fluxos web/estoque principais em português (`StockService`, controllers de venda/movimentação). Revisar novos services ao criar. |
+| 🟡 | `RoutePermissionMap` continua estático (entrada manual por rota). Mitigações: `bin/check-route-permission-map.php`; hub `GET /reports` com `PermissionService::canAccessReportsHub()` (OR vendas/estoque/financeiro). |
+| ⬜ | `Env::loadLegacy()` mantido como fallback sem Composer; Dotenv (`vlucas/phpdotenv`) é o caminho principal — remover legado quando política de deploy permitir. |
+
+---
 
 ## Infraestrutura de schema
 
-- `database.sql` nem sempre reflete última migration sem processo de regeneração.
-- `stock_movements` sem `company_id` — join obrigatório, complexidade em queries.
+| Status | Detalhe |
+|--------|---------|
+| 🟡 | `database.sql` consolidado inclui módulos recentes (PIX, SaaS, quotes, inventário), mas **não substitui** `php database/run_migration.php` em ambientes já instalados. |
+| ⬜ | `stock_movements` **sem** `company_id` — isolamento via join com `products`; migration futura exigiria revisão de queries e índices. |
 
-## Próximos passos sugeridos (incrementais)
+---
 
-1. Migrar repositórios para `BaseRepository`.
-2. Refatorar transações para `Database::transaction()`.
-3. Ampliar testes de services com PDO mock.
-4. Fechar gaps de ACL no mapa de rotas.
-5. Implementar gateway PIX real atrás de `PixGatewayInterface`.
+## Integrações (fora da lista original)
+
+| Status | Detalhe |
+|--------|---------|
+| ✅ | Gateway PIX Mercado Pago implementado: `MercadoPagoPixGateway`, `GatewayFactory`, webhook `/webhooks/pix/mercadopago`, testes em `MercadoPagoPixGatewayTest`. |
+| 🟡 | Produção depende de configuração: `PIX_DEFAULT_GATEWAY=mercadopago` + `PIX_MERCADOPAGO_*` no `.env` (ver `config/.env.example`). |
+
+---
+
+## Próximos passos sugeridos (prioridade)
+
+| Prioridade | Tarefa | Esforço estimado |
+|------------|--------|------------------|
+| P1 | Migrar repositórios de alto tráfego para `BaseRepository` (`Order`, `Product`, `Payment`, `AccountsReceivable`, `PixCharge`) | Alto |
+| P1 | Refatorar `StockService` e `ProductService` para `Database::transaction()` | Médio |
+| P2 | Ampliar testes de integração (financeiro, estoque, cancelamento) | Médio |
+| P2 | PHPStan 5 → 6 (corrigir arrays sem value-type) | Médio |
+| P3 | Migrar repositórios administrativos restantes para `BaseRepository` | Alto |
+| P3 | Avaliar `company_id` em `stock_movements` (migration + impacto) | Alto |
+| P3 | Remover `Env::loadLegacy` após validar deploy só com Composer | Baixo |
+
+---
+
+## Itens já resolvidos (não reabrir)
+
+- ~~Implementar gateway PIX real~~ → `PaymentGatewayInterface` + Mercado Pago + mock.
+- ~~ACL hub de relatórios sem controle~~ → `canAccessReportsHub()` no middleware.
+- ~~Mensagens em inglês nos fluxos principais de estoque/venda~~ → corrigido (mai/2026).

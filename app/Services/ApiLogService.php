@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\Logger;
 use App\Helpers\ApiRequest;
 use App\Repositories\ApiLogRepository;
 
@@ -33,7 +34,12 @@ final class ApiLogService
         }
         catch (\Throwable $e)
         {
-            error_log('API log insert failed: ' . $e->getMessage());
+            Logger::exception($e, 'Falha ao registrar log de API.', [
+                'method' => $method,
+                'endpoint' => $endpoint,
+                'user_id' => $userId,
+            ]);
+
             return 0;
         }
     }
@@ -51,7 +57,10 @@ final class ApiLogService
         }
         catch (\Throwable $e)
         {
-            error_log('API log update failed: ' . $e->getMessage());
+            Logger::exception($e, 'Falha ao atualizar log de API.', [
+                'log_id' => $logId,
+                'status_code' => $statusCode,
+            ]);
         }
     }
 
@@ -68,7 +77,10 @@ final class ApiLogService
         }
         catch (\Throwable $e)
         {
-            error_log('API log user attach failed: ' . $e->getMessage());
+            Logger::exception($e, 'Falha ao vincular usuário ao log de API.', [
+                'log_id' => $logId,
+                'user_id' => $userId,
+            ]);
         }
     }
 }

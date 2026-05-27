@@ -53,6 +53,7 @@ Cada documento segue: visão geral, fluxo, banco, services, repositories, contro
 - [bugs-conhecidos.md](bugs/bugs-conhecidos.md)
 - [limitacoes.md](bugs/limitacoes.md)
 - [debito-tecnico.md](bugs/debito-tecnico.md)
+- [plano-implementacao-debito-tecnico.md](bugs/plano-implementacao-debito-tecnico.md)
 - [pontos-atencao.md](bugs/pontos-atencao.md)
 
 ## Código de referência
