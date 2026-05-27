@@ -24,12 +24,13 @@ final class StockMovementRepository extends BaseRepository
     {
         $stmt = $this->db->prepare(
             'INSERT INTO stock_movements (
-                product_id, type, quantity, reference_type, reference_id, notes, created_by
+                company_id, product_id, type, quantity, reference_type, reference_id, notes, created_by
              ) VALUES (
-                :product_id, :type, :quantity, :reference_type, :reference_id, :notes, :created_by
+                :company_id, :product_id, :type, :quantity, :reference_type, :reference_id, :notes, :created_by
              ) RETURNING id'
         );
         $stmt->execute([
+            'company_id' => $this->companyId(),
             'product_id' => $productId,
             'type' => $type,
             'quantity' => $quantity,
@@ -57,7 +58,7 @@ final class StockMovementRepository extends BaseRepository
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
 
-        $where = ['p.company_id = :company_id'];
+        $where = ['m.company_id = :company_id'];
         $params = $this->companyParams();
 
         if ($productId !== null)

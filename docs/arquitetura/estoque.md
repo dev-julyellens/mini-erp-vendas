@@ -34,13 +34,13 @@ GET/POST /stock-movements → StockMovementController
 | Tabela | Detalhe |
 |--------|---------|
 | `products` | `stock`, `min_stock`, `type` (product/service) |
-| `stock_movements` | `type`, `quantity`, `stock_before`, `stock_after`, `reference_type`, `reference_id`, `notes`, `created_by` |
+| `stock_movements` | `company_id`, `type`, `quantity`, `reference_type`, `reference_id`, `notes`, `created_by` |
 
 Tipos permitidos (`StockService::TYPES`):
 
 `entrada`, `saida`, `ajuste`, `devolucao`, `perda`, `inventario`
 
-**Nota:** `stock_movements` não possui `company_id`; escopo via `products.company_id` no `StockMovementRepository`.
+**Nota:** `stock_movements.company_id` é preenchido no insert (`StockMovementRepository` + `CompanyScope`). Listagens filtram por `m.company_id`.
 
 ## 4. Services envolvidos
 
@@ -96,7 +96,6 @@ Referências comuns: `reference_type='order'`, `reference_id=<orderId>`.
 
 ## 11. Possíveis melhorias futuras
 
-- `company_id` direto em `stock_movements`.
 - Lote/série e múltiplos depósitos.
 - Custo médio ponderado integrado ao financeiro.
 - Job assíncrono para alertas de estoque baixo em alto volume.

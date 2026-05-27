@@ -387,6 +387,7 @@ CREATE INDEX idx_cash_flow_occurred_type ON cash_flow (occurred_at DESC, type);
 
 CREATE TABLE stock_movements (
     id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies (id),
     product_id INTEGER NOT NULL REFERENCES products (id) ON DELETE RESTRICT,
     type VARCHAR(20) NOT NULL,
     quantity INTEGER NOT NULL,
@@ -401,6 +402,7 @@ CREATE TABLE stock_movements (
     CONSTRAINT stock_movements_quantity_non_zero CHECK (quantity <> 0)
 );
 
+CREATE INDEX idx_stock_movements_company_created ON stock_movements (company_id, created_at DESC);
 CREATE INDEX idx_stock_movements_product_id ON stock_movements (product_id);
 CREATE INDEX idx_stock_movements_type ON stock_movements (type);
 CREATE INDEX idx_stock_movements_created_at ON stock_movements (created_at DESC);

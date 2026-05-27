@@ -192,7 +192,7 @@ flowchart LR
 
 ---
 
-## Fase 5 — Schema `stock_movements.company_id` (opcional / alto impacto)
+## Fase 5 — Schema `stock_movements.company_id` ✅ (mai/2026)
 
 **Objetivo:** simplificar queries multi-tenant e reduzir risco de join esquecido.
 
@@ -274,7 +274,7 @@ Não replanejar:
 | `error_log` em services | 0 | 0 |
 | PHPStan level | 5 | 6 |
 | Testes integração (arquivos) | ~3 | ≥ 6 |
-| `stock_movements.company_id` | Não | Sim (opcional) |
+| `stock_movements.company_id` | Sim | Sim |
 
 Quando todas as metas P1–P2 forem atingidas, considerar este plano **encerrado** e arquivar fases P3 restantes no backlog.
 

@@ -113,6 +113,7 @@ function bootstrapAppliedMigrations(PDO $db): void
         '021_create_quotes.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'quotes'",
         '022_create_inventory_counts.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'inventory_counts'",
         '023_sync_audit_quotes_inventory.sql' => migration023IsComplete($db) ? 'SELECT 1' : 'SELECT 0',
+        '024_stock_movements_company_id.sql' => "SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'stock_movements' AND column_name = 'company_id'",
     ];
 
     $bootstrapped = 0;

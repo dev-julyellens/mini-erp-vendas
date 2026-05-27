@@ -68,7 +68,7 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 | Status | Detalhe |
 |--------|---------|
 | 🟡 | `database.sql` consolidado inclui módulos recentes (PIX, SaaS, quotes, inventário), mas **não substitui** `php database/run_migration.php` em ambientes já instalados. |
-| ⬜ | `stock_movements` **sem** `company_id` — isolamento via join com `products`; migration futura exigiria revisão de queries e índices. |
+| ✅ | `stock_movements.company_id` + migration `024`; isolamento direto e índice `(company_id, created_at)` (mai/2026). Ver `docs/arquitetura/adr-stock-movements-company-id.md`. |
 
 ---
 
@@ -85,7 +85,6 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 
 | Prioridade | Tarefa | Esforço estimado |
 |------------|--------|------------------|
-| P3 | Avaliar `company_id` em `stock_movements` (migration + impacto) | Alto |
 | P3 | Remover `Env::loadLegacy` após validar deploy só com Composer | Baixo |
 
 ---

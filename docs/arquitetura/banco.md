@@ -91,7 +91,7 @@ Nenhum controller acessa o banco diretamente. Instalação/migrations são scrip
 - FKs e CHECK constraints no schema (ex.: `permissions.module`, `products.type`).
 - Estoque em `products.stock` é derivado de movimentações via `StockService`.
 - Preço histórico de venda em `order_items.unit_price` (não retroage alterações no catálogo).
-- `stock_movements` não tem `company_id`; isolamento via join em `products.company_id`.
+- `stock_movements.company_id` — isolamento direto por empresa; join com `products` apenas para exibir nome do produto.
 
 ## 8. Fluxo de dados
 
@@ -122,4 +122,4 @@ Valores monetários: strings decimais normalizadas por `App\Helpers\Money` (BCMa
 - Adotar `Database::transaction()` de forma uniforme nos services.
 - Gerar `database.sql` automaticamente a partir das migrations.
 - Índices adicionais conforme volume de dados em produção.
-- Considerar `company_id` em `stock_movements` para simplificar queries (hoje via join).
+- Ver [adr-stock-movements-company-id.md](adr-stock-movements-company-id.md) para histórico da coluna `company_id`.
