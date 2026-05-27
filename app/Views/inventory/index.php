@@ -114,6 +114,7 @@ require dirname(__DIR__) . '/components/filter-panel.php';
     <div class="modal fade" id="start-inventory-modal" tabindex="-1" aria-labelledby="start-inventory-title" aria-hidden="true">
         <div class="modal-dialog">
             <form class="modal-content" method="post" action="<?= htmlspecialchars($url('inventory/start'), ENT_QUOTES, 'UTF-8') ?>">
+                <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                 <div class="modal-header">
                     <h2 class="modal-title fs-5" id="start-inventory-title">Iniciar inventário físico</h2>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>

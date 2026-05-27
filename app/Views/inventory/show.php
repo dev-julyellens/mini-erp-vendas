@@ -56,6 +56,7 @@ require dirname(__DIR__) . '/components/page-header.php';
 
 <?php if ($count->isOpen() && Permission::can('estoque', 'editar')): ?>
     <form method="post" action="<?= htmlspecialchars($url('inventory/save-lines'), ENT_QUOTES, 'UTF-8') ?>">
+        <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
         <input type="hidden" name="inventory_count_id" value="<?= (int) $count->id ?>">
     <?php endif; ?>
 
@@ -148,6 +149,7 @@ require dirname(__DIR__) . '/components/page-header.php';
     <div class="modal fade" id="finalize-inventory-modal" tabindex="-1" aria-labelledby="finalize-inventory-title" aria-hidden="true">
         <div class="modal-dialog">
             <form class="modal-content" method="post" action="<?= htmlspecialchars($url('inventory/finalize'), ENT_QUOTES, 'UTF-8') ?>">
+                <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                 <input type="hidden" name="id" value="<?= (int) $count->id ?>">
                 <div class="modal-header">
                     <h2 class="modal-title fs-5" id="finalize-inventory-title">Finalizar inventário</h2>
@@ -169,6 +171,7 @@ require dirname(__DIR__) . '/components/page-header.php';
     <div class="modal fade" id="cancel-inventory-modal" tabindex="-1" aria-labelledby="cancel-inventory-title" aria-hidden="true">
         <div class="modal-dialog">
             <form class="modal-content" method="post" action="<?= htmlspecialchars($url('inventory/cancel'), ENT_QUOTES, 'UTF-8') ?>">
+                <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                 <input type="hidden" name="id" value="<?= (int) $count->id ?>">
                 <div class="modal-header">
                     <h2 class="modal-title fs-5" id="cancel-inventory-title">Cancelar inventário</h2>

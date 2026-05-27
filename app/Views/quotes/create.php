@@ -30,7 +30,8 @@ require dirname(__DIR__) . '/components/page-header.php';
 ?>
 <div id="quoteAutosaveStatus" class="alert alert-light border py-2 px-3 mb-3 small d-none" role="status" aria-live="polite"></div>
 <div class="card-soft p-3 p-md-4" id="quoteFormCard" data-ajax-skeleton data-ajax-skeleton-rows="4">
-    <form id="quoteForm" class="needs-validation" novalidate data-no-loading>
+    <form id="quoteForm" class="needs-validation" novalidate data-no-loading method="post" action="#"
+        data-store-url="<?= htmlspecialchars($url('api/quotes'), ENT_QUOTES, 'UTF-8') ?>">
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label" for="customerId">Cliente</label>
@@ -124,7 +125,5 @@ require dirname(__DIR__) . '/components/page-header.php';
 </template>
 
 <script>
-    window.__QUOTE_STORE_URL__ = <?= json_encode($url('quotes/store'), JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?>;
+    window.__QUOTE_STORE_URL__ = <?= json_encode($url('api/quotes'), JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?>;
 </script>
-<script src="<?= htmlspecialchars($url('assets/js/autosave.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
-<script src="<?= htmlspecialchars($url('assets/js/quote_create.js'), ENT_QUOTES, 'UTF-8') ?>"></script>

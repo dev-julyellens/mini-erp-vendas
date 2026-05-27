@@ -193,6 +193,7 @@ $router->get('/api/products', \App\Controllers\ApiProductController::class . '@i
 $router->get('/api/orders', \App\Controllers\ApiOrderController::class . '@index');
 $router->post('/api/orders', \App\Controllers\ApiOrderController::class . '@store');
 $router->post('/api/orders/cancel', \App\Controllers\ApiOrderController::class . '@cancel');
+$router->post('/api/quotes', \App\Controllers\ApiQuoteController::class . '@store');
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = PathHelper::requestPath();

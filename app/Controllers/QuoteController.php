@@ -73,6 +73,10 @@ final class QuoteController extends Controller
             'customers' => (new CustomerRepository())->allOrderedByName(),
             'products' => (new ProductRepository())->allOrderedByName(),
             'flash' => Flash::pull(),
+            'pageScripts' => [
+                'assets/js/autosave.js',
+                'assets/js/quote_create.js',
+            ],
         ]);
     }
 

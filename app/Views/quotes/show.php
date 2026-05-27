@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Helpers\Csrf;
 use App\Helpers\DateHelper;
 use App\Helpers\Permission;
 use App\Models\Quote;
@@ -20,6 +21,7 @@ $actionsHtml = '';
 if ($quote->status === 'draft' && Permission::can('vendas', 'editar'))
 {
     $actionsHtml .= '<form method="post" action="' . htmlspecialchars($url('quotes/mark-sent'), ENT_QUOTES, 'UTF-8') . '" class="d-inline">'
+        . Csrf::field()
         . '<input type="hidden" name="id" value="' . (int) $quote->id . '">'
         . '<button type="submit" class="btn btn-outline"><i class="bi bi-send"></i> Marcar como enviado</button>'
         . '</form>';
@@ -113,6 +115,7 @@ require dirname(__DIR__) . '/components/page-header.php';
     <div class="modal fade" id="convert-quote-modal" tabindex="-1" aria-labelledby="convert-quote-title" aria-hidden="true">
         <div class="modal-dialog">
             <form class="modal-content" method="post" action="<?= htmlspecialchars($url('quotes/convert'), ENT_QUOTES, 'UTF-8') ?>">
+                <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                 <input type="hidden" name="id" value="<?= (int) $quote->id ?>">
                 <div class="modal-header">
                     <h2 class="modal-title fs-5" id="convert-quote-title">Converter em venda</h2>
@@ -140,6 +143,7 @@ require dirname(__DIR__) . '/components/page-header.php';
     <div class="modal fade" id="cancel-quote-modal" tabindex="-1" aria-labelledby="cancel-quote-title" aria-hidden="true">
         <div class="modal-dialog">
             <form class="modal-content" method="post" action="<?= htmlspecialchars($url('quotes/cancel'), ENT_QUOTES, 'UTF-8') ?>">
+                <?php require dirname(__DIR__) . '/partials/csrf.php'; ?>
                 <input type="hidden" name="id" value="<?= (int) $quote->id ?>">
                 <div class="modal-header">
                     <h2 class="modal-title fs-5" id="cancel-quote-title">Cancelar orçamento</h2>

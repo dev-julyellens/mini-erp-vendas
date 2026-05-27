@@ -1,13 +1,18 @@
 (function () {
     "use strict";
 
-    function getCsrfToken() {
-        var body = document.body;
-        if (body && body.dataset.csrfToken) {
-            return body.dataset.csrfToken;
+    function getStoreUrl() {
+        if (typeof window.__QUOTE_STORE_URL__ === "string" && window.__QUOTE_STORE_URL__ !== "") {
+            return window.__QUOTE_STORE_URL__;
         }
-        var input = document.querySelector('input[name="_csrf"]');
-        return input ? input.value : "";
+        var form = document.getElementById("quoteForm");
+        if (form && form.dataset.storeUrl) {
+            return form.dataset.storeUrl;
+        }
+        if (window.MiniErp && window.MiniErp.baseUrl) {
+            return window.MiniErp.baseUrl.replace(/\/$/, "") + "/api/quotes";
+        }
+        return "";
     }
 
     function moneyFormatBR(value) {
@@ -194,10 +199,12 @@
             btnAdd.addEventListener("click", addLine);
         }
 
-        addLine();
-
         var form = document.getElementById("quoteForm");
-        if (form && window.MiniErp && window.MiniErp.autosave) {
+        if (!form) {
+            return;
+        }
+
+        if (window.MiniErp && window.MiniErp.autosave) {
             quoteAutosave = window.MiniErp.autosave.init({
                 key: "quote-create",
                 form: form,
@@ -206,9 +213,21 @@
                 isEmpty: isQuoteStateEmpty,
                 statusEl: document.getElementById("quoteAutosaveStatus"),
                 clearOnSubmit: false,
+                autoRestore: false,
             });
         }
-        if (!form || !window.__QUOTE_STORE_URL__) {
+
+        addLine();
+
+        var storeUrl = getStoreUrl();
+        if (!storeUrl) {
+            if (window.MiniErp && window.MiniErp.toast) {
+                window.MiniErp.toast(
+                    "Erro",
+                    "URL de salvamento não configurada. Recarregue a página.",
+                    "danger"
+                );
+            }
             return;
         }
 
@@ -247,6 +266,10 @@
                 return;
             }
 
+            if (quoteAutosave && typeof quoteAutosave.clear === "function") {
+                quoteAutosave.clear();
+            }
+
             var validUntil = document.getElementById("validUntil")
                 ? document.getElementById("validUntil").value
                 : "";
@@ -267,13 +290,13 @@
                 window.MiniErp.skeleton.start(formCard);
             }
 
-            fetch(window.__QUOTE_STORE_URL__, {
+            fetch(storeUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Accept: "application/json",
-                    "X-CSRF-Token": getCsrfToken(),
                 },
+                credentials: "same-origin",
                 body: JSON.stringify({
                     customer_id: customerId,
                     items: items,
@@ -295,24 +318,28 @@
                     });
                 })
                 .then(function (result) {
-                    if (result.ok && result.body && result.body.success) {
+                    var quoteId =
+                        result.body && (result.body.quote_id || result.body.id)
+                            ? result.body.quote_id || result.body.id
+                            : null;
+
+                    if (result.ok && result.body && result.body.success && quoteId) {
                         if (quoteAutosave && typeof quoteAutosave.clear === "function") {
                             quoteAutosave.clear();
                         }
                         if (window.MiniErp && window.MiniErp.toast) {
                             window.MiniErp.toast(
                                 "Sucesso",
-                                "Orçamento #" + result.body.quote_id + " registrado.",
+                                "Orçamento #" + quoteId + " registrado.",
                                 "success"
                             );
                         }
-                        var id = result.body.quote_id;
-                        setTimeout(function () {
-                            window.location.href =
-                                window.MiniErp.baseUrl.replace(/\/$/, "") +
-                                "/quotes/show?id=" +
-                                encodeURIComponent(String(id));
-                        }, 450);
+                        var base =
+                            window.MiniErp && window.MiniErp.baseUrl
+                                ? window.MiniErp.baseUrl.replace(/\/$/, "")
+                                : "";
+                        window.location.href =
+                            base + "/quotes/show?id=" + encodeURIComponent(String(quoteId));
                         return;
                     }
 
@@ -321,6 +348,8 @@
                         msg = Object.values(result.body.errors).join(" ");
                     } else if (result.body && result.body.message) {
                         msg = result.body.message;
+                    } else if (result.status === 403) {
+                        msg = "Acesso negado. Atualize a página e tente novamente.";
                     } else if (result.raw) {
                         msg = result.raw.trim().slice(0, 200);
                     }

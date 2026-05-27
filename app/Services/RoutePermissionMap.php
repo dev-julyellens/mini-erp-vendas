@@ -64,6 +64,7 @@ final class RoutePermissionMap
         'GET /api/orders' => ['vendas', 'visualizar'],
         'POST /api/orders' => ['vendas', 'criar'],
         'POST /api/orders/cancel' => ['vendas', 'excluir'],
+        'POST /api/quotes' => ['vendas', 'criar'],
 
         'GET /reports/sales-period' => ['vendas', 'visualizar'],
         'GET /reports/sales-period/export' => ['vendas', 'visualizar'],

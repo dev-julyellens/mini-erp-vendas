@@ -126,30 +126,12 @@ final class NavigationMenu
                 'icon' => 'bi-receipt',
                 'active' => $navPrefix('/orders') !== '',
             ];
-            if (Permission::can('vendas', 'criar'))
-            {
-                $comercial[] = [
-                    'label' => 'Nova venda',
-                    'href' => $url('orders/create'),
-                    'icon' => 'bi-plus-circle',
-                    'active' => $navPrefix('/orders/create') !== '',
-                ];
-            }
             $comercial[] = [
                 'label' => 'Orçamentos',
                 'href' => $url('quotes'),
                 'icon' => 'bi-file-earmark-text',
                 'active' => $navPrefix('/quotes') !== '',
             ];
-            if (Permission::can('vendas', 'criar'))
-            {
-                $comercial[] = [
-                    'label' => 'Novo orçamento',
-                    'href' => $url('quotes/create'),
-                    'icon' => 'bi-file-earmark-plus',
-                    'active' => $navPrefix('/quotes/create') !== '',
-                ];
-            }
         }
         if ($comercial !== [])
         {
@@ -178,22 +160,10 @@ final class NavigationMenu
                 'active' => $navPrefix('/finance/accounts-receivable') !== '',
             ];
             $financeiro[] = [
-                'label' => 'Parcelas em aberto',
+                'label' => 'Parcelas',
                 'href' => $url('finance/installments/open'),
                 'icon' => 'bi-calendar2-check',
-                'active' => $currentPath === '/finance/installments/open',
-            ];
-            $financeiro[] = [
-                'label' => 'Parcelas vencidas',
-                'href' => $url('finance/installments/overdue'),
-                'icon' => 'bi-exclamation-triangle',
-                'active' => $currentPath === '/finance/installments/overdue',
-            ];
-            $financeiro[] = [
-                'label' => 'Histórico financeiro',
-                'href' => $url('finance/installments/history'),
-                'icon' => 'bi-clock-history',
-                'active' => $currentPath === '/finance/installments/history',
+                'active' => $navPrefix('/finance/installments') !== '',
             ];
         }
         if ($financeiro !== [])

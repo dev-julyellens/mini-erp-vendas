@@ -91,7 +91,8 @@
      *   skipRestore?: boolean,
      *   statusEl?: HTMLElement|null,
      *   debounceMs?: number,
-     *   clearOnSubmit?: boolean
+     *   clearOnSubmit?: boolean,
+     *   autoRestore?: boolean
      * }} options
      */
     function init(options) {
@@ -141,7 +142,7 @@
             var entry = read(baseKey);
             if (entry && !isEmpty(entry.state)) {
                 var emptyNow = isEmpty(getState());
-                if (emptyNow) {
+                if (emptyNow && options.autoRestore !== false) {
                     restoreDraft();
                 } else if (statusEl) {
                     statusEl.classList.remove("d-none");

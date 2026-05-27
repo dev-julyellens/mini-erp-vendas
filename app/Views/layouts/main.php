@@ -63,9 +63,11 @@ if (Auth::check())
     data-app-name="<?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?>"
     <?php if ($bodyUserId !== ''): ?> data-user-id="<?= htmlspecialchars($bodyUserId, ENT_QUOTES, 'UTF-8') ?>" <?php endif; ?>
     <?php if ($bodyCompanyId !== ''): ?> data-company-id="<?= htmlspecialchars($bodyCompanyId, ENT_QUOTES, 'UTF-8') ?>" <?php endif; ?>
+    <?php if (Auth::check()): ?>
+    data-csrf-token="<?= htmlspecialchars(Csrf::token(), ENT_QUOTES, 'UTF-8') ?>"
+    <?php endif; ?>
     <?php if ($userPrefsJson !== ''): ?>
     data-user-prefs="<?= htmlspecialchars($userPrefsJson, ENT_QUOTES, 'UTF-8') ?>"
-    data-csrf-token="<?= htmlspecialchars(Csrf::token(), ENT_QUOTES, 'UTF-8') ?>"
     data-prefs-url="<?= htmlspecialchars($url('profile/preferences'), ENT_QUOTES, 'UTF-8') ?>"
     <?php endif; ?>>
     <a class="skip-link" href="#mainContent">Ir para o conteúdo principal</a>

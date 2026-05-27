@@ -904,7 +904,7 @@
         initDataTables();
     });
 
-    window.MiniErp = {
+    window.MiniErp = Object.assign(window.MiniErp || {}, {
         baseUrl: getBaseUrl(),
         getCsrfToken: getCsrfToken,
         toast: showToast,
@@ -935,5 +935,5 @@
                 }
             },
         },
-    };
+    });
 })();
