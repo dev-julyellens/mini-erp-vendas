@@ -16,9 +16,6 @@ parameters:
             message: '#^Parameter \#1 \$array of function reset#'
             path: app/Controllers/PixChargeController.php
         -
-            message: '#^Strict comparison using === between non-falsy-string#'
-            path: app/Helpers/PathHelper.php
-        -
             message: '#^Else branch is unreachable#'
         -
             message: '#^Strict comparison using === between array\{.*\} and array\{\}#'

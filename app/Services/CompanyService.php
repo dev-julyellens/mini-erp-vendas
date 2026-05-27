@@ -49,24 +49,13 @@ final class CompanyService
             throw new ValidationException($v['errors']);
         }
 
-        $pdo = Database::getConnection();
-        $pdo->beginTransaction();
-        try
+        return Database::transaction(function (\PDO $pdo) use ($v): int
         {
             $id = $this->companies->insert($v['name'], $v['tax_id'], $v['slug']);
-            $pdo->commit();
             Audit::record('criar', 'usuarios', $id, null, ['name' => $v['name'], 'slug' => $v['slug']]);
 
             return $id;
-        }
-        catch (\Throwable $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
+        });
     }
 
     public function update(int $id, string $name, ?string $taxId, string $slug): void

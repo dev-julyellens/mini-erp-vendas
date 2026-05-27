@@ -23,10 +23,10 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 
 | Status | Detalhe |
 |--------|---------|
-| 🟡 | `Database::transaction()` já usado nos fluxos críticos: `OrderService`, `OrderCancelService`, `PaymentService`, `InstallmentService`, `QuoteService`, `InventoryCountService`, `PixChargeService`. |
-| ⬜ | Transação manual (`beginTransaction` / `commit` / `rollBack`) permanece em: `AuthService`, `StockService`, `ProductService`, `UserService`, `CompanyService`, `OnboardingService`, `SubscriptionBillingService`. |
+| ✅ | Todos os services em `app/Services/` usam `Database::transaction()`; nenhum `beginTransaction` manual fora de `Database.php` (mai/2026). |
+| ✅ | Inclui estoque/produtos (`StockService`, `ProductService`) e admin/SaaS (`AuthService`, `UserService`, `CompanyService`, `OnboardingService`, `SubscriptionBillingService`). |
 
-**Meta:** eliminar blocos manuais restantes e padronizar rollback via `Database::transaction()`.
+**Meta:** manter padrão em novos fluxos multi-tabela; aninhar com `$manageTransaction = false` quando um service chama outro dentro da mesma transação.
 
 ---
 
@@ -86,7 +86,6 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 | Prioridade | Tarefa | Esforço estimado |
 |------------|--------|------------------|
 | P1 | Migrar repositórios de alto tráfego para `BaseRepository` (`Order`, `Product`, `Payment`, `AccountsReceivable`, `PixCharge`) | Alto |
-| P1 | Refatorar `StockService` e `ProductService` para `Database::transaction()` | Médio |
 | P2 | Ampliar testes de integração (financeiro, estoque, cancelamento) | Médio |
 | P2 | PHPStan 5 → 6 (corrigir arrays sem value-type) | Médio |
 | P3 | Migrar repositórios administrativos restantes para `BaseRepository` | Alto |

@@ -195,55 +195,43 @@ final class ProductService
         $initialStock = (int) $data['stock'];
         $data['stock'] = 0;
 
-        $pdo = Database::getConnection();
-        $pdo->beginTransaction();
-
         try
         {
-            $productRepo = new ProductRepository($pdo);
-            $id = $productRepo->insert($data);
-
-            if (
-                $data['type'] === ProductPricing::TYPE_PRODUCT
-                && $initialStock > 0
-            )
+            $id = Database::transaction(function (\PDO $pdo) use ($data, $initialStock): int
             {
-                $stockService = new StockService(
-                    new StockMovementRepository($pdo),
-                    $productRepo,
-                    $pdo
-                );
-                $stockService->apply(
-                    'entrada',
-                    $id,
-                    $initialStock,
-                    'product',
-                    $id,
-                    'Estoque inicial',
-                    null,
-                    false
-                );
-            }
+                $productRepo = new ProductRepository($pdo);
+                $id = $productRepo->insert($data);
 
-            $pdo->commit();
+                if (
+                    $data['type'] === ProductPricing::TYPE_PRODUCT
+                    && $initialStock > 0
+                )
+                {
+                    $stockService = new StockService(
+                        new StockMovementRepository($pdo),
+                        $productRepo,
+                        $pdo
+                    );
+                    $stockService->apply(
+                        'entrada',
+                        $id,
+                        $initialStock,
+                        'product',
+                        $id,
+                        'Estoque inicial',
+                        null,
+                        false
+                    );
+                }
+
+                return $id;
+            });
         }
         catch (\PDOException $e)
         {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
             if (isset($e->errorInfo[0]) && $e->errorInfo[0] === '23505')
             {
                 throw new ValidationException(['sku' => 'SKU ou código de barras já cadastrado.']);
-            }
-            throw $e;
-        }
-        catch (\Throwable $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
             }
             throw $e;
         }
@@ -280,71 +268,57 @@ final class ProductService
 
         $oldSnapshot = AuditService::productSnapshot($existing);
 
-        $pdo = Database::getConnection();
-        $pdo->beginTransaction();
-
         try
         {
-            $productRepo = new ProductRepository($pdo);
-            $stockService = new StockService(
-                new StockMovementRepository($pdo),
-                $productRepo,
-                $pdo
-            );
-
-            if (
-                !$existing->isService()
-                && $isService
-                && $existing->stock > 0
-            )
+            Database::transaction(function (\PDO $pdo) use ($id, $data, $existing, $isService, $targetStock): void
             {
-                $stockService->applyAbsoluteStock(
-                    $id,
-                    0,
-                    'ajuste',
-                    'Zeragem de estoque ao converter para serviço',
-                    false
+                $productRepo = new ProductRepository($pdo);
+                $stockService = new StockService(
+                    new StockMovementRepository($pdo),
+                    $productRepo,
+                    $pdo
                 );
-            }
 
-            $data['stock'] = $isService ? 0 : $existing->stock;
-            $data['min_stock'] = $isService ? 0 : (int) $data['min_stock'];
+                if (
+                    !$existing->isService()
+                    && $isService
+                    && $existing->stock > 0
+                )
+                {
+                    $stockService->applyAbsoluteStock(
+                        $id,
+                        0,
+                        'ajuste',
+                        'Zeragem de estoque ao converter para serviço',
+                        false
+                    );
+                }
 
-            $productRepo->update($id, $data);
+                $data['stock'] = $isService ? 0 : $existing->stock;
+                $data['min_stock'] = $isService ? 0 : (int) $data['min_stock'];
 
-            if (
-                !$isService
-                && $existing->stock !== $targetStock
-            )
-            {
-                $stockService->applyAbsoluteStock(
-                    $id,
-                    $targetStock,
-                    'ajuste',
-                    'Ajuste manual via cadastro de produto',
-                    false
-                );
-            }
+                $productRepo->update($id, $data);
 
-            $pdo->commit();
+                if (
+                    !$isService
+                    && $existing->stock !== $targetStock
+                )
+                {
+                    $stockService->applyAbsoluteStock(
+                        $id,
+                        $targetStock,
+                        'ajuste',
+                        'Ajuste manual via cadastro de produto',
+                        false
+                    );
+                }
+            });
         }
         catch (\PDOException $e)
         {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
             if (isset($e->errorInfo[0]) && $e->errorInfo[0] === '23505')
             {
                 throw new ValidationException(['sku' => 'SKU ou código de barras já cadastrado.']);
-            }
-            throw $e;
-        }
-        catch (\Throwable $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
             }
             throw $e;
         }

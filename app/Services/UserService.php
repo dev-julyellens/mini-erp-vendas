@@ -67,24 +67,14 @@ final class UserService
         }
 
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        $pdo = Database::getConnection();
-        $pdo->beginTransaction();
-        try
+
+        return Database::transaction(function (\PDO $pdo) use ($v, $hash): int
         {
             $id = $this->users->insert($v['name'], $v['email'], $hash, $v['role']);
-            $pdo->commit();
             Audit::record('criar', 'usuarios', $id, null, ['email' => $v['email'], 'role' => $v['role']]);
 
             return $id;
-        }
-        catch (\Throwable $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
+        });
     }
 
     public function update(int $id, string $name, string $email, string $role): void

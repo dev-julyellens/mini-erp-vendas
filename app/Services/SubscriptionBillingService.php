@@ -63,9 +63,7 @@ final class SubscriptionBillingService
             throw new ValidationException(['invoice_id' => 'Fatura inválida ou já processada.']);
         }
 
-        $pdo = Database::getConnection();
-        $pdo->beginTransaction();
-        try
+        Database::transaction(function (\PDO $pdo) use ($invoiceId, $companyId): void
         {
             if (!$this->invoices->markPaidForCompany($invoiceId, $companyId))
             {
@@ -75,16 +73,7 @@ final class SubscriptionBillingService
             $periodStart = date('Y-m-d H:i:s');
             $periodEnd = date('Y-m-d H:i:s', strtotime('+1 month'));
             $this->subscriptions->renewPeriod($companyId, $periodStart, $periodEnd, 'active');
-            $pdo->commit();
-        }
-        catch (\Throwable $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
+        });
     }
 
     private function generateRenewalInvoice(Subscription $subscription): bool

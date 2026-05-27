@@ -70,73 +70,79 @@ final class StockService
             : $quantity;
 
         $pdo = $this->products->getConnection();
-        $startedHere = false;
 
         if ($manageTransaction && !$pdo->inTransaction())
         {
-            $pdo->beginTransaction();
-            $startedHere = true;
-        }
-
-        try
-        {
-            $product = $this->products->findById($productId, $lockProduct);
-            if ($product === null)
-            {
-                throw new ValidationException(['product_id' => 'Produto não encontrado.']);
-            }
-
-            if ($product->isService())
-            {
-                throw new ValidationException([
-                    'product_id' => 'Serviços não possuem movimentação de estoque.',
-                ]);
-            }
-
-            if ($delta < 0 && $product->stock + $delta < 0)
-            {
-                throw new ValidationException([
-                    'quantity' => sprintf(
-                        'Estoque insuficiente para "%s". Disponível: %d.',
-                        $product->name,
-                        $product->stock
-                    ),
-                ]);
-            }
-
-            $movementId = $this->movements->insert(
-                $productId,
+            $movementId = Database::transaction(function (PDO $pdo) use (
                 $type,
-                $storedQuantity,
+                $productId,
+                $quantity,
                 $referenceType,
                 $referenceId,
                 $notes,
-                $createdBy ?? Auth::id()
-            );
-
-            $this->products->adjustStock($productId, $delta);
+                $createdBy,
+                $lockProduct
+            ): int
+            {
+                return $this->apply(
+                    $type,
+                    $productId,
+                    $quantity,
+                    $referenceType,
+                    $referenceId,
+                    $notes,
+                    $createdBy,
+                    false,
+                    $lockProduct
+                );
+            });
 
             $updatedProduct = $this->products->findById($productId, false);
-
-            if ($startedHere)
+            if ($updatedProduct !== null && !$updatedProduct->isService())
             {
-                $pdo->commit();
-                if ($updatedProduct !== null && !$updatedProduct->isService())
-                {
-                    (new \App\Services\NotificationService(null, $pdo))->notifyLowStock($updatedProduct);
-                }
+                (new NotificationService(null, $pdo))->notifyLowStock($updatedProduct);
             }
 
             return $movementId;
         }
-        catch (\Throwable $e)
+
+        $product = $this->products->findById($productId, $lockProduct);
+        if ($product === null)
         {
-            if ($startedHere && $pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
+            throw new ValidationException(['product_id' => 'Produto não encontrado.']);
         }
+
+        if ($product->isService())
+        {
+            throw new ValidationException([
+                'product_id' => 'Serviços não possuem movimentação de estoque.',
+            ]);
+        }
+
+        if ($delta < 0 && $product->stock + $delta < 0)
+        {
+            throw new ValidationException([
+                'quantity' => sprintf(
+                    'Estoque insuficiente para "%s". Disponível: %d.',
+                    $product->name,
+                    $product->stock
+                ),
+            ]);
+        }
+
+        $movementId = $this->movements->insert(
+            $productId,
+            $type,
+            $storedQuantity,
+            $referenceType,
+            $referenceId,
+            $notes,
+            $createdBy ?? Auth::id()
+        );
+
+        $this->products->adjustStock($productId, $delta);
+
+        return $movementId;
     }
 
     public function applyAbsoluteStock(

@@ -103,22 +103,11 @@ final class OnboardingService
     public function selectPlan(string $planCode): void
     {
         $companyId = CompanyContext::requireId();
-        $pdo = Database::getConnection();
-        $pdo->beginTransaction();
-        try
+        Database::transaction(function (\PDO $pdo) use ($companyId, $planCode): void
         {
             $this->subscriptions->subscribeCompany($companyId, $planCode);
             $this->companies->completeOnboarding($companyId);
-            $pdo->commit();
-        }
-        catch (\Throwable $e)
-        {
-            if ($pdo->inTransaction())
-            {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
+        });
     }
 
     private function normalizeSlug(string $value): string

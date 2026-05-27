@@ -61,13 +61,13 @@ flowchart LR
 
 ---
 
-## Fase 1 — Transações (`Database::transaction`)
+## Fase 1 — Transações (`Database::transaction`) ✅ (mai/2026)
 
 **Objetivo:** mesmo padrão de rollback/commit dos fluxos de venda e pagamento.
 
 **Ordem recomendada:** `StockService` primeiro (mais crítico para estoque), depois `ProductService`.
 
-### 1.1 — `StockService`
+### 1.1 — `StockService` ✅
 
 | Campo | Conteúdo |
 |-------|----------|
@@ -76,7 +76,7 @@ flowchart LR
 | Testes | Estender ou criar teste de integração: movimentação + estoque consistente em falha simulada |
 | Critério de aceite | Sem `beginTransaction` manual no arquivo; `composer test` verde |
 
-### 1.2 — `ProductService`
+### 1.2 — `ProductService` ✅
 
 | Campo | Conteúdo |
 |-------|----------|
@@ -84,7 +84,7 @@ flowchart LR
 | Ação | Mesmo padrão da fase 1.1 |
 | Critério de aceite | CRUD produto/serviço inalterado em comportamento; transação única por operação |
 
-### 1.3 — Demais services (P2 dentro da fase 1 ou PRs separados)
+### 1.3 — Demais services ✅
 
 | Service | Prioridade | Notas |
 |---------|------------|-------|

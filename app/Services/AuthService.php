@@ -219,23 +219,12 @@ final class AuthService
         }
 
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        $db = Database::getConnection();
-        $db->beginTransaction();
-        try
+        Database::transaction(function (\PDO $db) use ($userId, $hash, $tokenHash): void
         {
             $this->users->updatePassword($userId, $hash);
             $this->users->deleteResetToken($tokenHash);
             $this->users->deleteResetTokensForUser($userId);
-            $db->commit();
-        }
-        catch (\Throwable $e)
-        {
-            if ($db->inTransaction())
-            {
-                $db->rollBack();
-            }
-            throw $e;
-        }
+        });
 
         $user = $this->users->findById($userId);
         if ($user !== null)
