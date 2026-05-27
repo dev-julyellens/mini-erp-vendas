@@ -212,12 +212,12 @@ Itens do [gerenciamento-completo.md](../../.cursor/prompts/gerenciamento-complet
 
 | Item sugerido | Status | Ação |
 |---------------|--------|------|
-| Pedidos vs Orçamentos | ⬜ | Avaliar módulo de orçamento ou renomear/agrupar |
-| Recebimentos | ⬜ | Link para `finance/accounts-receivable` ou fluxo dedicado |
-| Histórico financeiro | ⬜ | Relatório ou listagem consolidada |
-| Inventário | ⬜ | Tela futura ou documentar escopo |
-| Permissões (menu Admin) | ⬜ | `/profile#permissoes` ou tela dedicada |
-| Reestruturação em grupos (Dashboard, Comercial, Financeiro…) | ⬜ | Refatorar `app/Helpers/NavigationMenu.php` + `sidebar.php` |
+| Pedidos vs Orçamentos | 🟡 | Sem módulo de orçamento; vendas em `orders` |
+| Recebimentos | ✅ | Menu → `finance/accounts-receivable` |
+| Histórico financeiro | ✅ | Menu → `finance/installments/history` |
+| Inventário | 🟡 | Futuro — ver `debito-tecnico.md` |
+| Permissões (menu Admin) | ✅ | `profile#permissoes` |
+| Reestruturação em grupos (Dashboard, Comercial, Financeiro…) | ✅ | `NavigationMenu.php` (grupos existentes + itens financeiros) |
 
 Ver também seção **Menu** em [checklist-refatoracao-ui.md](checklist-refatoracao-ui.md).
 
@@ -227,8 +227,8 @@ Ver também seção **Menu** em [checklist-refatoracao-ui.md](checklist-refatora
 
 | # | Tarefa | Sigla | Status | Arquivo / ação |
 |---|--------|-------|--------|----------------|
-| 10.1 | Gateway PIX real (`PixGatewayInterface`) | INT | ⬜ | Hoje só `MockPixGateway` |
-| 10.2 | E-mail transacional (reset, notificações críticas) | INT | ⬜ | Config SMTP em `.env.example` |
+| 10.1 | Gateway PIX real (`PixGatewayInterface`) | INT | ✅ | `MercadoPagoPixGateway` + webhook `/webhooks/pix/mercadopago` |
+| 10.2 | E-mail transacional (reset, notificações críticas) | INT | ✅ | PHPMailer + `MailService::sendTransactional`; `.env.example` |
 | 10.3 | Módulo de orçamentos (se escopo de produto) | BE | ⬜ | Não existe — só vendas |
 | 10.4 | Inventário físico (contagem) | BE | ⬜ | Futuro — estoque tem movimentações |
 
@@ -298,10 +298,11 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 3. ~~5.6 — PHPStan ignore~~ · 5.7 🟡 (nível 6 mapeado)  
 4. ~~7.2 — HSTS~~ · 7.3 🟡 (`theme-boot.js`)
 
-### Sprint H — Menu e integrações (conforme produto) — P2–P3
+### Sprint H — Menu e integrações (conforme produto) — P2–P3 ✅
 
-1. Fase 9 — `NavigationMenu.php`  
-2. 10.1–10.2 — PIX real + e-mail
+1. ~~Fase 9 — `NavigationMenu.php`~~  
+2. ~~10.1 — Mercado Pago PIX~~  
+3. ~~10.2 — e-mail transacional documentado + `sendTransactional`~~
 
 ---
 
@@ -319,7 +320,7 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 | Migrations / DB | ~92% | Bootstrap 018–020; índices pendentes (2.4) |
 | Performance JS | ~75% | Unificar form margens (6.3); SRI CDNs (6.5) |
 | Acessibilidade auditada | ~80% | CI axe (11.4); toasts SR (8.6) |
-| Integrações (PIX/e-mail) | ~20% | Mock → produção |
+| Integrações (PIX/e-mail) | ~75% | Credenciais MP em produção; orçamentos/inventário futuros |
 
 ---
 
@@ -344,4 +345,4 @@ Atualizar também `docs/bugs/bugs-conhecidos.md` ou `debito-tecnico.md` se for b
 3. Novos bugs → `docs/bugs/bugs-conhecidos.md` + referência cruzada aqui.  
 4. Antes de release: Fase 0 deve estar ✅ ou explicitamente aceita com risco documentado.
 
-**Última atualização:** 26/05/2026 — Sprint G: `Database::transaction`, installments read fix, logging, HSTS, `theme-boot.js`.
+**Última atualização:** 26/05/2026 — Sprint H: Mercado Pago PIX, menu financeiro, e-mail transacional.

@@ -26,7 +26,7 @@ Lista baseada no código e comportamento observável. Não inclui issues externa
 
 | Item | Descrição |
 |------|-----------|
-| PIX produção | Apenas `MockPixGateway`; cobranças reais não processadas. |
+| PIX produção | Usar `PIX_DEFAULT_GATEWAY=mercadopago` + credenciais MP; mock só em dev. |
 
 ## Instalação
 

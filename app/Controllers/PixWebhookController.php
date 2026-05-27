@@ -23,6 +23,18 @@ final class PixWebhookController extends Controller
         $this->handle('mock');
     }
 
+    public function mercadopago(): void
+    {
+        if (!\App\Helpers\PixConfig::isMercadoPagoConfigured())
+        {
+            $this->json(['success' => false, 'message' => 'Gateway Mercado Pago não configurado.'], 404);
+
+            return;
+        }
+
+        $this->handle('mercadopago');
+    }
+
     private function handle(string $gateway): void
     {
         $rawBody = file_get_contents('php://input');
@@ -37,7 +49,10 @@ final class PixWebhookController extends Controller
             $payload = $_POST;
         }
 
-        $signature = $_SERVER['HTTP_X_PIX_SIGNATURE'] ?? $_SERVER['HTTP_X_WEBHOOK_SIGNATURE'] ?? null;
+        $signature = $_SERVER['HTTP_X_PIX_SIGNATURE']
+            ?? $_SERVER['HTTP_X_WEBHOOK_SIGNATURE']
+            ?? $_SERVER['HTTP_X_SIGNATURE']
+            ?? null;
 
         try
         {

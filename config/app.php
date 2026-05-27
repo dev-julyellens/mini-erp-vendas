@@ -49,6 +49,9 @@ $pixTtl = $env('PIX_CHARGE_TTL_SECONDS');
 $pixWebhookSecret = $env('PIX_WEBHOOK_SECRET');
 $pixMerchantName = $env('PIX_MERCHANT_NAME');
 $pixMerchantCity = $env('PIX_MERCHANT_CITY');
+$pixMpToken = $env('PIX_MERCADOPAGO_ACCESS_TOKEN');
+$pixMpWebhookSecret = $env('PIX_MERCADOPAGO_WEBHOOK_SECRET');
+$pixMpPayerEmail = $env('PIX_MERCADOPAGO_PAYER_EMAIL');
 $logPath = $env('LOG_PATH');
 $logLevel = $env('LOG_LEVEL');
 
@@ -121,5 +124,8 @@ return [
         'webhook_secret' => ($pixWebhookSecret !== null && $pixWebhookSecret !== '') ? $pixWebhookSecret : '',
         'merchant_name' => ($pixMerchantName !== null && $pixMerchantName !== '') ? $pixMerchantName : 'Mini ERP',
         'merchant_city' => ($pixMerchantCity !== null && $pixMerchantCity !== '') ? $pixMerchantCity : 'Sao Paulo',
+        'mercadopago_access_token' => ($pixMpToken !== null && $pixMpToken !== '') ? $pixMpToken : '',
+        'mercadopago_webhook_secret' => ($pixMpWebhookSecret !== null && $pixMpWebhookSecret !== '') ? $pixMpWebhookSecret : '',
+        'mercadopago_payer_email' => ($pixMpPayerEmail !== null && $pixMpPayerEmail !== '') ? $pixMpPayerEmail : '',
     ],
 ];

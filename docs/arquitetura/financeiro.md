@@ -106,7 +106,7 @@ Auditoria: entidades `conta_receber`, `parcelamento`, `recebimento` (conforme op
 
 - Consistência transacional entre `payments`, `accounts_receivable` e `cash_flow`.
 - Webhook PIX mock é rota **pública** (lista em `AuthMiddleware`).
-- Gateway real de produção **não implementado** — apenas `MockPixGateway`.
+- Gateway **Mercado Pago** (`mercadopago`) quando `PIX_MERCADOPAGO_ACCESS_TOKEN` está definido; **mock** para desenvolvimento.
 - Simulação de pagamento PIX: `POST /finance/pix/simulate-pay` (dev/teste).
 
 ## 10. Dependências

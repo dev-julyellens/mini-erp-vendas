@@ -48,6 +48,33 @@ final class PixConfig
         return (bool) ($config['enabled'] ?? true);
     }
 
+    public static function mercadoPagoAccessToken(): string
+    {
+        $config = self::config();
+
+        return trim((string) ($config['mercadopago_access_token'] ?? ''));
+    }
+
+    public static function mercadoPagoWebhookSecret(): string
+    {
+        $config = self::config();
+
+        return trim((string) ($config['mercadopago_webhook_secret'] ?? ''));
+    }
+
+    public static function mercadoPagoPayerEmail(): string
+    {
+        $config = self::config();
+        $email = trim((string) ($config['mercadopago_payer_email'] ?? ''));
+
+        return $email !== '' ? $email : 'noreply@mercadopago.com';
+    }
+
+    public static function isMercadoPagoConfigured(): bool
+    {
+        return self::mercadoPagoAccessToken() !== '';
+    }
+
     /**
      * @return array<string, mixed>
      */

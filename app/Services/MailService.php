@@ -34,6 +34,18 @@ HTML;
         return $this->send($toEmail, $subject, $html, $text);
     }
 
+    /**
+     * Alerta transacional genérico (notificações críticas, confirmações).
+     */
+    public function sendTransactional(string $toEmail, string $subject, string $message): bool
+    {
+        $safe = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+        $html = '<p>' . nl2br($safe) . '</p>'
+            . '<p style="color:#666;font-size:12px;">Mini ERP de Vendas</p>';
+
+        return $this->send($toEmail, $subject, $html, $message);
+    }
+
     public function send(string $to, string $subject, string $htmlBody, ?string $textBody = null): bool
     {
         $to = trim($to);

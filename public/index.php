@@ -167,6 +167,7 @@ $router->post('/finance/pix/create-installment', \App\Controllers\PixChargeContr
 $router->post('/finance/pix/simulate-pay', \App\Controllers\PixChargeController::class . '@simulatePay');
 
 $router->post('/webhooks/pix/mock', \App\Controllers\PixWebhookController::class . '@mock');
+$router->post('/webhooks/pix/mercadopago', \App\Controllers\PixWebhookController::class . '@mercadopago');
 
 $router->get('/stock-movements', \App\Controllers\StockMovementController::class . '@index');
 $router->get('/stock-movements/create', \App\Controllers\StockMovementController::class . '@create');

@@ -12,7 +12,7 @@ flowchart TB
     PCS --> GF[GatewayFactory]
     GF --> GW[PaymentGatewayInterface]
     GW --> Mock[MockPixGateway]
-    GW --> Future[Outros gateways]
+    GW --> MP[MercadoPagoPixGateway]
     PCS --> Repo[PixChargeRepository]
     WH[Webhook público] --> PCS
     PCS --> Pay[PaymentService / InstallmentService]
@@ -50,7 +50,8 @@ flowchart TB
 | POST | `/finance/pix/create-account` | financeiro / criar | Cobrança na conta |
 | POST | `/finance/pix/create-installment` | financeiro / criar | Cobrança na parcela |
 | POST | `/finance/pix/simulate-pay` | financeiro / criar | Simula pagamento (gateway mock) |
-| POST | `/webhooks/pix/mock` | público | Webhook do gateway mock |
+| POST | `/webhooks/pix/mock` | público | Webhook do gateway mock (dev/staging) |
+| POST | `/webhooks/pix/mercadopago` | público | Notificações Mercado Pago |
 
 ## Configuração (`config/.env`)
 
@@ -61,7 +62,19 @@ PIX_CHARGE_TTL_SECONDS=3600
 PIX_WEBHOOK_SECRET=
 PIX_MERCHANT_NAME=Mini ERP
 PIX_MERCHANT_CITY=Sao Paulo
+
+# Produção — Mercado Pago (ver .cursor/prompts/integracao-pix.md)
+PIX_DEFAULT_GATEWAY=mercadopago
+PIX_MERCADOPAGO_ACCESS_TOKEN=
+PIX_MERCADOPAGO_WEBHOOK_SECRET=
+PIX_MERCADOPAGO_PAYER_EMAIL=noreply@suaempresa.com.br
 ```
+
+No painel Mercado Pago, configure a URL de notificação:
+
+`{APP_BASE_URL}/webhooks/pix/mercadopago`
+
+Eventos recomendados: `payment` (criação e atualização).
 
 ## Migration
 
@@ -89,11 +102,20 @@ curl -X POST http://localhost/mini-erp-vendas/public/webhooks/pix/mock \
   -d '{"external_id":"ERPXXXXXXXX","status":"paid"}'
 ```
 
+## Gateway Mercado Pago (`mercadopago`)
+
+Implementação: `app/Integrations/Payment/Gateways/MercadoPagoPixGateway.php` + `MercadoPagoApiClient.php`.
+
+- Cria cobrança via `POST /v1/payments` (`payment_method_id: pix`).
+- QR Code e copia e cola em `point_of_interaction.transaction_data`.
+- Polling e webhook consultam `GET /v1/payments/{id}`.
+- Assinatura do webhook: header `x-signature` + `PIX_MERCADOPAGO_WEBHOOK_SECRET`.
+
 ## Novo gateway
 
 1. Implemente `PaymentGatewayInterface` em `app/Integrations/Payment/Gateways/`.
 2. Registre em `GatewayFactory::make()`.
-3. Adicione rota de webhook em `public/index.php` e `AuthMiddleware::PUBLIC_ROUTES`.
+3. Adicione rota de webhook em `public/index.php` (rotas `/webhooks/pix/*` são públicas).
 4. Configure credenciais em `config/app.php` / `.env`.
 
 ## Verificação manual

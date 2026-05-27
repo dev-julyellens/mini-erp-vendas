@@ -135,12 +135,6 @@ final class NavigationMenu
                     'active' => $navPrefix('/orders/create') !== '',
                 ];
             }
-            $comercial[] = [
-                'label' => 'Parcelamentos',
-                'href' => $url('finance/installments/open'),
-                'icon' => 'bi-calendar2-check',
-                'active' => $navPrefix('/finance/installments') !== '',
-            ];
         }
         if ($comercial !== [])
         {
@@ -163,16 +157,28 @@ final class NavigationMenu
                 'active' => $navPrefix('/finance/cash-flow') !== '',
             ];
             $financeiro[] = [
-                'label' => 'Contas a receber',
+                'label' => 'Recebimentos',
                 'href' => $url('finance/accounts-receivable'),
                 'icon' => 'bi-wallet2',
                 'active' => $navPrefix('/finance/accounts-receivable') !== '',
+            ];
+            $financeiro[] = [
+                'label' => 'Parcelas em aberto',
+                'href' => $url('finance/installments/open'),
+                'icon' => 'bi-calendar2-check',
+                'active' => $currentPath === '/finance/installments/open',
             ];
             $financeiro[] = [
                 'label' => 'Parcelas vencidas',
                 'href' => $url('finance/installments/overdue'),
                 'icon' => 'bi-exclamation-triangle',
                 'active' => $currentPath === '/finance/installments/overdue',
+            ];
+            $financeiro[] = [
+                'label' => 'Histórico financeiro',
+                'href' => $url('finance/installments/history'),
+                'icon' => 'bi-clock-history',
+                'active' => $currentPath === '/finance/installments/history',
             ];
         }
         if ($financeiro !== [])
@@ -230,6 +236,12 @@ final class NavigationMenu
         $admin = [];
         if ($canUsuarios)
         {
+            $admin[] = [
+                'label' => 'Permissões',
+                'href' => $url('profile') . '#permissoes',
+                'icon' => 'bi-shield-lock',
+                'active' => $navPrefix('/profile') !== '',
+            ];
             $admin[] = [
                 'label' => 'Auditoria',
                 'href' => $url('audit-logs'),
