@@ -6,7 +6,10 @@ O projeto roda como aplicação PHP tradicional (Apache/nginx + PHP-FPM), sem co
 
 ## 2. Variáveis de ambiente
 
-Arquivo: `config/.env` (modelo em `config/.env.example`). Carregado por `App\Core\Env::load()` em `app/bootstrap.php`.
+Arquivo: `config/.env` (modelo em `config/.env.example`). Carregado por `App\Core\Env::load()` em `app/bootstrap.php` via **vlucas/phpdotenv** (requer `composer install` — não há parser legado).
+
+- `.env` ausente ou ilegível: boot continua (variáveis podem vir do servidor).
+- `.env` com sintaxe inválida: `RuntimeException` com mensagem indicando o arquivo e o erro do Dotenv (ex.: senha SMTP com espaços sem aspas — use `MAIL_SMTP_PASSWORD="valor com espacos"`).
 
 | Variável | Produção | Desenvolvimento |
 |----------|----------|-----------------|
@@ -67,7 +70,7 @@ php bin/migrate
 ```
 
 - Registra versões em `schema_migrations`
-- `bootstrapAppliedMigrations()` marca migrations 001–020 já presentes em bancos legados (primeira execução com tabela vazia)
+- `bootstrapAppliedMigrations()` marca migrations 001–024 já presentes em bancos legados (primeira execução com tabela vazia)
 - Migrations são idempotentes (`IF NOT EXISTS` onde possível)
 
 Sincronização `database.sql` ↔ migrations: ver seção em [banco.md](banco.md#12-sincronização-databasesql).

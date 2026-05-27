@@ -59,7 +59,7 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 |--------|---------|
 | ✅ | Mensagens de domínio nos fluxos web/estoque principais em português (`StockService`, controllers de venda/movimentação). Revisar novos services ao criar. |
 | 🟡 | `RoutePermissionMap` continua estático (entrada manual por rota). Mitigações: `bin/check-route-permission-map.php`; hub `GET /reports` com `PermissionService::canAccessReportsHub()` (OR vendas/estoque/financeiro). |
-| ⬜ | `Env::loadLegacy()` mantido como fallback sem Composer; Dotenv (`vlucas/phpdotenv`) é o caminho principal — remover legado quando política de deploy permitir. |
+| ✅ | `Env::load()` usa apenas Dotenv; parser legado removido (mai/2026). Boot exige `composer install`. |
 
 ---
 
@@ -85,7 +85,6 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 
 | Prioridade | Tarefa | Esforço estimado |
 |------------|--------|------------------|
-| P3 | Remover `Env::loadLegacy` após validar deploy só com Composer | Baixo |
 
 ---
 

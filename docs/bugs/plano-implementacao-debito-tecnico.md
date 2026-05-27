@@ -219,12 +219,12 @@ flowchart LR
 
 ---
 
-## Fase 6 — Remover `Env::loadLegacy`
+## Fase 6 — Remover `Env::loadLegacy` ✅ (mai/2026)
 
 | Campo | Conteúdo |
 |-------|----------|
 | Pré-requisito | Deploy sempre com `composer install` e Dotenv |
-| Ação | Remover `loadLegacy()` e testes associados; documentar em `docs/arquitetura/devops.md` |
+| Ação | `loadLegacy()` removido; `EnvTest` cobre .env válido/inválido; documentado em `docs/arquitetura/devops.md` |
 | Critério de aceite | Boot com `.env` válido e inválido (mensagem clara); CI verde |
 
 ---
