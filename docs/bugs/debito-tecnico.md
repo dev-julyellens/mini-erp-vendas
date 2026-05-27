@@ -12,8 +12,8 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 
 | Status | Detalhe |
 |--------|---------|
-| 🟡 | **6 de 33** repositórios estendem `BaseRepository` (PDO injetável): `Customer`, `Quote`, `QuoteItem`, `Installment`, `InventoryCount`, `InventoryCountLine`. |
-| ⬜ | **~27** repositórios ainda instanciam `Database::getConnection()` diretamente (`Order`, `Product`, `Payment`, `PixCharge`, `AccountsReceivable`, etc.). |
+| 🟡 | **13 de 33** repositórios estendem `BaseRepository` (PDO injetável): núcleo venda/estoque/financeiro (`Product`, `Order`, `OrderItem`, `Payment`, `AccountsReceivable`, `PixCharge`, `StockMovement`) + orçamentos/inventário/clientes. |
+| ⬜ | **~20** repositórios administrativos ainda instanciam `Database::getConnection()` diretamente (`User`, `Company`, `Category`, `Report`, etc.). |
 
 **Impacto:** duplicação de construtor/PDO e maior dificuldade para testes com banco em memória ou mock.
 
@@ -85,7 +85,6 @@ Consolidado de `docs/implementacoes/20-refatoracao-tecnica-geral.md` e revisão 
 
 | Prioridade | Tarefa | Esforço estimado |
 |------------|--------|------------------|
-| P1 | Migrar repositórios de alto tráfego para `BaseRepository` (`Order`, `Product`, `Payment`, `AccountsReceivable`, `PixCharge`) | Alto |
 | P2 | Ampliar testes de integração (financeiro, estoque, cancelamento) | Médio |
 | P2 | PHPStan 5 → 6 (corrigir arrays sem value-type) | Médio |
 | P3 | Migrar repositórios administrativos restantes para `BaseRepository` | Alto |

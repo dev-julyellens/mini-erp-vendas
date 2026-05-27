@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Core\Database;
 use App\Models\AccountsReceivable;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class AccountsReceivableRepository
+final class AccountsReceivableRepository extends BaseRepository
 {
     use CompanyScope;
-    private PDO $db;
 
     private const SELECT_COLUMNS = 'ar.id, ar.order_id, ar.customer_id, ar.amount, ar.due_date, ar.status,
         ar.created_at, ar.updated_at, c.name AS customer_name,
@@ -29,11 +27,6 @@ final class AccountsReceivableRepository
             FROM payments
             GROUP BY accounts_receivable_id
         ) pay ON pay.accounts_receivable_id = ar.id';
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function insert(int $orderId, int $customerId, string $amount, string $dueDate): int
     {

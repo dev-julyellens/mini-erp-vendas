@@ -98,7 +98,7 @@ flowchart LR
 
 ---
 
-## Fase 2 — `BaseRepository` (núcleo alto tráfego)
+## Fase 2 — `BaseRepository` (núcleo alto tráfego) ✅ (mai/2026)
 
 **Objetivo:** PDO injetável nos repositórios mais usados em venda, estoque e financeiro.
 

@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Core\Database;
 use App\Models\PixCharge;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class PixChargeRepository
+final class PixChargeRepository extends BaseRepository
 {
     use CompanyScope;
-
-    private PDO $db;
 
     private const SELECT_COLUMNS = 'pc.id, pc.company_id, pc.accounts_receivable_id, pc.installment_id,
         pc.gateway, pc.external_id, pc.amount, pc.status, pc.qr_payload, pc.qr_image_url,
@@ -26,11 +23,6 @@ final class PixChargeRepository
         INNER JOIN orders o ON o.id = ar.order_id AND o.company_id = :company_id
         INNER JOIN customers c ON c.id = ar.customer_id AND c.company_id = :company_id
         LEFT JOIN installments inst ON inst.id = pc.installment_id';
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function insert(
         int $companyId,

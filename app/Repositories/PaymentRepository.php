@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Core\Database;
 use App\Models\Payment;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class PaymentRepository
+final class PaymentRepository extends BaseRepository
 {
     use CompanyScope;
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function insert(
         int $accountsReceivableId,

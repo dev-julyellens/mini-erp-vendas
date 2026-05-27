@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Core\Database;
 use App\Helpers\ProductPricing;
 use App\Models\Product;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class ProductRepository
+final class ProductRepository extends BaseRepository
 {
     use CompanyScope;
     private const SELECT_COLUMNS = '
@@ -20,13 +19,6 @@ final class ProductRepository
         c.name AS category_name';
 
     private const FROM_JOIN = ' FROM products p LEFT JOIN categories c ON c.id = p.category_id AND c.company_id = p.company_id ';
-
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function findById(int $id, bool $forUpdate = false): ?Product
     {
@@ -216,11 +208,6 @@ final class ProductRepository
     {
         $stmt = $this->db->prepare('DELETE FROM products WHERE id = :id AND company_id = :company_id');
         $stmt->execute(['id' => $id, 'company_id' => $this->companyId()]);
-    }
-
-    public function getConnection(): PDO
-    {
-        return $this->db;
     }
 
     public function decrementStock(int $productId, int $quantity): void

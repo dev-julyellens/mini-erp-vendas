@@ -4,21 +4,13 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Core\Database;
 use App\Models\StockMovement;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class StockMovementRepository
+final class StockMovementRepository extends BaseRepository
 {
     use CompanyScope;
-
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function insert(
         int $productId,

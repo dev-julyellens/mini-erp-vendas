@@ -4,21 +4,13 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Core\Database;
 use App\Models\OrderItem;
 use App\Repositories\Concerns\CompanyScope;
 use PDO;
 
-final class OrderItemRepository
+final class OrderItemRepository extends BaseRepository
 {
     use CompanyScope;
-
-    private PDO $db;
-
-    public function __construct(?PDO $db = null)
-    {
-        $this->db = $db ?? Database::getConnection();
-    }
 
     public function insert(int $orderId, int $productId, int $quantity, string $unitPrice, string $subtotal): void
     {
