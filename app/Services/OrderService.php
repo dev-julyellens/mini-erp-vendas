@@ -10,6 +10,7 @@ use App\Core\ValidationException;
 use App\Helpers\Audit;
 use App\Helpers\Money;
 use App\Repositories\CustomerRepository;
+use App\Repositories\AccountsReceivableRepository;
 use App\Repositories\OrderItemRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
@@ -19,11 +20,31 @@ use PDOException;
 
 final class OrderService
 {
-    /** Venda concluída na criação (baixa de estoque + conta a receber). */
+    /** Venda quitada (conta a receber totalmente recebida). */
     public const STATUS_PAID = 'paid';
 
-    /** Reservado para rascunho/orçamento futuro; não usado em placeOrder(). */
+    /** Venda registrada; aguardando recebimento financeiro. */
     public const STATUS_PENDING = 'pending';
+
+    /**
+     * Atualiza o pedido para `paid` quando a conta a receber vinculada estiver quitada.
+     */
+    public function syncPaymentStatusFromReceivable(int $orderId, ?PDO $pdo = null): void
+    {
+        $accountRepo = new AccountsReceivableRepository($pdo);
+        $ar = $accountRepo->findByOrderId($orderId);
+        if ($ar === null || $ar->status !== 'paid')
+        {
+            return;
+        }
+
+        $orderRepo = new OrderRepository($pdo);
+        $order = $orderRepo->findById($orderId);
+        if ($order !== null && $order->status === self::STATUS_PENDING)
+        {
+            $orderRepo->markPaid($orderId);
+        }
+    }
 
     /**
      * @param array<int, array{product_id?: mixed, quantity?: mixed}> $lines
@@ -135,7 +156,7 @@ final class OrderService
                     }
                 }
 
-                $orderId = $orderRepo->insert($customerId, $total, self::STATUS_PAID);
+                $orderId = $orderRepo->insert($customerId, $total, self::STATUS_PENDING);
 
                 foreach ($prepared as $row)
                 {
@@ -221,7 +242,7 @@ final class OrderService
             Audit::record('venda', 'vendas', $orderId, null, [
                 'customer_id' => $customerId,
                 'total_amount' => $total,
-                'status' => 'paid',
+                'status' => self::STATUS_PENDING,
                 'items' => $prepared,
             ]);
 

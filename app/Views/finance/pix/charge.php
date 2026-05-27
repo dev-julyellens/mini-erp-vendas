@@ -47,12 +47,14 @@ require dirname(__DIR__, 2) . '/components/page-header.php';
             <?php endif; ?>
 
             <?php if ($charge->isPending() && !$charge->isExpired()): ?>
-                <div class="text-center">
-                    <?php if ($charge->qr_image_url !== null && $charge->qr_image_url !== ''): ?>
-                        <img src="<?= htmlspecialchars($charge->qr_image_url, ENT_QUOTES, 'UTF-8') ?>"
-                            alt="QR Code PIX" class="img-fluid rounded border bg-white p-2" style="max-width: 320px;">
-                    <?php endif; ?>
-                </div>
+                <?php if ($charge->qr_payload !== null && $charge->qr_payload !== ''): ?>
+                    <div id="pix-qr-host" class="d-flex justify-content-center mb-2" aria-hidden="true">
+                        <?php if ($charge->qr_image_url !== null && $charge->qr_image_url !== ''): ?>
+                            <img id="pix-qr-server" src="<?= htmlspecialchars($charge->qr_image_url, ENT_QUOTES, 'UTF-8') ?>"
+                                alt="" class="img-fluid rounded border bg-white p-2" style="max-width: 320px;">
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
 
                 <?php if ($charge->qr_payload !== null && $charge->qr_payload !== ''): ?>
                     <div class="mt-3 text-center mx-auto" style="max-width: 860px;">
@@ -100,6 +102,9 @@ require dirname(__DIR__, 2) . '/components/page-header.php';
 </div>
 
 <?php if ($charge->isPending() && !$charge->isExpired()): ?>
+    <?php if ($charge->qr_payload !== null && $charge->qr_payload !== ''): ?>
+        <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" crossorigin="anonymous"></script>
+    <?php endif; ?>
     <script>
         (function() {
             const statusUrl = <?= json_encode($statusUrl, JSON_UNESCAPED_UNICODE) ?>;
@@ -108,6 +113,43 @@ require dirname(__DIR__, 2) . '/components/page-header.php';
             const hint = document.getElementById('pix-poll-hint');
             const copyBtn = document.getElementById('pix-copy-btn');
             const copyInput = document.getElementById('pix-copy');
+            const qrHost = document.getElementById('pix-qr-host');
+            const serverImg = document.getElementById('pix-qr-server');
+
+            function renderClientQr() {
+                if (!qrHost || !copyInput || !window.QRCode || qrHost.querySelector('canvas')) {
+                    return;
+                }
+                const payload = copyInput.value || '';
+                if (!payload) {
+                    return;
+                }
+                const canvas = document.createElement('canvas');
+                canvas.setAttribute('role', 'img');
+                canvas.setAttribute('aria-label', 'QR Code PIX');
+                canvas.className = 'rounded border bg-white p-2';
+                canvas.style.maxWidth = '320px';
+                qrHost.appendChild(canvas);
+                window.QRCode.toCanvas(canvas, payload, {
+                    width: 240,
+                    margin: 1
+                }, function(err) {
+                    if (err) {
+                        canvas.remove();
+                    }
+                });
+            }
+
+            if (qrHost && copyInput) {
+                if (!serverImg) {
+                    renderClientQr();
+                } else {
+                    serverImg.addEventListener('error', function() {
+                        serverImg.classList.add('d-none');
+                        renderClientQr();
+                    });
+                }
+            }
 
             if (copyBtn && copyInput) {
                 copyBtn.addEventListener('click', function() {

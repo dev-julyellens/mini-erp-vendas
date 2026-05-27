@@ -83,6 +83,10 @@ final class OrderController extends Controller
             'customers' => $customers->allOrderedByName(),
             'products' => $products->allOrderedByName(),
             'flash' => Flash::pull(),
+            'pageScripts' => [
+                'assets/js/autosave.js',
+                'assets/js/order_create.js',
+            ],
         ]);
     }
 

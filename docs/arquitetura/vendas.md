@@ -41,7 +41,7 @@ Ver `docs/arquitetura/` (regras em `OrderCancelService`) e `docs/regras-negocio/
 | `installments` | Se parcelado |
 | `stock_movements` | Saídas tipo `saida` ref `order` |
 
-Status em `orders`: `pending`, `paid`, `canceled`, `refunded`. O fluxo atual grava **`paid`** na criação (`OrderService` + auditoria).
+Status em `orders`: `pending`, `paid`, `canceled`, `refunded`. O fluxo atual grava **`pending`** na criação e **`paid`** após quitação da AR (`OrderService::syncPaymentStatusFromReceivable`).
 
 ## 4. Services envolvidos
 
@@ -94,7 +94,7 @@ Form/JSON → Controller → OrderService
 - Transação única: falha em qualquer etapa faz rollback completo.
 - Ordenação de `product_id` antes dos locks reduz risco de deadlock.
 - Cancelamento bloqueado se AR paga ou parcelas/recebimentos já quitados.
-- Status `pending` existe no schema mas o fluxo de criação usa `paid`.
+- Pedidos antigos podem constar como `paid` na criação (comportamento legado); novos registros usam `pending` até o recebimento.
 
 ## 10. Dependências
 

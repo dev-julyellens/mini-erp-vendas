@@ -40,7 +40,7 @@ Mensagens via `ValidationException` com campos específicos.
 ## Diferença de status
 
 - Schema suporta `refunded`; fluxo principal de cancelamento usa `canceled`.
-- Status `pending` no pedido não é usado no fluxo de criação atual (pedido nasce `paid`).
+- Pedido nasce `pending` e pode ser cancelado enquanto `pending` ou `paid` (antes de estornos futuros).
 
 ## Referências
 

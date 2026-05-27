@@ -48,7 +48,7 @@ final class OrderRepository
         return $row ? Order::fromArray($row) : null;
     }
 
-    public function insert(int $customerId, string $totalAmount, string $status = 'paid'): int
+    public function insert(int $customerId, string $totalAmount, string $status = 'pending'): int
     {
         $stmt = $this->db->prepare(
             'INSERT INTO orders (customer_id, total_amount, status, company_id)
@@ -63,6 +63,23 @@ final class OrderRepository
         ]);
 
         return (int) $stmt->fetchColumn();
+    }
+
+    public function markPaid(int $orderId): void
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE orders
+             SET status = :paid
+             WHERE id = :id
+               AND company_id = :company_id
+               AND status = :pending'
+        );
+        $stmt->execute([
+            'id' => $orderId,
+            'paid' => 'paid',
+            'pending' => 'pending',
+            'company_id' => $this->companyId(),
+        ]);
     }
 
     public function markCanceled(int $orderId, int $canceledBy): void

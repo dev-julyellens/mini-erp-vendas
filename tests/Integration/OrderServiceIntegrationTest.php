@@ -119,7 +119,7 @@ final class OrderServiceIntegrationTest extends TestCase
 
         $order = (new OrderRepository($pdo))->findById($orderId);
         $this->assertNotNull($order);
-        $this->assertSame(OrderService::STATUS_PAID, $order->status);
+        $this->assertSame(OrderService::STATUS_PENDING, $order->status);
     }
 
     public function testPlaceOrderRejectsUnknownCustomer(): void

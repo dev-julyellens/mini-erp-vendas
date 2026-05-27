@@ -6,7 +6,7 @@ Lista baseada no código e comportamento observável. Não inclui issues externa
 
 | Item | Descrição |
 |------|-----------|
-| Status `pending` em pedidos | **Comportamento intencional (mai/2026):** `placeOrder()` grava `paid` porque a venda é finalizada na hora (estoque + AR). `pending` fica reservado para rascunho/orçamento futuro (`OrderService::STATUS_PENDING`). |
+| Status do pedido vs AR | **Corrigido (mai/2026):** pedido nasce `pending`; vira `paid` ao quitar a conta a receber. Estoque baixa na criação; recebimento financeiro é separado. |
 
 ## Segurança / ambiente
 

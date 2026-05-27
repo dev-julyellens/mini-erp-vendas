@@ -64,7 +64,7 @@ final class Order
         $m->id = (int) $row['id'];
         $m->customer_id = (int) $row['customer_id'];
         $m->total_amount = (string) $row['total_amount'];
-        $m->status = isset($row['status']) ? (string) $row['status'] : 'paid';
+        $m->status = isset($row['status']) ? (string) $row['status'] : 'pending';
         $m->canceled_by = isset($row['canceled_by']) && $row['canceled_by'] !== null
             ? (int) $row['canceled_by']
             : null;

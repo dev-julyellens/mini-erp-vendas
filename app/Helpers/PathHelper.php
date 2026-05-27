@@ -10,23 +10,34 @@ final class PathHelper
     {
         $uri = $_SERVER['REQUEST_URI'] ?? '/';
         $path = parse_url($uri, PHP_URL_PATH);
-        if (!is_string($path) || $path === '') {
+        if (!is_string($path) || $path === '')
+        {
             $path = '/';
         }
 
         $scriptName = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
         $dir = dirname($scriptName);
-        if ($dir !== '/' && $dir !== '.' && strpos($path, $dir) === 0) {
+        if ($dir !== '/' && $dir !== '.' && strpos($path, $dir) === 0)
+        {
             $path = substr($path, strlen($dir)) ?: '/';
         }
 
         $path = '/' . trim($path, '/');
-        if ($path === '//') {
+        if ($path === '//')
+        {
             $path = '/';
         }
 
-        if ($path === '/index.php' || substr($path, -10) === '/index.php') {
+        if ($path === '/index.php' || substr($path, -10) === '/index.php')
+        {
             $path = '/';
+        }
+
+        // URLs no estilo index.php/api/... (PATH_INFO) devem rotear como /api/...
+        $apiPos = strpos($path, '/api/');
+        if ($apiPos !== false && $apiPos > 0)
+        {
+            $path = substr($path, $apiPos);
         }
 
         return $path === '' ? '/' : $path;

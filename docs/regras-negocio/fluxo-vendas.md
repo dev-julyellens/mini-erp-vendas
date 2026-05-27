@@ -17,7 +17,7 @@ Documentação derivada de `OrderService`, `OrderController` e `ApiOrderControll
 4. **Estoque** — para `type=product`, `stock >= quantity`; serviços ignoram estoque.
 5. **Preço** — `unit_price` gravado em `order_items` = preço do catálogo no momento da venda.
 6. **Total** — soma dos subtotais (`Money::mul` / `Money::add`).
-7. **Status do pedido** — gravado como `paid` na criação (auditoria inclui `status: paid`).
+7. **Status do pedido** — gravado como `pending` na criação; passa a `paid` quando a conta a receber for quitada (recebimento ou parcelas).
 8. **Estoque** — baixa automática tipo `saida`, referência `order`.
 9. **Financeiro** — sempre gera `accounts_receivable` com status `pending`.
 10. **Parcelamento** — opcional:

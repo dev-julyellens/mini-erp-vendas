@@ -177,6 +177,11 @@ final class InstallmentService
                 $newStatus = Money::compare($newPaidTotal, $ar->amount) >= 0 ? 'paid' : 'partial';
                 $accountRepo->updateStatus($ar->id, $newStatus);
 
+                if ($newStatus === 'paid')
+                {
+                    (new OrderService())->syncPaymentStatusFromReceivable($installment->order_id, $pdo);
+                }
+
                 $cashRepo->insert(
                     'entrada',
                     $installment->amount,

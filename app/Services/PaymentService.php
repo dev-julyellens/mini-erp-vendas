@@ -107,6 +107,11 @@ final class PaymentService
                 $newStatus = Money::compare($newPaidTotal, $ar->amount) >= 0 ? 'paid' : 'partial';
                 $accountRepo->updateStatus($accountsReceivableId, $newStatus);
 
+                if ($newStatus === 'paid')
+                {
+                    (new OrderService())->syncPaymentStatusFromReceivable($ar->order_id, $pdo);
+                }
+
                 $cashRepo->insert(
                     'entrada',
                     $amount,

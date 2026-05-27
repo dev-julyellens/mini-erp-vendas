@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\Database;
+use App\Core\Logger;
 use App\Core\ValidationException;
 use App\Helpers\Audit;
 use App\Helpers\Auth;
@@ -150,27 +151,7 @@ final class PixChargeService
             return null;
         }
 
-        // Compatibilidade: cobranças mock antigas podem ter URL externa (bloqueada por CSP)
-        // ou não ter imagem persistida.
-        if (
-            $charge->gateway === 'mock'
-            && $charge->qr_payload !== null
-            && $charge->qr_payload !== ''
-            && (
-                $charge->qr_image_url === null
-                || $charge->qr_image_url === ''
-                || str_starts_with($charge->qr_image_url, 'http')
-            )
-        )
-        {
-            $dataUri = $this->buildQrDataUri($charge->qr_payload, 240);
-            if ($dataUri !== null)
-            {
-                $charge->qr_image_url = $dataUri;
-                // Persiste para evitar inconsistências e cache de HTML/CDN.
-                $repo->updateQrImageUrlById($charge->id, $dataUri);
-            }
-        }
+        $this->ensureQrImageUrl($charge, $repo);
 
         return $charge;
     }
@@ -422,6 +403,12 @@ final class PixChargeService
             $ttl,
         ));
 
+        $qrImageUrl = $response->qrImageUrl;
+        if (!$this->isUsableQrImageUrl($qrImageUrl) && $response->qrPayload !== '')
+        {
+            $qrImageUrl = $this->buildQrDataUri($response->qrPayload, 240);
+        }
+
         $repo = new PixChargeRepository();
         $chargeId = $repo->insert(
             $companyId,
@@ -432,7 +419,7 @@ final class PixChargeService
             $amount,
             $response->status,
             $response->qrPayload,
-            $response->qrImageUrl,
+            $qrImageUrl,
             $response->expiresAt,
             $userId
         );
@@ -496,8 +483,65 @@ final class PixChargeService
         return 'ERP' . strtoupper(bin2hex(random_bytes(8)));
     }
 
+    private function ensureQrImageUrl(PixCharge $charge, PixChargeRepository $repo): void
+    {
+        if (
+            !$charge->isPending()
+            || $charge->isExpired()
+            || $charge->qr_payload === null
+            || $charge->qr_payload === ''
+        )
+        {
+            return;
+        }
+
+        if ($this->isUsableQrImageUrl($charge->qr_image_url))
+        {
+            return;
+        }
+
+        $dataUri = $this->buildQrDataUri($charge->qr_payload, 240);
+        if ($dataUri === null)
+        {
+            Logger::warning('Falha ao gerar QR Code PIX no servidor (verifique ext-gd no PHP do Apache).', [
+                'charge_id' => $charge->id,
+                'gateway' => $charge->gateway,
+            ]);
+
+            return;
+        }
+
+        $charge->qr_image_url = $dataUri;
+        $repo->updateQrImageUrlById($charge->id, $dataUri);
+    }
+
+    private function isUsableQrImageUrl(?string $url): bool
+    {
+        if ($url === null || $url === '')
+        {
+            return false;
+        }
+
+        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://'))
+        {
+            return false;
+        }
+
+        if (!str_starts_with($url, 'data:image/'))
+        {
+            return false;
+        }
+
+        return strlen($url) > 128;
+    }
+
     private function buildQrDataUri(string $payload, int $size): ?string
     {
+        if (!extension_loaded('gd'))
+        {
+            return null;
+        }
+
         try
         {
             $qrCode = new QrCode(
@@ -511,6 +555,10 @@ final class PixChargeService
         }
         catch (\Throwable $e)
         {
+            Logger::warning('Exceção ao gerar QR Code PIX.', [
+                'message' => $e->getMessage(),
+            ]);
+
             return null;
         }
     }

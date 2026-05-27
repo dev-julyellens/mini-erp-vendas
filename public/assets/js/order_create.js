@@ -1,6 +1,32 @@
 (function () {
     "use strict";
 
+    function getCsrfToken() {
+        if (window.MiniErp && typeof window.MiniErp.getCsrfToken === "function") {
+            return window.MiniErp.getCsrfToken();
+        }
+        var body = document.body;
+        if (body && body.dataset.csrfToken) {
+            return body.dataset.csrfToken;
+        }
+        var input = document.querySelector('input[name="_csrf"]');
+        return input ? input.value : "";
+    }
+
+    function getStoreUrl() {
+        if (typeof window.__ORDER_STORE_URL__ === "string" && window.__ORDER_STORE_URL__ !== "") {
+            return window.__ORDER_STORE_URL__;
+        }
+        var form = document.getElementById("orderForm");
+        if (form && form.dataset.storeUrl) {
+            return form.dataset.storeUrl;
+        }
+        if (window.MiniErp && window.MiniErp.baseUrl) {
+            return window.MiniErp.baseUrl.replace(/\/$/, "") + "/api/orders";
+        }
+        return "";
+    }
+
     function moneyFormatBR(value) {
         var n = Number(value);
         if (!isFinite(n)) {
@@ -245,12 +271,36 @@
                 window.MiniErp.skeleton.start(formCard);
             }
 
-            fetch(window.__ORDER_STORE_URL__, {
+            var storeUrl = getStoreUrl();
+            if (!storeUrl) {
+                if (window.MiniErp && window.MiniErp.toast) {
+                    window.MiniErp.toast("Erro", "URL de salvamento não configurada. Atualize a página.", "danger");
+                }
+                if (btn) {
+                    btn.disabled = false;
+                }
+                if (spinner) {
+                    spinner.classList.add("d-none");
+                }
+                if (window.MiniErp && window.MiniErp.skeleton && formCard) {
+                    window.MiniErp.skeleton.stop(formCard);
+                }
+                return;
+            }
+
+            var csrf = getCsrfToken();
+            var headers = {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            };
+            if (csrf) {
+                headers["X-CSRF-Token"] = csrf;
+            }
+
+            fetch(storeUrl, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
+                headers: headers,
+                credentials: "same-origin",
                 body: JSON.stringify({
                     customer_id: customerId,
                     items: items,
