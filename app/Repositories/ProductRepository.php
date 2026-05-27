@@ -92,6 +92,22 @@ final class ProductRepository
     }
 
     /**
+     * Produtos físicos (exclui serviços) para inventário.
+     *
+     * @return list<Product>
+     */
+    public function listPhysicalProductsOrderedByName(): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT ' . self::SELECT_COLUMNS . self::FROM_JOIN
+                . " WHERE p.company_id = :company_id AND p.type = 'product' ORDER BY p.name ASC"
+        );
+        $stmt->execute($this->companyParams());
+
+        return $this->mapRows($stmt->fetchAll());
+    }
+
+    /**
      * @param array{q?: string, category_id?: int, type?: string, low_stock?: bool} $filters
      * @return array{items: list<Product>, total: int}
      */

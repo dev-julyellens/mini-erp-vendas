@@ -407,6 +407,76 @@ CREATE INDEX idx_stock_movements_created_at ON stock_movements (created_at DESC)
 CREATE INDEX idx_stock_movements_product_created ON stock_movements (product_id, created_at DESC);
 CREATE INDEX idx_stock_movements_reference ON stock_movements (reference_type, reference_id);
 
+CREATE TABLE quotes (
+    id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies (id),
+    customer_id INTEGER NOT NULL REFERENCES customers (id) ON DELETE RESTRICT,
+    total_amount NUMERIC(14, 2) NOT NULL DEFAULT 0,
+    status VARCHAR(20) NOT NULL DEFAULT 'draft',
+    valid_until DATE,
+    notes TEXT,
+    converted_order_id INTEGER REFERENCES orders (id) ON DELETE SET NULL,
+    created_by INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT quotes_total_non_negative CHECK (total_amount >= 0),
+    CONSTRAINT quotes_status_check CHECK (
+        status IN ('draft', 'sent', 'approved', 'canceled', 'converted')
+    )
+);
+
+CREATE INDEX idx_quotes_company ON quotes (company_id);
+CREATE INDEX idx_quotes_customer ON quotes (customer_id);
+CREATE INDEX idx_quotes_status ON quotes (status);
+CREATE INDEX idx_quotes_valid_until ON quotes (valid_until);
+CREATE INDEX idx_quotes_created_at ON quotes (created_at DESC);
+
+CREATE TABLE quote_items (
+    id SERIAL PRIMARY KEY,
+    quote_id INTEGER NOT NULL REFERENCES quotes (id) ON DELETE CASCADE,
+    product_id INTEGER NOT NULL REFERENCES products (id) ON DELETE RESTRICT,
+    quantity INTEGER NOT NULL,
+    unit_price NUMERIC(12, 2) NOT NULL,
+    subtotal NUMERIC(14, 2) NOT NULL,
+    CONSTRAINT quote_items_quantity_positive CHECK (quantity > 0),
+    CONSTRAINT quote_items_prices_positive CHECK (unit_price > 0 AND subtotal > 0)
+);
+
+CREATE INDEX idx_quote_items_quote ON quote_items (quote_id);
+CREATE INDEX idx_quote_items_product ON quote_items (product_id);
+
+CREATE TABLE inventory_counts (
+    id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies (id),
+    status VARCHAR(20) NOT NULL DEFAULT 'open',
+    notes TEXT,
+    created_by INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    finalized_by INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    finalized_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT inventory_counts_status_check CHECK (
+        status IN ('open', 'finalized', 'canceled')
+    )
+);
+
+CREATE INDEX idx_inventory_counts_company ON inventory_counts (company_id);
+CREATE INDEX idx_inventory_counts_status ON inventory_counts (status);
+CREATE INDEX idx_inventory_counts_created_at ON inventory_counts (created_at DESC);
+
+CREATE TABLE inventory_count_lines (
+    id SERIAL PRIMARY KEY,
+    inventory_count_id INTEGER NOT NULL REFERENCES inventory_counts (id) ON DELETE CASCADE,
+    product_id INTEGER NOT NULL REFERENCES products (id) ON DELETE RESTRICT,
+    system_qty INTEGER NOT NULL DEFAULT 0,
+    counted_qty INTEGER,
+    CONSTRAINT inventory_count_lines_unique_product UNIQUE (inventory_count_id, product_id),
+    CONSTRAINT inventory_count_lines_system_non_negative CHECK (system_qty >= 0),
+    CONSTRAINT inventory_count_lines_counted_non_negative CHECK (counted_qty IS NULL OR counted_qty >= 0)
+);
+
+CREATE INDEX idx_inventory_count_lines_count ON inventory_count_lines (inventory_count_id);
+CREATE INDEX idx_inventory_count_lines_product ON inventory_count_lines (product_id);
+
 CREATE TABLE audit_logs (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users (id) ON DELETE SET NULL,
@@ -440,7 +510,10 @@ CREATE TABLE audit_logs (
             'cancelamento_parcelas',
             'consentimento_lgpd',
             'pix_cobranca',
-            'pix_conciliacao'
+            'pix_conciliacao',
+            'orcamento',
+            'orcamento_conversao',
+            'inventario_fisico'
         )
     ),
     CONSTRAINT audit_logs_entity_check CHECK (

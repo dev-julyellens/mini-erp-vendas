@@ -82,6 +82,21 @@ $router->get('/orders/create', \App\Controllers\OrderController::class . '@creat
 $router->post('/orders/store', \App\Controllers\OrderController::class . '@store');
 $router->post('/orders/cancel', \App\Controllers\OrderController::class . '@cancel');
 
+$router->get('/quotes', \App\Controllers\QuoteController::class . '@index');
+$router->get('/quotes/show', \App\Controllers\QuoteController::class . '@show');
+$router->get('/quotes/create', \App\Controllers\QuoteController::class . '@create');
+$router->post('/quotes/store', \App\Controllers\QuoteController::class . '@store');
+$router->post('/quotes/convert', \App\Controllers\QuoteController::class . '@convert');
+$router->post('/quotes/cancel', \App\Controllers\QuoteController::class . '@cancel');
+$router->post('/quotes/mark-sent', \App\Controllers\QuoteController::class . '@markSent');
+
+$router->get('/inventory', \App\Controllers\InventoryCountController::class . '@index');
+$router->get('/inventory/show', \App\Controllers\InventoryCountController::class . '@show');
+$router->post('/inventory/start', \App\Controllers\InventoryCountController::class . '@start');
+$router->post('/inventory/save-lines', \App\Controllers\InventoryCountController::class . '@saveLines');
+$router->post('/inventory/finalize', \App\Controllers\InventoryCountController::class . '@finalize');
+$router->post('/inventory/cancel', \App\Controllers\InventoryCountController::class . '@cancel');
+
 $router->get('/reports', \App\Controllers\ReportController::class . '@index');
 $router->get('/reports/sales-period', \App\Controllers\ReportController::class . '@salesPeriod');
 $router->get('/reports/sales-period/export', \App\Controllers\ReportController::class . '@exportSalesPeriod');

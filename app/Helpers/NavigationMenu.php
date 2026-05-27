@@ -135,6 +135,21 @@ final class NavigationMenu
                     'active' => $navPrefix('/orders/create') !== '',
                 ];
             }
+            $comercial[] = [
+                'label' => 'Orçamentos',
+                'href' => $url('quotes'),
+                'icon' => 'bi-file-earmark-text',
+                'active' => $navPrefix('/quotes') !== '',
+            ];
+            if (Permission::can('vendas', 'criar'))
+            {
+                $comercial[] = [
+                    'label' => 'Novo orçamento',
+                    'href' => $url('quotes/create'),
+                    'icon' => 'bi-file-earmark-plus',
+                    'active' => $navPrefix('/quotes/create') !== '',
+                ];
+            }
         }
         if ($comercial !== [])
         {
@@ -194,6 +209,12 @@ final class NavigationMenu
                 'href' => $url('stock-movements'),
                 'icon' => 'bi-archive',
                 'active' => $navPrefix('/stock-movements') !== '',
+            ];
+            $estoque[] = [
+                'label' => 'Inventário físico',
+                'href' => $url('inventory'),
+                'icon' => 'bi-clipboard-check',
+                'active' => $navPrefix('/inventory') !== '',
             ];
         }
         if ($estoque !== [])

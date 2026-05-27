@@ -45,6 +45,21 @@ final class RoutePermissionMap
         'POST /orders/store' => ['vendas', 'criar'],
         'POST /orders/cancel' => ['vendas', 'excluir'],
 
+        'GET /quotes' => ['vendas', 'visualizar'],
+        'GET /quotes/show' => ['vendas', 'visualizar'],
+        'GET /quotes/create' => ['vendas', 'criar'],
+        'POST /quotes/store' => ['vendas', 'criar'],
+        'POST /quotes/convert' => ['vendas', 'criar'],
+        'POST /quotes/cancel' => ['vendas', 'excluir'],
+        'POST /quotes/mark-sent' => ['vendas', 'editar'],
+
+        'GET /inventory' => ['estoque', 'visualizar'],
+        'GET /inventory/show' => ['estoque', 'visualizar'],
+        'POST /inventory/start' => ['estoque', 'criar'],
+        'POST /inventory/save-lines' => ['estoque', 'editar'],
+        'POST /inventory/finalize' => ['estoque', 'criar'],
+        'POST /inventory/cancel' => ['estoque', 'excluir'],
+
         'GET /api/products' => ['produtos', 'visualizar'],
         'GET /api/orders' => ['vendas', 'visualizar'],
         'POST /api/orders' => ['vendas', 'criar'],

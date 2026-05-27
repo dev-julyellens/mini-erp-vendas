@@ -110,6 +110,9 @@ function bootstrapAppliedMigrations(PDO $db): void
         '018_sync_audit_constraints.sql' => migration018IsComplete($db) ? 'SELECT 1' : 'SELECT 0',
         '019_user_companies_roles.sql' => "SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'user_companies' AND column_name = 'role'",
         '020_profile_avatar_and_preferences.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_preferences'",
+        '021_create_quotes.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'quotes'",
+        '022_create_inventory_counts.sql' => "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'inventory_counts'",
+        '023_sync_audit_quotes_inventory.sql' => migration023IsComplete($db) ? 'SELECT 1' : 'SELECT 0',
     ];
 
     $bootstrapped = 0;
@@ -157,6 +160,17 @@ function migration005IsComplete(PDO $db): bool
     )->fetchColumn();
 
     return is_string($def) && str_contains($def, 'cancelamento_venda');
+}
+
+function migration023IsComplete(PDO $db): bool
+{
+    $def = $db->query(
+        "SELECT pg_get_constraintdef(c.oid)
+         FROM pg_constraint c
+         WHERE c.conname = 'audit_logs_action_check'"
+    )->fetchColumn();
+
+    return is_string($def) && str_contains($def, 'orcamento');
 }
 
 function migration018IsComplete(PDO $db): bool

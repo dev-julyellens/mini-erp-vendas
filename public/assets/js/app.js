@@ -906,6 +906,7 @@
 
     window.MiniErp = {
         baseUrl: getBaseUrl(),
+        getCsrfToken: getCsrfToken,
         toast: showToast,
         theme: {
             get: getStoredTheme,

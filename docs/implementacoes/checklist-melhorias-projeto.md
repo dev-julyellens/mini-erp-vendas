@@ -212,7 +212,7 @@ Itens do [gerenciamento-completo.md](../../.cursor/prompts/gerenciamento-complet
 
 | Item sugerido | Status | Ação |
 |---------------|--------|------|
-| Pedidos vs Orçamentos | 🟡 | Sem módulo de orçamento; vendas em `orders` |
+| Pedidos vs Orçamentos | ✅ | Orçamentos em `quotes` / `quote_items`; conversão gera `orders` |
 | Recebimentos | ✅ | Menu → `finance/accounts-receivable` |
 | Histórico financeiro | ✅ | Menu → `finance/installments/history` |
 | Inventário | 🟡 | Futuro — ver `debito-tecnico.md` |
@@ -229,8 +229,8 @@ Ver também seção **Menu** em [checklist-refatoracao-ui.md](checklist-refatora
 |---|--------|-------|--------|----------------|
 | 10.1 | Gateway PIX real (`PixGatewayInterface`) | INT | ✅ | `MercadoPagoPixGateway` + webhook `/webhooks/pix/mercadopago` |
 | 10.2 | E-mail transacional (reset, notificações críticas) | INT | ✅ | PHPMailer + `MailService::sendTransactional`; `.env.example` |
-| 10.3 | Módulo de orçamentos (se escopo de produto) | BE | ⬜ | Não existe — só vendas |
-| 10.4 | Inventário físico (contagem) | BE | ⬜ | Futuro — estoque tem movimentações |
+| 10.3 | Módulo de orçamentos (se escopo de produto) | BE | ✅ | `quotes`, `QuoteService`, UI `/quotes` |
+| 10.4 | Inventário físico (contagem) | BE | ✅ | `inventory_counts`, ajuste tipo `inventario`, UI `/inventory` |
 
 ---
 
@@ -320,7 +320,7 @@ Maioria concluída — ver [checklist-refatoracao-ui.md](checklist-refatoracao-u
 | Migrations / DB | ~92% | Bootstrap 018–020; índices pendentes (2.4) |
 | Performance JS | ~75% | Unificar form margens (6.3); SRI CDNs (6.5) |
 | Acessibilidade auditada | ~80% | CI axe (11.4); toasts SR (8.6) |
-| Integrações (PIX/e-mail) | ~75% | Credenciais MP em produção; orçamentos/inventário futuros |
+| Integrações (PIX/e-mail) | ~75% | Credenciais MP em produção; orçamentos e inventário implementados |
 
 ---
 
